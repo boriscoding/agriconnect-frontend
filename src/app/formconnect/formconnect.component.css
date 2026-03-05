@@ -1,0 +1,302 @@
+/* Conteneur principal plein écran */
+.contenair {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100vh;
+  background-color: #f4f8f4; /* Un blanc légèrement teinté de vert */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* La carte d'inscription */
+.signup-form {
+  display: flex;
+  width: 900px;
+  max-width: 95%;
+  height: auto;
+  min-height: 550px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(45, 90, 39, 0.15); /* Ombre légèrement verte */
+  overflow: hidden;
+  transition: transform 0.5s ease;
+}
+
+/* Conteneur interne Flexbox */
+.content {
+  display: flex;
+  width: 100%;
+}
+
+/* SECTION GAUCHE (Formulaire) */
+.rigthx {
+  flex: 1.2;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.rigthx h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.rigthx h3 b {
+  color: #2d5a27; /* Vert du logo */
+}
+
+/* Champs de saisie stylisés */
+.contform {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contform input, .contform select {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid #e1e8ef;
+  border-radius: 25px;
+  background-color: #f8fbff;
+  outline: none;
+  transition: 0.3s;
+}
+
+.contform input:focus, .contform select:focus {
+  border-color: #f2b33d; /* Jaune du logo au focus */
+  box-shadow: 0 0 8px rgba(242, 179, 61, 0.2);
+}
+
+/* Wrapper pour le mot de passe avec l'icône */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #2d5a27; /* Vert du logo */
+}
+
+/* Boutons */
+.inscrire {
+  margin-top: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 25px;
+  /* Dégradé utilisant le vert et le jaune du logo */
+  background: linear-gradient(to right, #2d5a27 0%, #3e7d36 100%);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(45, 90, 39, 0.4);
+}
+
+.btn-submit {
+  background: transparent;
+  border: 1px solid #2d5a27;
+  color: #2d5a27;
+  padding: 10px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+/* SECTION DROITE (Panneau Vert avec Logo) */
+.leftx {
+  flex: 1;
+  /* Dégradé vertical vert forêt vers vert plus sombre */
+background: radial-gradient(circle, #ffffff 0%, #e8f5e9 100%);
+/* Dans ce cas, change la couleur du texte en bas : */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.leftx img {
+  width: 80%;
+  height: auto;
+  /* Ombre portée sur le logo pour la lisibilité */
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+}
+
+/* Animation de fermeture */
+.slide-out {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content { flex-direction: column-reverse; }
+  .leftx { padding: 20px; min-height: 150px; }
+  .signup-form { height: auto; }
+}
+/* À ajouter dans ton CSS */
+.input-row {
+  display: flex;
+  gap: 15px;
+}
+
+.input-row input {
+  flex: 1; /* Les deux champs prendront la même largeur */
+}
+
+/* Et sur mobile, on les remet l'un sous l'autre */
+@media (max-width: 600px) {
+  .input-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+}
+/* Section droite : Vert profond du logo */
+.leftx {
+  flex: 1;
+ background: linear-gradient(135deg, #72b01d 0%, #458b3a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: white;
+}
+
+/* Bouton S'inscrire : Ergonomie améliorée */
+.inscrire {
+  background-color: #2d5a27; /* Vert forêt */
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* Bouton Se connecter : Style "Outline" plus léger */
+.btn-submit {
+  background: white;
+  color: #2d5a27;
+  border: 1px solid #2d5a27;
+  padding: 10px;
+  border-radius: 30px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.logo-img {
+    width: 250px; /* Ajuste selon la taille voulue */
+    height: auto;
+    margin-bottom: 20px;
+}
+.leftx img {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+/* Button retour au homepage */
+ /* --- STYLE DE BASE --- */
+.floating-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: white;
+  color: #28a745;
+  border: 2px solid #28a745;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 2000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- ANIMATION PC (Hover) --- */
+@media (min-width: 993px) {
+  .floating-back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+  }
+  .floating-back-btn:hover {
+    transform: translateX(-5px);
+    background: #28a745;
+    color: white;
+  }
+}
+
+/* --- ANIMATION MOBILE (Pulse flottant) --- */
+@media (max-width: 992px) {
+  .floating-back-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 20px; /* À droite sur mobile c'est plus accessible au pouce */
+    background: #28a745;
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    animation: pulse-green 2s infinite; /* Lancement de l'anim */
+  }
+
+  .btn-text { display: none; } /* On ne garde que l'icône sur mobile */
+  
+  .floating-back-btn i {
+    font-size: 1.5rem;
+  }
+}
+
+/* --- DÉFINITION DE L'ANIMATION --- */
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(40, 167, 69, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+.floating-back-btn:active {
+  transform: scale(0.9);
+  background: #1e7e34; /* Un vert plus foncé au clic */
+}
+/* Changer la couleur du toast de succès en vert "Agri" */
+.toast-success {
+  background-color: #2e7d32 !important; /* Vert foncé */
+  border: 1px solid #1b5e20;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+}
+
+/* Modifier la police et la taille du texte */
+.toast-container .ngx-toastr {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 8px; /* Bords arrondis */
+  padding: 15px 15px 15px 50px; /* Espace pour l'icône */
+}
+
+/* Changer la couleur de la barre de progression */
+.toast-progress {
+  background-color: #ffffff !important;
+  opacity: 0.6;
+}

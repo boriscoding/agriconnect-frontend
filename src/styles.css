@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+/* Masque la barre de défilement sur toute l'application */
+@import 'ngx-toastr/toastr';
+body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}

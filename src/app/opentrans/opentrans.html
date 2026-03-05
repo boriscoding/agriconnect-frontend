@@ -1,0 +1,146 @@
+<app-header (sidebarToggle)="sidebarOpen = $event"></app-header>
+<app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
+
+<div class="main-wrapper">
+  <button class="mobile-menu-btn d-lg-none" (click)="sidebarOpen = !sidebarOpen">
+    <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
+    <span>Menu</span>
+  </button>
+
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <div class="sticky-sub-header">
+    <div class="tabs-container">
+      <div class="tab">Producteur</div>
+      <div class="tab active">Transporteur</div>
+      <div class="tab">Acheteur</div>
+    </div>
+  </div>
+
+  <div class="layout-content">
+    <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
+      <div class="sidebar-top">
+        <h4 class="producer-title" style="color: #28a745;">Transporteur</h4>
+        <div class="search-box-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="form-control-custom" placeholder="Rechercher un trajet...">
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li class="nav-item">
+          <i class="fas fa-truck"></i> <span>Mes Véhicules</span>
+        </li>
+        <li class="nav-item">
+          <i class="fas fa-route"></i> <span>Mes Itinéraires</span>
+        </li>
+        <li class="nav-item">
+          <i class="fas fa-history"></i> <span>Historique</span>
+        </li>
+      </ul>
+
+      <button class="btn-publish pulse-animation" style="background-color: #28a745; color: #fff;" (click)="openOffreModal()">
+        <i class="fas fa-plus-circle"></i> <span>Publier un véhicule</span>
+      </button>
+    </aside>
+
+    <main class="feed-content">
+      <div class="section-intro">
+        <h2 class="main-title">Offres de transport</h2>
+        <p class="sub-text">Véhicules disponibles pour acheminer vos marchandises</p>
+      </div>
+
+      <div class="cards-grid">
+        <article class="offer-card" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="card-img-container">
+              <img src="https://picsum.photos/seed/truck/400/300" alt="camion">
+            <div class="view-count"><i class="fas fa-road"></i> 500km</div>
+          </div>
+          <div class="card-footer-actions">
+            <button class="btn-action order" style="background-color: #28a745; color: #fff;">
+              <i class="fas fa-calendar-check"></i> Réserver
+            </button>
+            <button class="btn-action more"><i class="fas fa-info-circle"></i></button>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="modal fade" [ngClass]="{'show d-block': isOffreModalOpen}" *ngIf="isOffreModalOpen">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal-rect shadow-lg">
+      
+      <div class="close-line">
+        <button type="button" class="btn-close-red" (click)="closeOffreModal()">×</button>
+      </div>
+
+      <div class="modal-body p-4 pt-0">
+        <h4 class="text-center fw-bold mb-4" style="color: #28a745;">DISPONIBILITÉ VÉHICULE</h4>
+
+        <form (ngSubmit)="saveOffre()">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Type de véhicule (Ex: Camion 10T, Camionnette)</label>
+            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.vehicule" name="vehicule" required placeholder="Quel véhicule proposez-vous ?">
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+                <label class="small fw-bold">Capacité (Tonnes/m³)</label>
+                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.capacite" name="capacite" placeholder="Ex: 10">
+            </div>
+            <div class="col-6">
+                <label class="small fw-bold">Tarif estimé / km</label>
+                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.prixKilo" name="prix" placeholder="FCFA">
+            </div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label small fw-bold">Zone de service / Trajet habituel</label>
+            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.trajet" name="trajet" placeholder="Ex: Bafoussam - Douala">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Détails techniques</label>
+            <textarea class="form-control input-rect" rows="3" [(ngModel)]="newOffre.description" name="description" placeholder="Frigo disponible, bâché, disponible immédiatement..."></textarea>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="button" class="btn btn-secondary flex-grow-1 btn-rect" (click)="closeOffreModal()">Annuler</button>
+            <button type="submit" class="btn flex-grow-1 btn-rect" style="background-color: #28a745; color: white; border:none;">Publier l'offre</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>
+<div class="nav-fab-container">
+  <div class="nav-fab-options" [class.active]="isNavMenuOpen">
+    
+    <button class="nav-fab-child" (click)="navigateTo('/')" title="Accueil">
+      <i class="fas fa-home"></i>
+      <span class="nav-fab-label">Accueil</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/localisation')" title="Local">
+      <i class="fas fa-map-marker-alt"></i>
+      <span class="nav-fab-label">Local</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/Chat')" title="Discussion">
+      <i class="fas fa-comments"></i>
+      <span class="nav-fab-label">Chat</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/dashbord')" title="Tableau de bord">
+      <i class="fas fa-chart-line"></i>
+      <span class="nav-fab-label">Dashboard</span>
+    </button>
+
+  </div>
+
+  <button class="nav-fab-main" (click)="isNavMenuOpen = !isNavMenuOpen" [class.active]="isNavMenuOpen">
+    <i class="fas" [ngClass]="isNavMenuOpen ? 'fa-times' : 'fa-compass'"></i>
+  </button>
+</div>

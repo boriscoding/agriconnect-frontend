@@ -1,0 +1,139 @@
+/* Conteneur principal qui centre tout sur la page */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6; /* Gris très clair pour faire ressortir la carte */
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* La carte blanche principale */
+.login-card {
+  display: flex;
+  width: 900px;
+  height: 550px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Pour que le dégradé respecte l'arrondi des bords */
+}
+
+/* SECTION GAUCHE : Formulaire */
+.form-section {
+  flex: 1.2;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.header p {
+  color: #999;
+  margin-bottom: 30px;
+}
+
+/* Style des champs de saisie */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px 15px 15px 45px;
+  border: 1px solid #e1e8ef;
+  border-radius: 30px;
+  background-color: #f8fbff;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #4facfe;
+  background-color: #fff;
+}
+
+/* Icônes simulées (tu peux utiliser FontAwesome ou Material Icons) */
+.input-group::before {
+  content: '👤'; /* Remplace par une icône e-mail */
+  position: absolute;
+  left: 18px;
+  top: 15px;
+  color: #4facfe;
+}
+
+/* Options : Remember me & Forgot Password */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 30px;
+  color: #777;
+}
+
+.options a {
+  color: #4facfe;
+  text-decoration: none;
+}
+
+/* Bouton Sign In avec dégradé */
+.btn-signin {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-signin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 172, 254, 0.6);
+}
+
+/* SECTION DROITE : Le panneau dégradé */
+.info-section {
+  flex: 1;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.info-content h2 {
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+}
+
+.info-content p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Responsive : On cache la partie bleue sur mobile */
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    height: auto;
+  }
+  .info-section {
+    display: none;
+  }
+}

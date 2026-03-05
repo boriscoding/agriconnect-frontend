@@ -1,0 +1,229 @@
+<app-header (sidebarToggle)="sidebarOpen = $event"></app-header>
+<app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
+
+<div class="main-wrapper">
+  <button class="mobile-menu-btn d-lg-none" (click)="sidebarOpen = !sidebarOpen">
+    <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
+    <span>Menu</span>
+  </button>
+
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <div class="sticky-sub-header">
+    <div class="tabs-container">
+      <div class="tab active">Producteur</div>
+      <div class="tab" (click)="navigateTo('/transporteur')">Transporteur</div>
+      <div class="tab" (click)="navigateTo('/acheteur')">Acheteur</div>
+    </div>
+  </div>
+
+  <div class="layout-content">
+    <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
+      <div class="sidebar-top">
+        <h4 class="producer-title">Producteur</h4>
+        <div class="search-box-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="form-control-custom" placeholder="Rechercher une offre">
+        </div>
+      </div>
+      
+      <ul class="nav-links">
+        <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
+          <i class="fas fa-th-large"></i> <span>Tous</span>
+        </li>
+        <li class="nav-item" [class.active]="filterType === 'MES_OFFRES'" (click)="mesoffres()">
+          <i class="fas fa-tags"></i> <span>Mes offres</span>
+        </li>
+        <li class="nav-item" (click)="navigateTo('/profil')">
+          <i class="fas fa-user-circle"></i> <span>Mon Profil</span>
+        </li>
+        <li class="nav-item" (click)="logout()" style="color: #dc3545; cursor: pointer;">
+          <i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span>
+        </li>
+      </ul>
+
+      <button class="btn-publish pulse-animation" (click)="openOffreModal()">
+        <i class="fas fa-plus-circle"></i> <span>Publier une offre</span>
+      </button>
+    </aside>
+
+    <main class="feed-content">
+      <div class="section-intro" *ngIf="offresFiltrees.length > 0">
+        <div *ngIf="pub">
+          <h2 class="main-title">Publications des producteurs</h2>
+          <p class="sub-text">Découvrez les offres les plus récentes du marché</p>
+        </div>
+        <div *ngIf="!pub">
+          <h2 class="main-title">Mes Publications</h2>
+          <p class="sub-text">Gérez vos offres en cours</p>
+        </div>
+      </div>
+
+  <div class="marketplace-grid">
+  <article class="fb-card" *ngFor="let offre of offresFiltrees">
+    
+    <div class="fb-card-media compact-media">
+      <img [src]="offre.photo ? 'http://localhost:8080/uploads/' + offre.photo : 'assets/images/default-produit.png'" 
+           (error)="$any($event.target).src = 'assets/images/default-produit.png'"
+           alt="Produit" class="zoom-img">
+      
+      <div class="status-badge">
+        <span class="dot pulse-green"></span> {{ offre.statut || 'Disponible' }}
+      </div>
+      
+      <div class="fb-price-tag green-gradient">{{ offre.prixUnitaire }} FCFA</div>
+    </div>
+
+    <div class="fb-card-content">
+      <div class="content-header">
+        <h3 class="product-title">{{ offre.nproduit }}</h3>
+        <small class="category-pill">{{ offre.type_pro }}</small>
+      </div>
+      
+      <p class="description-text">
+        {{ (offre.description?.length > 85) ? (offre.description | slice:0:85) + '...' : offre.description }}
+      </p>
+
+      <div class="info-row">
+        <span class="location"><i class="fas fa-map-marker-alt text-success"></i> {{ offre.lieuProduction }}</span>
+        <span class="views"><i class="far fa-eye"></i> {{ offre.vues || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="fb-card-footer">
+      <button class="btn-fb btn-green-action" *ngIf="offre.producteur?.id !== userIdConnecte">
+        <i class="fas fa-shopping-basket"></i> Commander
+      </button>
+      <button class="btn-fb btn-edit" *ngIf="offre.producteur?.id === userIdConnecte">
+        <i class="fas fa-tools"></i> Gérer
+      </button>
+    </div>
+  </article>
+</div>  
+
+     <div *ngIf="offresFiltrees.length === 0" 
+     class="empty-state-container d-flex justify-content-center align-items-center w-100" 
+     style="min-height: 400px;">
+     
+  <div class="vide text-center"> <div class="empty-icon-wrapper mb-4">
+      <i class="fas fa-box-open fa-5x text-success floating-animation"></i>
+    </div>
+    
+    <h3 class="text-success fw-bold">
+      {{ filterType === 'TOUS' ? 'Aucune publication disponible' : 'Vous n\'avez pas encore d\'offres' }}
+    </h3>
+    
+    <p class="text-muted" *ngIf="filterType === 'MES_OFFRES'">
+      Boostez votre activité en publiant votre premier produit dès maintenant !
+    </p>
+    
+    <button class="btn btn-outline-success btn-lg mt-3 rounded-pill shadow-sm" (click)="openOffreModal()">
+      <i class="fas fa-magic"></i> Créer ma première offre
+    </button>
+  </div>
+</div>
+    </main>
+  </div>
+</div>
+
+<div class="modal fade" [ngClass]="{'show d-block': isOffreModalOpen}" *ngIf="isOffreModalOpen">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-2xl rounded-20 overflow-hidden">
+      
+      <div class="modal-header bg-success text-white p-3">
+        <div>
+          <h4 class="modal-title fw-bold mb-0">NOUVELLE PUBLICATION</h4>
+          <p class="text-white-50 small mb-0">Posté en tant que Producteur ID: {{ userIdConnecte }}</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeOffreModal()"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-light">
+        <form id="offreForm" (ngSubmit)="saveOffre()">
+          <div class="row g-4">
+            <div class="col-md-7">
+              <div class="card border-0 shadow-sm p-3 rounded-15 mb-3">
+                <label class="form-label fw-bold text-muted small">INFOS PRODUIT</label>
+                <div class="mb-3">
+                  <input type="text" class="form-control border-light bg-light" [(ngModel)]="newOffre.nproduit" name="nproduit" required placeholder="Nom du produit (Ex: Maïs blanc)">
+                </div>
+                <div class="row g-2 mb-3">
+                  <div class="col-7">
+                    <input type="number" class="form-control border-light bg-light" [(ngModel)]="newOffre.quantiteProduit" name="quantite" placeholder="Quantité">
+                  </div>
+                  <div class="col-5">
+                    <select class="form-select border-light bg-light" [(ngModel)]="newOffre.uniteMesure" name="unite">
+                      <option value="Kg">Kg</option>
+                      <option value="Sac">Sacs</option>
+                      <option value="Tonne">Tonnes</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <input type="number" class="form-control border-light bg-light" [(ngModel)]="newOffre.prixUnitaire" name="prix" placeholder="Prix Unitaire (FCFA)">
+                </div>
+                <textarea class="form-control border-light bg-light" rows="3" [(ngModel)]="newOffre.description" name="description" placeholder="Ajoutez des détails (état du produit, récolte...)"></textarea>
+              </div>
+
+              <div class="card border-0 shadow-sm p-3 rounded-15">
+                <label class="form-label fw-bold text-muted small">LOCALISATION</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <input type="text" class="form-control border-light bg-light" [(ngModel)]="newOffre.lieuProduction" name="lieu" placeholder="Ville/Village">
+                  </div>
+                  <div class="col-6">
+                    <select class="form-select border-light bg-light" [(ngModel)]="newOffre.region" name="region">
+                      <option value="Littoral">Littoral</option>
+                      <option value="Ouest">Ouest</option>
+                      <option value="Centre">Centre</option>
+                      <option value="Nord">Nord</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-5">
+              <div class="card border-0 shadow-sm p-3 rounded-15 mb-3 text-center">
+                <label class="form-label fw-bold text-muted small mb-3">PHOTO DU PRODUIT</label>
+                <div class="upload-zone py-3 border-2 border-dashed rounded-15 bg-light position-relative" style="min-height: 150px; cursor: pointer;">
+                  <div *ngIf="!imagePreview">
+                    <i class="fas fa-camera fa-2x text-success mb-2"></i>
+                    <p class="small text-muted">Cliquez pour ajouter une photo</p>
+                  </div>
+                  <img *ngIf="imagePreview" [src]="imagePreview" class="img-fluid rounded-15" style="max-height: 130px; width: 100%; object-fit: cover;">
+                  <input type="file" class="file-input-hidden" (change)="onFileSelected($event)" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm p-3 rounded-15 mb-3">
+                <label class="form-label fw-bold text-muted small">CATÉGORIE VENDEUR</label>
+                <select class="form-select border-light bg-light" [(ngModel)]="newOffre.type_pro" name="type_pro">
+                  <option value="PRODUCTEUR_DIRECT">Producteur Direct</option>
+                  <option value="GROSSISTE">Grossiste</option>
+                  <option value="DETAILLANT">Détaillant</option>
+                </select>
+              </div>
+              
+              <div class="alert alert-info small border-0 rounded-15">
+                <i class="fas fa-info-circle"></i> Votre offre sera visible immédiatement par tous les acheteurs.
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mt-4">
+            <button type="button" class="btn btn-light rounded-pill flex-grow-1 py-2 fw-bold" (click)="closeOffreModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn btn-success rounded-pill flex-grow-1 py-2 fw-bold shadow" [disabled]="isSubmitting">
+              <span *ngIf="!isSubmitting"><i class="fas fa-check-circle me-2"></i> PUBLIER MAINTENANT</span>
+              <span *ngIf="isSubmitting"><i class="fas fa-spinner fa-spin"></i> Publication...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>

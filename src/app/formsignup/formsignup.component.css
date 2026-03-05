@@ -1,0 +1,240 @@
+/* --- STRUCTURE GLOBALE --- */
+.main-container-form {
+  position: fixed;
+  inset: 0;
+  background-color: #f4f8f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.signup-card {
+  display: flex;
+  flex-direction: row; /* Aligne les blocs côte à côte */
+  width: 950px;
+  max-width: 95%;
+  height: 650px;
+  background: white;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(45, 90, 39, 0.15);
+  transition: transform 0.5s ease;
+}
+
+/* --- CÔTÉ GAUCHE (BRANDING) --- */
+.brand-section-left {
+  flex: 1;
+  background: linear-gradient(135deg, #2d5a27 0%, #458b3a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: white;
+  text-align: center;
+}
+
+.logo-img {
+  width: 250px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  margin-bottom: 20px;
+}
+
+/* --- CÔTÉ DROIT (FORMULAIRE) --- */
+.form-section-right {
+  flex: 1.2;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.header-text h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.header-text b { color: #2d5a27; }
+
+/* --- INPUTS DESIGNÉ COMME LE CODE PRÉCÉDENT --- */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+
+input, select {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid #e1e8ef;
+  border-radius: 45px; /* Exactement comme demandé */
+  background-color: #f8fbff;
+  outline: none;
+  transition: 0.3s;
+}
+
+input:focus, select:focus {
+  border-color: #f2b33d; /* Focus Jaune Agriconnect */
+  box-shadow: 0 0 8px rgba(242, 179, 61, 0.2);
+}
+
+.password-field { position: relative; }
+.password-field i {
+  position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+  cursor: pointer; color: #2d5a27;
+}
+
+/* --- BOUTONS DESIGNÉ COMME LE CODE PRÉCÉDENT --- */
+.action-buttons {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inscrire {
+  background-color: #2d5a27;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.btn-submit {
+  background: white;
+  color: #2d5a27;
+  border: 1px solid #2d5a27;
+  padding: 12px;
+  border-radius: 30px;
+  width: 100%;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.inscrire:hover { background-color: #1e3d1a; }
+.btn-submit:hover { background-color: #f1f8ed; }
+
+/* Animation de sortie */
+.slide-out { transform: translateX(120%); opacity: 0; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .signup-card { flex-direction: column; height: auto; }
+  .row { flex-direction: column; gap: 15px; }
+}
+.main-container-form {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f1f8ed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* Button retour au homepage */
+ /* --- STYLE DE BASE --- */
+.floating-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: white;
+  color: #28a745;
+  border: 2px solid #28a745;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 2000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- ANIMATION PC (Hover) --- */
+@media (min-width: 993px) {
+  .floating-back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+  }
+  .floating-back-btn:hover {
+    transform: translateX(-5px);
+    background: #28a745;
+    color: white;
+  }
+}
+
+/* --- ANIMATION MOBILE (Pulse flottant) --- */
+@media (max-width: 992px) {
+  .floating-back-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 20px; /* À droite sur mobile c'est plus accessible au pouce */
+    background: #28a745;
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    animation: pulse-green 2s infinite; /* Lancement de l'anim */
+  }
+
+  .btn-text { display: none; } /* On ne garde que l'icône sur mobile */
+  
+  .floating-back-btn i {
+    font-size: 1.5rem;
+  }
+}
+
+/* --- DÉFINITION DE L'ANIMATION --- */
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(40, 167, 69, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+.floating-back-btn:active {
+  transform: scale(0.9);
+  background: #1e7e34; /* Un vert plus foncé au clic */
+}
+/* --- VALIDATION DES CHAMPS --- */
+
+/* Cible les inputs et selects ayant la classe is-invalid */
+input.is-invalid, 
+select.is-invalid {
+  border: 2px solid rgb(235, 88, 102 , 0.5) !important;
+  background-color: #fff8f8 !important;
+}
+
+/* Cas spécial pour le champ mot de passe (qui est une div contenant l'input) */
+.password-field.is-invalid input {
+  border: 2px solid  rgb(235, 88, 102 , 0.5) !important;
+  background-color: #fff8f8 !important;
+}
+
+/* Pour que la bordure rouge reste visible même quand on clique (focus) */
+input.is-invalid:focus, 
+select.is-invalid:focus {
+  border-color:  rgb(235, 88, 102 , 0.5)  !important;
+  box-shadow: 0 0 8px rgba(220, 53, 69, 0.1) !important;
+}

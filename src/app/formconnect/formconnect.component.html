@@ -1,0 +1,45 @@
+<div class="contenair" *ngIf="Form">
+  <div class="signup-form" [ngClass]="{ 'slide-out': isClosing }">
+    <div class="content">
+      <div class="rigthx">
+        <h3>Bienvenue. <br>Se connecter à mon compte</h3>
+        
+        <form #registrationForm="ngForm">
+          <div class="contform">
+        
+<input type="email" placeholder="Email" name="email" [(ngModel)]="email" />            
+            <div class="password-wrapper">
+              <input [type]="passwordType" placeholder="Password" name="password" [(ngModel)]="password"/>
+              <i [class]="passwordIcon" (click)="viewpass()"></i>
+            </div>
+
+            <select name="categorie" [(ngModel)]="selectedCategorie">
+              <option value="Producteur">P. Producteur </option>
+              <option value="Transporteur">Transporteur </option>
+              <option value="Acheteur">Acheteur </option>
+            </select>
+
+            <button type="button" class="inscrire" (click)="onSubmit()">Se connecter</button>
+            
+            <button type="button" class="btn-submit"  routerLink="/dashbord">S'inscrire</button>
+            
+            <div class="social-login">
+              </div>
+            
+          </div>
+        </form>
+      </div>
+
+      <div class="leftx">
+        <img src="assets/images/loagri.png" alt="Agriconnect Logo">
+        <div style="position: absolute; bottom: 30px; color: white; text-align: center; z-index: 2;">
+            <p style="font-weight: 300; letter-spacing: 1px;">Le futur de l'agriculture au Cameroun</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="floating-back-btn" routerLink="/homepage" (click)="goToHome()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+</div>

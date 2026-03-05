@@ -1,0 +1,94 @@
+/* le root des couleurs */
+:root{
+     --vert-fort:green;
+     --vert-claire:rgb(137, 187, 90);
+}
+/* body */
+
+/* le css du circle de sam sam  */
+ .content-load{
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     height: 100vh;
+     margin: 0;
+     width: 100%;
+     flex-direction: column;
+     background-color: rgb(240, 245, 220);
+      position: absolute;
+     top: 0;
+     left: 0;
+     transform: translateX(0%);
+     transition: transform 0.8s ease-in-out;
+}
+.circle {
+      border-radius: 50%;
+     border: 25px solid rgb(137, 187, 90);
+     width: 22em;
+     border-top: 25px solid green;
+     height: 22em;
+     animation: circle 1s linear infinite;
+}
+.slide-out-left {
+  transform: translateX(-100%);
+}
+@keyframes circle {
+0% {transform: rotate(15deg);}     
+25% {transform: rotate(45deg);}     
+50% {transform: rotate(90deg);}     
+75% {transform: rotate(180deg);}      
+100% {transform: rotate(360deg);}     
+}
+/* le code du texte loading pouurcentage */
+#pourcent{
+     font-family: 'Courier New', Courier, monospace;
+     color: gray;
+     font-size: 2em;
+}
+#logoload{
+     width: 14em;
+     position: absolute;
+     margin-top: -4em;
+     height: 13em;
+     /* border: 2px solid green; */
+     background-image: url(./images/logoAgriconnect.png);
+     background-repeat: no-repeat;
+     background-size: cover;
+}
+
+
+
+/* code du responsive 
+@media only screen and (max-width : 600px) and (max-width:1024px){*/
+.content-load #pourcent{
+     font-size: 1.9em;
+}
+.circle{
+     width: 15em;
+     height: 15em;
+}
+
+.contenair-form{
+     width: 80%;
+     height: 70%;
+}
+.contenair-form form #btn-form{ 
+     font-size: 1.2em;
+     margin-top: 2.1em;
+}
+.descripload{
+     margin-top: 15%;
+}
+.contenair-items .menu, .content-final, .content-lo{
+     display: none;
+}
+
+#logoload{
+     width: 10em;
+     height: 9em;
+
+}
+
+
+
+

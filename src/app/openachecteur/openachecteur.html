@@ -1,0 +1,146 @@
+<app-header (sidebarToggle)="sidebarOpen = $event"></app-header>
+<app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
+
+<div class="main-wrapper">
+  <button class="mobile-menu-btn d-lg-none" (click)="sidebarOpen = !sidebarOpen">
+    <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
+    <span>Menu</span>
+  </button>
+
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <div class="sticky-sub-header">
+    <div class="tabs-container">
+      <div class="tab" >Producteur</div>
+      <div class="tab">Transporteur</div>
+      <div class="tab active">Acheteur</div>
+    </div>
+  </div>
+
+  <div class="layout-content">
+    <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
+      <div class="sidebar-top">
+        <h4 class="producer-title" style="color: #ffc107;">Acheteur</h4>
+        <div class="search-box-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="form-control-custom" placeholder="Rechercher un besoin...">
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li class="nav-item">
+          <i class="fas fa-user-circle"></i> <span>Mon Profil</span>
+        </li>
+        <li class="nav-item">
+          <i class="fas fa-headset"></i> <span>Assistance</span>
+        </li>
+      </ul>
+
+      <button class="btn-publish pulse-animation" style="background-color: #ffc107; color: #000;" (click)="openOffreModal()">
+        <i class="fas fa-bullhorn"></i> <span>Publier un besoin</span>
+      </button>
+    </aside>
+
+    <main class="feed-content">
+      <div class="section-intro">
+        <h2 class="main-title">Demandes des acheteurs</h2>
+        <p class="sub-text">Consultez ce que les clients recherchent actuellement</p>
+      </div>
+
+      <div class="cards-grid">
+        <article class="offer-card" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="card-img-container">
+              <img src="https://picsum.photos/seed/buying/400/300" alt="besoin">
+            <div class="view-count"><i class="fas fa-eye"></i> 1.2k</div>
+          </div>
+          <div class="card-footer-actions">
+            <button class="btn-action order" style="background-color: #ffc107; color: #000;">
+              <i class="fas fa-handshake"></i> Proposer
+            </button>
+            <button class="btn-action more"><i class="fas fa-plus"></i></button>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="modal fade" [ngClass]="{'show d-block': isOffreModalOpen}" *ngIf="isOffreModalOpen">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal-rect shadow-lg">
+      
+      <div class="close-line">
+        <button type="button" class="btn-close-red" (click)="closeOffreModal()">×</button>
+      </div>
+
+      <div class="modal-body p-4 pt-0">
+        <h4 class="text-center fw-bold mb-4" style="color: #ffc107;">NOUVEAU BESOIN</h4>
+
+        <form (ngSubmit)="saveOffre()">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Produit recherché (Ex: 2 Tonnes de Maïs)</label>
+            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.produit" name="produit" required placeholder="Que recherchez-vous ?">
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+                <label class="small fw-bold">Quantité voulue</label>
+                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.quantiteProduit" name="quantite">
+            </div>
+            <div class="col-6">
+                <label class="small fw-bold">Budget estimé (FCFA)</label>
+                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.prixUnitaire" name="prix">
+            </div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label small fw-bold">Urgence de la demande</label>
+            <select class="form-select input-rect" [(ngModel)]="newOffre.statut" name="statut">
+              <option value="URGENT">🔴 Urgent (Moins de 48h)</option>
+              <option value="NORMAL">🟡 Normal (1 semaine)</option>
+              <option value="PLANIFIE">🟢 Planifié (Long terme)</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Détails de la demande</label>
+            <textarea class="form-control input-rect" rows="3" [(ngModel)]="newOffre.description" name="description" placeholder="Précisez la zone de livraison, la qualité souhaitée..."></textarea>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="button" class="btn btn-secondary flex-grow-1 btn-rect" (click)="closeOffreModal()">Annuler</button>
+            <button type="submit" class="btn flex-grow-1 btn-rect" style="background-color: #ffc107; border:none;">Publier mon besoin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+ <div class="nav-fab-options" [class.active]="isNavMenuOpen">
+    
+    <button class="nav-fab-child" (click)="navigateTo('/')" title="Accueil">
+      <i class="fas fa-home"></i>
+      <span class="nav-fab-label">Accueil</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/local')" title="Local">
+      <i class="fas fa-map-marker-alt"></i>
+      <span class="nav-fab-label">Local</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/discussion')" title="Discussion">
+      <i class="fas fa-comments"></i>
+      <span class="nav-fab-label">Chat</span>
+    </button>
+
+    <button class="nav-fab-child" (click)="navigateTo('/dashbord')" title="Tableau de bord">
+      <i class="fas fa-chart-line"></i>
+      <span class="nav-fab-label">Dashboard</span>
+    </button>
+
+  </div>
+
+  <button class="nav-fab-main" (click)="isNavMenuOpen = !isNavMenuOpen" [class.active]="isNavMenuOpen">
+    <i class="fas" [ngClass]="isNavMenuOpen ? 'fa-times' : 'fa-compass'"></i>
+  </button>
+<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>

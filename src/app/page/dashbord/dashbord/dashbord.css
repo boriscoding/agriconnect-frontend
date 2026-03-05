@@ -1,0 +1,310 @@
+/* --- CONFIGURATION & VARIABLES --- */
+:root {
+  --primary-green: #2d8c2d;
+  --light-green-bg: #b6f3b6; /* Correspond au fond de l'icône Home active */
+  --bg-gray: #f8f9fa;
+  --text-gray: #8e8e93;
+  --border-color: #f0f0f0;
+}
+@media (max-width: 992px) {
+  
+.mobile-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--bg-gray);
+  min-height: 100vh;
+  position: relative;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: white;
+}
+
+/* --- EN-TÊTE FIXE (Recherche & Filtres) --- */
+/* --- HEADER --- */
+.top-header {
+  background: #ffffff;
+  padding: 15px 15px 10px 15px;
+  
+  /* Positionnement forcé */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  
+  /* Largeur max si tu es sur PC (pour rester dans ton cadre mobile) */
+  max-width: 480px; 
+  margin: 0 auto;
+}
+
+/* IMPORTANT : Ajoute une marge au contenu suivant pour ne pas qu'il passe sous le header */
+.publications-header {
+  margin-top: 130px; /* Ajuste cette valeur selon la hauteur de ton header */
+}
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  flex: 1;
+  background: #f4f6f8;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  margin-left: 10px;
+  width: 100%;
+  color: #8e8e93;
+}
+
+.action-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #333;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* --- FILTRES (CHIPS) --- */
+.filter-bar {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 5px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.filter-bar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.filter-chip {
+  padding: 10px 22px;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: #2d8c2d;
+  color: #fff;
+  border-color: #2d8c2d;
+}
+
+/* --- PUBLICATIONS HEADER --- */
+.publications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 15px;
+  background: #fdfdfd;
+}
+
+.main-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #2d8c2d;
+}
+
+.date-badge i {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.date-badge span {
+  font-size: 10px;
+  font-weight: 700;
+}
+/* --- SECTION SUGGESTIONS --- */
+.suggestions-section {
+  padding: 10px 0;
+  background: #fff;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px;
+  margin-bottom: 10px;
+}
+
+.horizontal-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 5px 15px 15px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.suggestion-card {
+  min-width: 145px;
+  background: #f9f9f9;
+  border-radius: 18px;
+  padding: 15px 10px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+
+.avatar-wrapper {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 10px;
+  border: 2px solid #2d8c2d; /* Le cercle vert */
+  border-radius: 50%;
+  padding: 3px; /* L'espace blanc crucial */
+  background: #fff;
+}
+
+.avatar-wrapper img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.btn-follow {
+  background: #2d8c2d;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 0;
+  width: 100%;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-followed {
+  background: #e0e0e0 !important;
+  color: #555 !important;
+}
+
+/* --- BARRE DE NAVIGATION FLOTTANTE --- */
+.floating-tabbar {
+  position: fixed;
+  bottom: 25px;
+  left: 20px;
+  right: 20px;
+  height: 65px;
+  background: white;
+  border-radius: 35px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.tab-item {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #a0a0a0;
+}
+
+.tab-item.active {
+  background:  #b6f3b6;
+  color: #2d8c2d;
+  border-radius: 20px;
+}
+/* --- CONTENEUR DE LA PUBLICATION --- */
+.publication-item {
+  padding: 15px;
+  background-color: transparent;
+}
+
+.image-box {
+  position: relative;
+  width: 100%;
+  height: 230px; /* Hauteur fixe pour l'harmonie visuelle */
+  border-radius: 25px; /* Bords très arrondis comme tes cartes suggestions */
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Ombre pour donner du relief */
+}
+
+/* L'image principale du post */
+.image-box > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Empêche l'image d'être écrasée */
+  display: block;
+}
+
+/* --- BADGE "PRODUCTEUR" --- */
+.badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: rgba(45, 140, 45, 0.9); /* Vert AgriConnect avec transparence */
+  color: white;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 2;
+  backdrop-filter: blur(4px); /* Effet de flou derrière le badge (très moderne) */
+}
+
+/* --- L'AVATAR FLOTTANT (User Overlap) --- */
+.user-mini-overlap {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  width: 45px;
+  height: 45px;
+  background: white;
+  border-radius: 12px; /* Carré arrondi comme sur ton design */
+  padding: 3px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-mini-overlap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px; /* Un peu moins arrondi que le conteneur blanc */
+  object-fit: cover;
+}
+ 
+}
+

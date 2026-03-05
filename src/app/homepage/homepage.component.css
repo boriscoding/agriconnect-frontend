@@ -1,0 +1,176 @@
+/* --- CONFIGURATION GLOBALE --- */
+.main-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f8ed; /* Fond crème léger comme sur ton image */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- CARTE DE BIENVENUE --- */
+.welcome-card {
+  background: white;
+  padding: 40px;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(45, 90, 39, 0.1); /* Ombre légère teintée de vert */
+}
+
+/* Logo circulaire */
+.logo-circle {
+  margin-bottom: 20px;
+}
+
+.logo-circle img {
+  width: 150px; /* Taille pour bien voir le camion et l'épi */
+  height: auto;
+}
+
+/* Titre Bienvenue */
+.welcome-card h2 {
+  color: #333;
+  font-size: 1.6rem;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
+
+.welcome-card h2 span {
+  color: #2d5a27; /* Vert foncé Agriconnect */
+  font-weight: bold;
+  display: block;
+  font-size: 2rem;
+}
+
+/* --- BOUTONS --- */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Bouton Créer un compte (Inscrire) */
+.btn-signup {
+  background-color: #2d5a27; /* Vert du logo */
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 30px; /* Forme pilule */
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s ease;
+}
+
+.btn-signup:hover {
+  background-color: #1e3d1a;
+  transform: translateY(-2px);
+}
+
+/* Bouton Se Connecter (Connect) */
+.btn-connect {
+  background-color: transparent;
+  color: #2d5a27;
+  border: 2px solid #2d5a27;
+  padding: 12px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s ease;
+}
+
+.btn-connect:hover {
+  background-color: #f1f8ed;
+}
+
+/* --- RÉSEAUX SOCIAUX --- */
+.social-icons {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.social-icons i {
+  font-size: 1.8rem;
+  color: #2d5a27; /* Vert pour Facebook/Instagram */
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* L'icône Google en jaune pour rappeler l'épi de blé */
+.social-icons .fa-google {
+  color: #f2b33d;
+}
+
+.social-icons i:hover {
+  transform: scale(1.1);
+}
+
+/* --- FORMULAIRE & RETOUR --- */
+.back-pill {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: white;
+  border: 1px solid #2d5a27;
+  color: #2d5a27;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.imghaut img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px; /* Ajuste selon ton image haut.png */
+  opacity: 0.8;
+}
+/* Animation quand le formulaire apparaît */
+.form-container {
+  width: 100%;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* Empêche les conteneurs de se chevaucher */
+.main-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Force l'affichage des formulaires au premier plan */
+.form-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 50; /* Doit être supérieur à l'accueil */
+  padding-top: 80px; /* Espace pour le bouton retour */
+}
+
+/* Style du bouton retour pour qu'il soit toujours cliquable */
+.back-pill {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  cursor: pointer;
+  pointer-events: all; /* Force la détection du clic */
+}

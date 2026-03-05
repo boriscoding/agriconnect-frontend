@@ -1,0 +1,61 @@
+<div class="main-container-form" *ngIf="Form">
+  <div class="signup-card" [ngClass]="{ 'slide-out': isClosing }">
+    
+    <div class="brand-section-left">
+      <div class="logo-overlay">
+        <img src="assets/images/loagri.png" alt="Logo Agriconnect" class="logo-img">
+        <h4>Le futur de l'agriculture au Cameroun</h4>
+      </div>
+    </div>
+
+    <div class="form-section-right">
+      <div class="header-text">
+        <h3>salut. <b>{{ prenom || 'à toi' }}</b> <br>Créer mon compte</h3>
+      </div>
+
+      <form #registrationForm="ngForm" class="actual-form">
+       <div class="input-group">
+    
+    <input type="text" placeholder="Nom" name="nom" [(ngModel)]="nom" 
+           #nomRef="ngModel" required
+           [ngClass]="{'is-invalid': (nomRef.invalid && registrationForm.submitted)}"
+           style="border-radius: 45px;" class="form-control-custom"/>
+
+    <input type="text" placeholder="Prénom" name="prenom" [(ngModel)]="prenom" 
+           #prenomRef="ngModel" required
+           [ngClass]="{'is-invalid': (prenomRef.invalid && registrationForm.submitted)}"
+           style="border-radius: 45px;" class="form-control-custom"/>
+
+    <input type="email" placeholder="Email" name="email" [(ngModel)]="email" 
+           #emailRef="ngModel" required email
+           [ngClass]="{'is-invalid': (emailRef.invalid && registrationForm.submitted)}"
+           style="border-radius: 45px;" class="form-control-custom"/>
+    
+    <div class="password-field" [ngClass]="{'is-invalid': (passRef.invalid && registrationForm.submitted)}">
+      <input [type]="passwordType" placeholder="Password" name="password" 
+             [(ngModel)]="password" #passRef="ngModel" required/>
+      <i [class]="passwordIcon" (click)="viewpass()"></i>
+    </div>
+
+    <select name="categorie" [(ngModel)]="selectedCategorie" 
+            #catRef="ngModel" required
+            [ngClass]="{'is-invalid': (catRef.invalid && registrationForm.submitted)}"
+            style="border-radius: 45px;" class="form-control-custom">
+      <option value="Producteur">Producteur</option>
+      <option value="Transporteur">Transporteur</option>
+      <option value="Acheteur">Acheteur</option>
+    </select>
+  </div>
+
+        <div class="action-buttons">
+          <button type="submit" class="inscrire" (click)="onSubmit(registrationForm)">S'inscrire</button>
+          <button type="button" class="btn-submit" routerLink="/opentrans">Se connecter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Button retour au homepage -->
+<button class="floating-back-btn" routerLink="/homepage" (click)="goToHome()">
+  <i class="fas fa-arrow-left"></i>
+</button>

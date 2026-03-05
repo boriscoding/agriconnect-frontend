@@ -1,0 +1,41 @@
+<div class="login-container" [@fadeInUp]>
+  <div class="login-card">
+    
+    <div class="form-section">
+      <div class="header">
+        <h1>Hello!</h1>
+        <p>Sign into your account</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="input-group">
+          <span class="icon">📧</span>
+          <input type="email" formControlName="email" placeholder="E-mail">
+        </div>
+
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" formControlName="password" placeholder="Password">
+          <span class="toggle-password">👁️</span>
+        </div>
+
+        <div class="options">
+          <label><input type="checkbox"> Remember me</label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-signin">SIGN IN</button>
+      </form>
+
+      <p class="footer-text">Don't have an account? <a href="#">Create</a></p>
+    </div>
+
+    <div class="info-section">
+      <div class="info-content">
+        <h2>Welcome Back!</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

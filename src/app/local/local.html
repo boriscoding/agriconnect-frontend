@@ -1,0 +1,51 @@
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="card speed-card">
+      <div class="speed-value">{{ (gps.speed$ | async) || 0 }}</div>
+      <div class="speed-unit">km/h</div>
+    </div>
+
+    <div class="card">
+      <h3>Mode de transport</h3>
+      <div class="mode-grid">
+        <button *ngFor="let mode of modes" 
+                [class.active]="activeMode === mode"
+                (click)="setMode(mode)" 
+                class="btn-mode">
+          {{ mode | titlecase }}
+        </button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-start" *ngIf="debut === true" (click)="gps.startTracking()"  (click)="arrete()">
+        <i class="fas fa-play"></i> DÉMARRER
+      </button>
+      <button class="btn btn-stop" (click)="gps.stopTracking()" *ngIf="debut === false"  (click)="debute()">
+        <i class="fas fa-stop"></i> ARRÊTER
+      </button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div id="map" class="map-container"></div>
+
+    <div class="stats-footer">
+      <div class="stat">
+        <span class="label">Altitude</span>
+        <span class="value">{{ (gps.altitude$ | async) || 0 }} m</span>
+      </div>
+      <div class="stat">
+        <span class="label">Distance</span>
+        <span class="value">{{ (gps.distance$ | async)?.toFixed(2) || 0 }} km</span>
+      </div>
+      <div class="stat">
+        <span class="label">Statut</span>
+        <span class="value status-text" 
+              [style.color]="(gps.status$ | async) === 'Actif' ? '#00c853' : '#ff9100'">
+          {{ gps.status$ | async }}
+        </span>
+      </div>
+    </div>
+  </main>
+</div>

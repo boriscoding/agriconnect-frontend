@@ -1,0 +1,99 @@
+<div class="mobile-container">
+ <div class="mobile-wrapper">
+  <header class="top-header">
+    <div class="search-row">
+      <div class="search-bar">
+        <i class="icon-search"></i>
+        <input type="text" placeholder="Rechercher ici ...">
+      </div>
+      <div class="action-icons">
+        <button class="icon-btn"><i class="icon-sliders"></i></button>
+        <button class="icon-btn"><i class="icon-bell"></i></button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-chip active">Tous</button>
+      <button class="filter-chip">Producteurs</button>
+      <button class="filter-chip">Transporteur</button>
+      <button class="filter-chip">Acheteurs</button>
+    </div>
+  </header>
+
+  <div class="publications-header">
+    <h1 class="main-title">Publications</h1>
+    <div class="date-badge">
+      <i class="icon-star"></i>
+      <span>20/12/2025</span>
+    </div>
+  </div>
+</div>
+
+  <main class="content-area">
+    
+   <section class="suggestions-section">
+  <div class="section-header">
+    <h2>Suggestions pour vous</h2>
+    <a href="#" class="view-all">Voir tout</a>
+  </div>
+
+  <div class="horizontal-scroll-container">
+    
+    <div class="suggestion-card">
+      <div class="avatar-wrapper">
+        <img src="assets/img/jean.png" alt="Jean Dupont">
+      </div>
+      <h3>Jean Dupont</h3>
+      <span class="job-title">agriculteur</span>
+      <span class="follower-count">1,2 k abonnés</span>
+      <button class="btn-follow">
+        <i class="icon-user-plus"></i> Suivre
+      </button>
+    </div>
+
+    <div class="suggestion-card">
+      <div class="avatar-wrapper">
+        <img src="assets/img/marie.png" alt="Marie Claire">
+      </div>
+      <h3>Marie Claire</h3>
+      <span class="job-title">Productrice de lé...</span>
+      <span class="follower-count">567 abonnés</span>
+      <button class="btn-follow">
+        <i class="icon-user-plus"></i> Suivre
+      </button>
+    </div>
+
+    <div class="suggestion-card followed">
+      <div class="avatar-wrapper">
+        <img src="assets/img/pierre.png" alt="Pierre">
+      </div>
+      <h3>Pierre</h3>
+      <span class="job-title">Éleveur</span>
+      <span class="follower-count">892 abonnés</span>
+      <button class="btn-follow btn-followed">
+        <i class="icon-check"></i>Suivre
+      </button>
+    </div>
+
+  </div>
+</section>
+
+    <div class="publication-item" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="image-box" >
+        <span class="badge">Producteur</span>
+        <img src="https://picsum.photos/seed/buying/400/300" alt="Post">
+        <div class="user-mini-overlap">
+           <img src="https://picsum.photos/seed/buying/400/300">
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="floating-tabbar">
+    <div class="tab-item active"><i class="fas fa-home"></i></div>
+    <div class="tab-item"><i class="fas fa-map-marker-alt"></i></div>
+    <div class="tab-item">  <i class="fas fa-comments"></i></div>
+    <div class="tab-item">      <i class="fas fa-chart-line"></i>
+</div>
+  </nav>
+</div>

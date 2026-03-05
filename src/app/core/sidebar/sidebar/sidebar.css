@@ -1,0 +1,66 @@
+/* Structure de mise en page (Layout) */
+.layout {
+  display: flex;
+}
+
+.content {
+  flex: 1;
+  transition: margin-left 0.3s ease;
+  padding: 20px;
+}
+
+/* Décale le contenu quand la sidebar est affichée */
+.content.shift {
+  margin-left: 250px;
+}
+
+/* Sidebar - Style de base */
+.sidebar {
+  position: fixed;
+  top: 60px; /* hauteur du header */
+  left: -260px; /* Cachée par défaut */
+  width: 250px;
+  height: calc(100vh - 60px);
+  background: #ffffff;
+  border-right: 1px solid #ddd;
+  transition: left 0.3s ease;
+  z-index: 1040;
+  padding-top: 20px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Classe pour ouvrir la sidebar */
+.sidebar.open {
+  left: 0;
+}
+
+/* Liste à l'intérieur de la sidebar */
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.2s;
+}
+
+/* Icônes dans les items de liste */
+.sidebar ul li i {
+  color: #1877f2;
+}
+
+/* États au survol et actif */
+.sidebar ul li:hover {
+  background: #f0f2f5;
+}
+
+.sidebar ul li.active {
+  background: #e7f3ff;
+  font-weight: 600;
+}

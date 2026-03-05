@@ -1,0 +1,126 @@
+<div class="app-main-container">
+  <header class="top-app-bar">
+    <div class="brand-section">
+      <img src="../../assets/images/lop.png" class="mini-logo">
+      <span class="app-title-text">chat</span>
+    </div>
+  </header>
+
+  <div class="logri-chat-app" [class.chat-mobile-active]="isChatActive">
+    
+    <nav class="side-toolbar">
+      <div class="nav-top">
+        <div class="nav-icon active"><i class="fas fa-comment-alt"></i></div>
+        <div class="nav-icon" routerLink="/homepage"><i class="fas fa-home"></i></div>
+        <div class="nav-icon"><i class="fas fa-compass" routerLink="/localisation"></i></div>
+      </div>
+      <div class="nav-bottom">
+        <div class="nav-icon"><i class="fas fa-cog"></i></div>
+        <div class="nav-icon profile-icon"><i class="fas fa-user-circle"></i></div>
+      </div>
+    </nav>
+
+    <aside class="contacts-sidebar">
+      <div class="sidebar-content-wrapper">
+        <div class="sidebar-header-row">
+          <h2>Discussion</h2>
+          <div class="header-icons">
+            <i class="fas fa-th-list"></i> 
+            <i class="fas fa-caret-down"></i> 
+          </div>
+        </div>
+
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Recherche ou démarrer...">
+          </div>
+        </div>
+
+        <div class="scrollable-contacts" [@listAnimation]="messages.length">
+          <div class="contact-tile active" (click)="openChat()">
+            <div class="avatar-container">
+              <img src="https://ui-avatars.com/api/?name=Borel&background=random" alt="Borel">
+              <span class="dot online"></span>
+            </div>
+            <div class="tile-content">
+              <div class="tile-header"><strong>Borel</strong> <span class="time">11:45</span></div>
+              <p class="preview-text">Encore vous ?</p>
+            </div>
+          </div>
+
+          <div class="contact-tile" (click)="openChat()">
+            <div class="avatar-container">
+              <img src="https://ui-avatars.com/api/?name=Borimaru&background=28a745&color=fff" alt="Borimaru" >
+              <span class="dot busy"></span>
+            </div>
+            <div class="tile-content">
+              <div class="tile-header"><strong>Borimaru</strong> <span class="time">11:45</span></div>
+              <p class="preview-text">Encore vous ?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="conversation-window">
+      <header class="chat-top-bar">
+        <button class="back-to-contacts" (click)="closeChat()">
+          <i class="fas fa-arrow-left" ></i>
+        </button>
+
+        <img src="https://ui-avatars.com/api/?name=Borimaru&background=28a745&color=fff" class="small-avatar" style="border-radius: 50%;">
+        <span class="current-name">Borimaru</span>
+      </header>
+
+      <div class="chat-body" #scrollMe>
+        <div class="background-overlay" [style.background-image]="'url(../../assets/images/loagri.png)'"></div>
+
+        <div *ngFor="let msg of messages" 
+             [ngClass]="msg.isMe ? 'message sent' : 'message received'"
+             [@bubbleIn]>
+          
+          <div class="bubble" [class.image-bubble]="msg.image" [class.audio-bubble]="msg.audio">
+            <span class="sender" *ngIf="!msg.isMe">{{ msg.sender }}</span>
+            
+            <img *ngIf="msg.image" [src]="msg.image" class="chat-img-content">
+            
+            <div *ngIf="msg.audio" class="audio-container">
+              <audio [src]="msg.audio" controls class="chat-audio-player"></audio>
+            </div>
+
+            <p *ngIf="msg.text">{{ msg.text }}</p>
+            
+            <span class="msg-time">
+              {{ msg.time }}
+              <i class="fas fa-check-double" *ngIf="msg.isMe"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="chat-footer">
+        <button class="action-btn" (click)="triggerImageUpload()">
+          <i class="fas fa-paperclip"></i>
+          <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*">
+        </button>
+
+        <input type="text" 
+               [(ngModel)]="newMessage" 
+               (keyup.enter)="sendMessage()" 
+               placeholder="Taper un message...">
+
+        <button *ngIf="newMessage.trim().length > 0" (click)="sendMessage()" class="send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+
+        <button *ngIf="newMessage.trim().length === 0" 
+                (click)="startVoiceRecord()" 
+                class="voice-btn"
+                [class.recording]="isRecording">
+          <i class="fas" [ngClass]="isRecording ? 'fa-stop-circle' : 'fa-microphone'"></i>
+        </button>
+      </footer>
+    </main>
+  </div>
+</div>

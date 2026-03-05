@@ -1,0 +1,909 @@
+/* --- CONFIGURATION GLOBALE --- */
+.main-wrapper {
+  margin-top: 60px;
+  background-color: white; /* Ton beige de fond */
+  min-height: 100vh;
+}
+
+/* --- TABS ANIMÉS --- */
+.sticky-sub-header {
+  position: sticky;
+  top: 60px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.tab {
+  padding: 15px 25px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  position: relative;
+  transition: 0.3s;
+}
+
+.tab.active {
+  color: #28a745;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 0; height: 3px;
+  background: #28a745;
+  transition: 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.tab.active::after, .tab:hover::after {
+  width: 100%;
+}
+
+/* --- SIDEBAR BLANCHE & FIXE --- */
+.inner-sidebar {
+  width: 280px;
+  background: white;  
+  padding: 25px;
+  position: fixed;
+  margin-top: -1.6rem; /* Ajusté pour laisser place aux tabs */
+  height:80vh;
+left: -0.4rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.producer-title {
+  color: #28a745;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 10px 15px 10px 35px;
+  border-radius: 50px;
+  border: 1px solid #eee;
+  background: #f9f9f9;
+  font-size: 14px;
+}
+
+.search-box-wrapper { position: relative; }
+.search-icon { position: absolute; left: 12px; top: 12px; color: #aaa; }
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin-top: 30px;
+}
+
+.nav-item {
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-item:hover {
+  background: #f0fdf4;
+  color: #28a745;
+  transform: translateX(5px);
+}
+
+/* --- BOUTON PUBLIER AVEC ANIMATION --- */
+.btn-publish {
+  margin-top: auto;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-publish:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(40, 167, 69, 0.2);
+}
+
+/* --- GRILLE DE CARTES --- */
+.layout-content {
+  display: flex;
+  padding-right: 25px;
+  padding-top: 25px;
+  gap: 30px;
+}
+
+.feed-content { flex: 1;
+margin-left: 20rem; }
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.offer-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: 0.3s;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.offer-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.card-img-container {
+  height: 160px;
+  position: relative;
+}
+
+.card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+.view-count {
+  position: absolute; bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.6); color: white;
+  padding: 2px 8px; border-radius: 5px; font-size: 11px;
+}
+
+.card-footer-actions {
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+  background: #fcfaf5;
+}
+
+.btn-action.order {
+  flex: 1;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-action.order:hover {
+  background: #218838;
+}
+
+
+
+
+/* Style identique à la modale profil */
+.custom-modal-rect {
+  border-radius: 8px; /* Bordure moins arrondie */
+  border: none;
+  z-index:34;
+}
+
+.close-line {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.btn-close-red {
+  background: transparent;
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  font-size: 20px;
+  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.input-rect, .btn-rect {
+  border-radius: 4px !important;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border: none;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border: none;
+}
+.form-select.input-rect {
+  border-radius: 4px !important;
+  background-color: #fdfdfd;
+  border: 1px solid #ced4da;
+  font-size: 0.9rem;
+  padding: 10px;
+}
+
+.form-select.input-rect:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+input:focus{
+   border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+/* --- RESPONSIVITÉ (MOBILE & TABLETTE) --- */
+
+@media (max-width: 992px) {
+    /* 1. On libère l'espace à gauche pour le contenu */
+    .feed-content {
+        margin-left: 0 !important;
+        padding: 15px;
+    }
+
+    /* 2. On cache la sidebar fixe (ou on la prépare pour un menu burger) */
+    .inner-sidebar {
+        display: none; /* Cache la sidebar sur mobile */
+        /* Si tu as un bouton pour l'ouvrir, tu ajouteras une classe .show-sidebar */
+    }
+
+    /* 3. Ajustement du Header et des Tabs */
+    .tabs-container {
+        gap: 15px;
+        overflow-x: auto; /* Permet de défiler les onglets s'ils sont trop larges */
+        justify-content: flex-start;
+        padding: 0 10px;
+    }
+
+    .tab {
+        padding: 10px 15px;
+        white-space: nowrap; /* Empêche les onglets de revenir à la ligne */
+    }
+
+    /* 4. Grille de cartes : 2 colonnes sur tablette, 1 sur mobile */
+    .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+        gap: 15px;
+    }
+
+    /* 5. Modale plus large sur mobile pour être lisible */
+    .modal-dialog {
+        margin: 10px;
+        max-width: none;
+        z-index: 34;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Optimisation pour les tout petits écrans */
+    .main-title {
+        font-size: 1.4rem;
+    }
+    
+    .card-footer-actions {
+        flex-direction: column; /* Boutons l'un sur l'autre si nécessaire */
+    }
+    
+    .btn-action.order {
+        width: 100%;
+    }
+}
+
+/* --- BOUTON BURGER PRODUCTEUR --- */
+.mobile-menu-btn {
+  display: none; /* Caché par défaut sur PC */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 50px;
+  z-index: 1001;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  font-weight: 700;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- OVERLAY SOMBRE --- */
+.sidebar-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 900;
+  backdrop-filter: blur(2px);
+}
+
+/* --- ADAPTATION MOBILE (MEDIA QUERIES) --- */
+@media (max-width: 992px) {
+  .mobile-menu-btn {
+    display: flex; /* Apparaît sur mobile */
+  }
+
+  .feed-content {
+    margin-left: 0 !important; /* Plus de marge à gauche sur mobile */
+    padding: 15px;
+  }
+
+  .inner-sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Cachée à gauche */
+    height: 100vh;
+    width: 280px;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0; /* On annule le margin-top négatif sur mobile */
+    border-radius: 0 20px 20px 0;
+      z-index: 100000;
+  }
+
+  /* Quand on clique sur le bouton, la sidebar arrive */
+  .inner-sidebar.mobile-open {
+    left: 0;
+    z-index: 100000;
+  }
+}
+@media (max-width: 992px) {
+  .inner-sidebar {
+    left: -300px; /* Caché */
+    transition: left 0.4s ease-in-out;
+      z-index: 100000;
+  }
+  .inner-sidebar.mobile-open {
+    left: 15px; /* Apparaît (avec un petit décalage du bord) */
+      z-index: 100000;
+  }
+}
+/* --- BOUTON MOBILE --- */
+.mobile-toggle-btn {
+  display: none; /* Caché sur PC */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1100;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  gap: 10px;
+}
+
+/* --- LOGIQUE RESPONSIVE --- */
+@media (max-width: 992px) {
+  .mobile-toggle-btn {
+    display: flex; /* Apparaît sur Mobile */
+  }
+
+  .inner-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -320px; /* Complètement cachée à gauche */
+    width: 280px;
+    height: 100vh !important;
+    z-index: 1050;
+    margin: 0 !important;
+    border-radius: 0 20px 20px 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Effet rebond pro */
+      z-index: 100000;
+  }
+
+  /* QUAND LE MENU EST OUVERT */
+  .inner-sidebar.mobile-open {
+    left: 0 !important; /* Elle glisse vers la droite */
+      z-index: 100000;
+  }
+
+  .inner-sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1040;
+    backdrop-filter: blur(2px);
+      z-index: 100000;
+  }
+
+  .feed-content {
+    margin-left: 0 !important; /* On annule la marge de 20rem sur mobile */
+  }
+}
+
+@media (max-width: 992px) {
+  /* La Sidebar devient un panneau flottant */
+  .inner-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: -320px !important; /* On la cache à gauche */
+    width: 280px !important; /* Largeur fixe pour éviter l'effet écrasé */
+    height: 100vh !important;
+    z-index: 2000 !important; /* Pour passer au-dessus de tout */
+    margin: 0 !important;
+    background: white !important;
+    transition: left 0.3s ease-in-out !important;
+    box-shadow: 10px 0 20px rgba(0,0,0,0.2);
+    display: flex !important;
+  }
+
+  /* Quand sidebarOpen est vrai, on l'amène à l'écran */
+  .inner-sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  /* On annule la marge de 20rem pour que les cartes utilisent tout l'écran */
+  .feed-content {
+    margin-left: 0 !important;
+    padding: 10px;
+  }
+}
+/* --- COMPORTEMENT MOBILE --- */
+
+ /* Par défaut, on cache le menu flottant partout */
+.nav-fab-container {
+  display: none;
+}
+
+/* On ne l'affiche QUE sur les écrans "mobiles" (inférieurs à 992px) */
+@media (max-width: 991px) {
+  .nav-fab-container {
+    display: flex; /* Le menu devient visible */
+    position: fixed;
+    bottom: 30px;
+    right: 20px;
+    z-index: 2000;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .nav-fab-main {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #28a745;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  .nav-fab-options.active {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .nav-fab-child {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #28a745;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* Cache les labels sur mobile pour ne pas encombrer l'écran, 
+     ou on les affiche uniquement si on a de la place */
+  .nav-fab-label {
+    display: none; 
+  }
+  
+}
+.nav-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+}
+
+.nav-item:hover {
+  background-color: rgba(40, 167, 69, 0.1); /* Vert très clair */
+}
+
+.nav-item.active {
+  background-color: #28a745;
+  color: white !important;
+}
+
+.nav-item.active i {
+  color: white;
+}
+
+/* Style pour le bouton modifier sur ses propres offres */
+.btn-action.edit {
+  background-color: #ffc107;
+  color: #000;
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+/* 1. Animation de pulsation pour le bouton Publier */
+.pulse-animation {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  transition: transform 0.2s ease;
+  animation: pulse-green 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(40, 167, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+/* 2. Icône qui flotte doucement quand c'est vide */
+.floating-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+/* 3. Effet d'apparition douce pour le texte */
+.slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 4. Animation au survol de l'icône plus */
+.bounce-icon {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-publish:hover .bounce-icon {
+  transform: rotate(90deg) scale(1.2);
+}
+
+/* Ajustement du conteneur vide */
+.empty-state-container {
+  min-height: 60vh;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  border: 2px dashed #e0e0e0;
+  margin-top: 20px;
+}
+.rounded-15 { border-radius: 15px !important; }
+.rounded-20 { border-radius: 20px !important; }
+
+.upload-zone {
+  transition: all 0.3s ease;
+  border-color: #e0e0e0;
+}
+
+.upload-zone:hover {
+  border-color: #28a745;
+  background-color: #f8fff9 !important;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0; left: 0;
+  cursor: pointer;
+}
+
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+.empty-state-container {
+  display: flex;
+  flex-direction: column; /* Aligne les éléments de haut en bas */
+  justify-content: center; /* Centre verticalement */
+  align-items: center;    /* Centre horizontalement */
+  min-height: 60vh;       /* Ajuste la hauteur pour que le centrage soit visible */
+  width: 100%;            /* Prend toute la largeur disponible */
+  text-align: center;     /* Centre le texte à l'intérieur des balises */
+}
+
+.vide {
+  /* Optionnel : ajoute un petit espace si besoin */
+  max-width: 500px;
+}
+/* Grille réactive */
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 16px;
+
+}
+
+/* Style de la carte */
+.fb-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.fb-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Zone Image */
+.fb-card-media {
+  position: relative;
+  aspect-ratio: 1 / 1; /* Image carrée comme sur Marketplace */
+  background: #e4e6eb;
+}
+
+.fb-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fb-price-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Contenu textuel */
+.fb-card-content {
+  padding: 12px;
+  flex-grow: 1;
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #050505;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #65676b;
+  margin-bottom: 8px;
+}
+
+.description-preview {
+  font-size: 0.85rem;
+  color: #65676b;
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Pied de carte et Boutons */
+.fb-card-footer {
+  padding: 8px 12px 12px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.btn-fb {
+  flex-grow: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.btn-message {
+  background-color: #ebf5ff;
+  color: #0064d1;
+}
+
+.btn-message:hover {
+  background-color: #dbeafe;
+}
+
+.btn-edit {
+  background-color: #f2f2f2;
+  color: #050505;
+}
+
+.btn-icon-only {
+  background: #f2f2f2;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  cursor: pointer;
+  color: #65676b;
+}
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fb-card {
+  animation: fadeIn 0.5s ease-out;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- Redimensionnement Image --- */
+.small-media {
+  height: 160px; /* Taille réduite */
+  overflow: hidden;
+  position: relative;
+}
+
+.zoom-img {
+  transition: transform 0.5s ease;
+}
+
+.fb-card:hover .zoom-img {
+  transform: scale(1.1); /* Animation de zoom au survol */
+}
+
+/* --- Touche de Vert --- */
+.green-price {
+  background: #28a745 !important; /* Vert succès */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-green-action {
+  background-color: #28a745;
+  color: white;
+  transition: background 0.3s;
+}
+
+.btn-green-action:hover {
+  background-color: #218838;
+  transform: scale(1.02);
+}
+
+.status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #28a745;
+}
+
+.dot {
+  height: 6px;
+  width: 6px;
+  background-color: #28a745;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Icône verte */
+.text-success {
+  color: #28a745 !important;
+}
+
+.fb-card:hover {
+  border-color: #28a745; /* La bordure devient verte au survol */
+}
+/* --- Animation du point vert --- */
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.pulse-green {
+  animation: pulse 2s infinite;
+}
+
+/* --- Taille Image Réduite --- */
+.compact-media {
+  height: 170px; /* Encore plus compact pour laisser place à la description */
+  overflow: hidden;
+  position: relative;
+  background: #f8f9fa;
+}
+
+/* --- Style Description --- */
+.description-text {
+  font-size: 0.82rem;
+  color: #4b4d52;
+  margin: 8px 0;
+  line-height: 1.4;
+  height: 40px; /* Hauteur fixe pour aligner les cartes */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Pillule de catégorie --- */
+.category-pill {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* --- Nouveau dégradé vert --- */
+.green-gradient {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 0 0 0 10px; /* Arrondi stylé */
+  font-size: 0.85rem;
+}
+
+/* --- Animation au survol de la carte --- */
+.fb-card {
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.fb-card:hover {
+  border-left: 3px solid #28a745; /* Liseré vert au survol */
+  background-color: #f9fff9;
+}
