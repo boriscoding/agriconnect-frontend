@@ -2,32 +2,51 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface OffreData {
+  id?: number;
+  nproduit: string;
+  type_pro: string;
+  prixUnitaire: number;
+  quantiteProduit: number;
+  description: string;
+  lieuProduction: string;
+  photo: string;
+  statut: string;     // <-- AJOUTÉ ICI pour corriger l'erreur NG9
+  region?: string;    // Optionnel
+  uniteMesure?: string; // Optionnel
+  producteur?: { 
+    id: number; 
+    nom: string; 
+    photosuser?: string 
+  };
+}
+
 @Injectable({ providedIn: 'root' })
-export class Offre {
-  // L'URL de base définie dans ton @RequestMapping au niveau du Controller
+export class OffreService {
   private apiUrl = 'http://localhost:8080/api/offres';
 
   constructor(private http: HttpClient) {}
 
-  // POST : Créer une offre
-  // Changement : /creer -> /publier pour correspondre au @PostMapping("/publier")
-  creerOffre(formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/publier`, formData);
+  creerOffre(formData: FormData): Observable<OffreData> {
+    return this.http.post<OffreData>(`${this.apiUrl}/publier`, formData);
   }
 
-  // GET : Toutes les offres
-  // Changement : apiUrl -> apiUrl + /toutes pour correspondre au @GetMapping("/toutes")
-  getAllOffres(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/toutes`);
+  getAllOffres(): Observable<OffreData[]> {
+    return this.http.get<OffreData[]>(`${this.apiUrl}/toutes`);
   }
 
-  // DELETE : Supprimer une offre
+  getOffresByProducteur(producteurId: number): Observable<OffreData[]> {
+    return this.http.get<OffreData[]>(`${this.apiUrl}/producteur/${producteurId}`);
+  }
+// --- NOUVELLE MÉTHODE : MODIFIER ---
+  modifierOffre(id: number, offre: OffreData): Observable<OffreData> {
+    // On envoie une requête PUT à l'URL : http://localhost:8080/api/offres/modifier/ID
+    return this.http.put<OffreData>(`${this.apiUrl}/modifier/${id}`, offre);
+  }
+
+  // --- NOUVELLE MÉTHODE : SUPPRIMER ---
   supprimerOffre(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  // GET : Offres par producteur
-  getOffresByProducteur(producteurId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/producteur/${producteurId}`);
+    // On envoie une requête DELETE à l'URL : http://localhost:8080/api/offres/supprimer/ID
+    return this.http.delete<void>(`${this.apiUrl}/supprimer/${id}`);
   }
 }

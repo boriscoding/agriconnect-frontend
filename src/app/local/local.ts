@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { GpsService } from '../services/gps';
 import { Subscription } from 'rxjs';
@@ -9,79 +9,113 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./local.css'],
   standalone: false
 })
-export class Local implements OnInit, AfterViewInit, OnDestroy {
-  // Déclarations nécessaires pour éviter les erreurs NG9
-  public modes = ['auto', 'walking', 'driving', 'bicycling'];
+export class Local implements AfterViewInit, OnDestroy {
+  public modes = ['auto', 'Marche', 'Conduite', 'Le cyclisme'];
   public activeMode = 'auto';
-  debut = true;
-  private map: any; 
+  public debut = false;
+  
+  private map: any;
   private marker: any;
-  private gpsSub!: Subscription; 
+  private gpsSub!: Subscription;
+  private isFirstPosition = true;
 
   constructor(
     public gps: GpsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
-  
-  arrete() : void {
-    this.debut = false ;
-  }
-  debute() : void {
-    this.debut = true ;
-  }
-  ngOnInit() {}
 
+  // Utilise l'import dynamique pour Leaflet uniquement dans le navigateur
   async ngAfterViewInit() {
-    // On n'exécute ce code QUE dans le navigateur
     if (isPlatformBrowser(this.platformId)) {
-      
-      // Chargement dynamique de Leaflet pour éviter "window is not defined"
-      const L = await import('leaflet');
+      // Gestion du redimensionnement
+      window.addEventListener('resize', () => {
+        if (this.map) this.map.invalidateSize();
+      });
 
+      const L = await import('leaflet');
       this.initMap(L);
       
+      // On s'abonne au flux GPS
       this.gpsSub = this.gps.position$.subscribe((pos: any) => {
+        // AFFICHAGE EN CONSOLE
+        console.log("Données GPS reçues dans le composant :", pos);
+
         if (pos && pos.coords && this.map) {
+          console.log(`📍 Localisation détectée : Lat ${pos.coords.latitude}, Lng ${pos.coords.longitude}`);
           this.updateMapPosition(pos.coords.latitude, pos.coords.longitude);
+        } else {
+          console.warn("⚠️ En attente d'un signal GPS valide...");
         }
       });
+
+      // Lancement automatique du tracking au démarrage
+      this.debute();
     }
   }
 
   private initMap(L: any) {
-    const defaultCoords: [number, number] = [48.8566, 2.3522];
+    // Coordonnées par défaut (Centre du Cameroun : Yaoundé)
+    const camerounCenter: [number, number] = [3.848, 11.502]; 
     
-    this.map = L.map('map').setView(defaultCoords, 13);
+    this.map = L.map('map', { zoomControl: false }).setView(camerounCenter, 6);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(this.map);
-    
-    // Configuration manuelle de l'icône pour éviter les erreurs d'images
+
     const iconDefault = L.icon({
-      iconRetinaUrl: 'assets/marker-icon-2x.png',
-      iconUrl: 'assets/marker-icon.png',
-      shadowUrl: 'assets/marker-shadow.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41]
     });
-    
-    this.marker = L.marker(defaultCoords, { icon: iconDefault }).addTo(this.map);
 
-    setTimeout(() => {
-      this.map.invalidateSize();
-    }, 200);
+    this.marker = L.marker(camerounCenter, { icon: iconDefault }).addTo(this.map);
+    
+    // Correction pour s'assurer que la carte occupe tout l'espace
+    setTimeout(() => this.map.invalidateSize(), 200);
   }
 
   private updateMapPosition(lat: number, lng: number) {
     if (this.map && this.marker) {
-      this.map.setView([lat, lng], this.map.getZoom());
       this.marker.setLatLng([lat, lng]);
+
+      if (this.isFirstPosition) {
+        // Zoom précis au premier signal reçu
+        this.map.setView([lat, lng], 16); 
+        this.isFirstPosition = false;
+        console.log("🎯 Premier repérage effectué sur la carte.");
+      } else {
+        // Déplacement fluide pour les suivants
+        this.map.panTo([lat, lng]); 
+      }
     }
+  }
+
+  debute(): void {
+    this.debut = true;
+    console.log("🚀 Activation du tracking GPS...");
+    this.gps.startTracking();
+  }
+
+  arrete(): void {
+    this.debut = false;
+    console.log("🛑 Arrêt du tracking GPS.");
+    this.gps.stopTracking();
   }
 
   setMode(mode: string) {
     this.activeMode = mode;
+  }
+
+  getModeIcon(mode: string): string {
+    const icons: any = { 
+      'auto': 'fa-car', 
+      'Marche': 'fa-walking', 
+      'Conduite': 'fa-steering-wheel', 
+      'Le cyclisme': 'fa-bicycle' 
+    };
+    return icons[mode] || 'fa-map-marker-alt';
   }
 
   ngOnDestroy() {

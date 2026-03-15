@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http'; // Ajouté pour les appels API
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-opentrans',
@@ -8,19 +8,19 @@ import { HttpClient } from '@angular/common/http'; // Ajouté pour les appels AP
   templateUrl: './opentrans.html',
   styleUrl: './opentrans.css',
 })
-export class Opentrans {
+export class Opentrans implements OnInit {
   sidebarOpen = false;
   headerOpen = false;
   isOffreModalOpen = false;
-  // Voici la variable manquante pour ton menu flottant
   isNavMenuOpen: boolean = false;
+  isSubmitting: boolean = false; // Pour gérer l'état du bouton pendant l'envoi
 
-  // Objet adapté pour un Transporteur (basé sur ton nouveau formulaire)
+  // Objet adapté pour un Transporteur
   newOffre: any = {
-    vehicule: '',       // Ex: Camion 10T
-    capacite: null,     // En tonnes
-    prixKilo: null,     // Tarif au km
-    trajet: '',         // Ex: Douala - Yaoundé
+    vehicule: '',       
+    capacite: null,     
+    prixKilo: null,     
+    trajet: '',         
     description: '',
     statut: 'DISPONIBLE',
     datePublication: new Date().toISOString().split('T')[0]
@@ -30,6 +30,15 @@ export class Opentrans {
   @Output() closeSidebar = new EventEmitter<void>();
 
   constructor(private router: Router, private http: HttpClient) {}
+
+  ngOnInit(): void {
+    // Vérification de la session au chargement
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      console.warn("Utilisateur non connecté");
+      // Optionnel : this.router.navigate(['/login']);
+    }
+  }
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
@@ -45,47 +54,58 @@ export class Opentrans {
 
   closeOffreModal() {
     this.isOffreModalOpen = false;
+    this.isSubmitting = false;
   }
 
   // Fonction pour enregistrer l'offre de transport
   saveOffre() {
-    // Récupération de l'ID du transporteur connecté (ex: ID 10)
-    const userId = localStorage.getItem('userId');
+    const storedId = localStorage.getItem('userId');
+    if (!storedId) {
+      alert("Erreur : session expirée. Veuillez vous reconnecter.");
+      return;
+    }
+
+    // Nettoyage de l'ID (au cas où il contient des caractères non numériques)
+    const userId = +storedId.replace(/\D/g, '');
+
+    this.isSubmitting = true;
     
     const offreAEnvoyer = {
       ...this.newOffre,
-      transporteur: { id: userId } // On lie l'offre au transporteur connecté
+      transporteur: { id: userId } 
     };
 
     console.log('Publication de l\'offre transporteur :', offreAEnvoyer);
 
-    // Appel à ton API Spring Boot
     this.http.post('http://localhost:8080/offres-transport/add', offreAEnvoyer).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('Succès !', response);
         this.closeOffreModal();
-        // Réinitialiser le formulaire
         this.resetForm();
+        this.isSubmitting = false;
+        alert("Offre de transport publiée avec succès !");
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erreur lors de la publication', err);
+        this.isSubmitting = false;
         alert("Erreur lors de l'enregistrement de l'offre.");
       }
     });
   }
-  // Dans ton opentrans.ts pour le menu flottant  
-toggleNavMenu() {
-  this.isNavMenuOpen = !this.isNavMenuOpen;
-  if (navigator.vibrate) {
-    navigator.vibrate(50); // Petite vibration de 50ms
+
+  toggleNavMenu() {
+    this.isNavMenuOpen = !this.isNavMenuOpen;
+    // Utilisation de facultative chaining pour éviter les erreurs sur certains navigateurs
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   }
-}
-// --- MÉTHODES DE NAVIGATION ---
-  
+
   navigateTo(path: string): void {
-    this.isNavMenuOpen = false; // On ferme le menu après le clic
+    this.isNavMenuOpen = false; 
     this.router.navigate([path]);
   }
+
   resetForm() {
     this.newOffre = {
       vehicule: '',
@@ -102,8 +122,8 @@ toggleNavMenu() {
     this.closeSidebar.emit();
   }
 
-  // Button retour au homepage
   goToHome() {
     this.router.navigate(['/homepage']);
   }
+  
 }

@@ -164,3 +164,267 @@
   font-weight: 800;
   text-transform: uppercase;
 }
+/* ============================================================
+   RESPONSIVE DESIGN (Tablettes et Mobiles)
+   ============================================================ */
+
+@media (max-width: 992px) {
+    .app-container {
+        flex-direction: column; /* La sidebar passe au dessus de la carte */
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 15px;
+        flex-direction: row; /* Aligne les éléments horizontalement sur tablette */
+        flex-wrap: wrap;
+        gap: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .speed-card {
+        flex: 1;
+        padding: 15px;
+        min-width: 150px;
+    }
+
+    .speed-value { font-size: 2.5rem; }
+
+    .card { flex: 1; min-width: 200px; }
+
+    .controls {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .btn { flex: 1; }
+}
+
+@media (max-width: 600px) {
+    /* Mobile : On optimise pour l'espace vertical */
+    
+    .sidebar {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .speed-card {
+        padding: 10px;
+    }
+
+    .speed-value { font-size: 2rem; }
+
+    /* On cache le sélecteur de mode sur mobile pour gagner de la place (optionnel) 
+       ou on le met en ligne */
+    .mode-grid {
+        grid-template-columns: repeat(4, 1fr); /* 4 icônes sur une ligne */
+    }
+
+    .btn-mode { padding: 8px 2px; font-size: 0.7rem; }
+
+    /* Footer de statistiques : On réduit la taille */
+    .stats-footer {
+        bottom: 15px;
+        left: 10px;
+        right: 10px;
+        padding: 12px 5px;
+        flex-wrap: wrap;
+    }
+
+    .stat {
+        flex: 1;
+        min-width: 30%;
+    }
+
+    .value { font-size: 0.9rem; }
+    .label { font-size: 0.6rem; }
+}
+
+/* Ajustement pour les écrans très petits ou en mode paysage sur mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar { width: 150px; height: 100vh; flex-direction: column; }
+    .speed-value { font-size: 1.5rem; }
+    .card, .mode-grid { display: none; } /* On cache le superflu */
+}
+.app-layout {
+  display: flex;
+  height: 100vh;
+  background: #0f172a;
+  color: white;
+}
+
+.sidebar {
+  width: 300px;
+  background: #1e293b;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 10;
+}
+
+.speed-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid #3b82f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.speed-circle .value { font-size: 3rem; font-weight: bold; }
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-mode {
+  background: #334155;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-mode.active { background: #3b82f6; }
+
+.map-wrapper { flex: 1; position: relative; }
+#map { height: 100%; width: 100%; z-index: 1; }
+
+/* HUD : Statistiques au-dessus de la carte */
+.hud-stats {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000; /* Toujours au-dessus de Leaflet */
+}
+
+.hud-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  min-width: 150px;
+}
+
+.hud-label { display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+.hud-value { font-size: 1.2rem; font-weight: bold; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-layout { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; padding: 1rem; }
+  .hud-stats { top: auto; bottom: 20px; right: 10px; left: 10px; flex-direction: row; }
+  .hud-card { flex: 1; min-width: 0; padding: 8px; text-align: center; }
+}
+/* Structure de base */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  background: #1e293b;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  z-index: 10;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+#map { height: 100%; width: 100%; z-index: 1; }
+
+/* HUD Flottant */
+.hud-stats {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.hud-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  min-width: 140px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* RESPONSIVE MOBILE */
+@media (max-width: 850px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  /* On réduit la vitesse sur mobile */
+  .speed-circle {
+    width: 80px;
+    height: 80px;
+    border-width: 3px;
+  }
+  .speed-circle .value { font-size: 1.5rem; }
+  .speed-circle .label { font-size: 0.6rem; }
+
+  /* On cache les modes sur petit mobile ou on les met en ligne */
+  .mode-section { display: none; } 
+
+  .main-actions {
+    flex-direction: row;
+    gap: 5px;
+  }
+
+  .hud-stats {
+    top: auto;
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .hud-card {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .hud-label i { display: none; } /* On cache les icônes HUD sur mobile */
+}
