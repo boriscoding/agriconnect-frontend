@@ -21,100 +21,143 @@
     </nav>
 
     <aside class="contacts-sidebar">
-      <div class="sidebar-content-wrapper">
-        <div class="sidebar-header-row">
-          <h2>Discussion</h2>
-          <div class="header-icons">
-            <i class="fas fa-th-list"></i> 
-            <i class="fas fa-caret-down"></i> 
-          </div>
-        </div>
-
-        <div class="search-container">
-          <div class="search-input-wrapper">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Recherche ou démarrer...">
-          </div>
-        </div>
-
-        <div class="scrollable-contacts" [@listAnimation]="messages.length">
-          <div class="contact-tile active" (click)="openChat()">
-            <div class="avatar-container">
-              <img src="https://ui-avatars.com/api/?name=Borel&background=random" alt="Borel">
-              <span class="dot online"></span>
-            </div>
-            <div class="tile-content">
-              <div class="tile-header"><strong>Borel</strong> <span class="time">11:45</span></div>
-              <p class="preview-text">Encore vous ?</p>
-            </div>
-          </div>
-
-          <div class="contact-tile" (click)="openChat()">
-            <div class="avatar-container">
-              <img src="https://ui-avatars.com/api/?name=Borimaru&background=28a745&color=fff" alt="Borimaru" >
-              <span class="dot busy"></span>
-            </div>
-            <div class="tile-content">
-              <div class="tile-header"><strong>Borimaru</strong> <span class="time">11:45</span></div>
-              <p class="preview-text">Encore vous ?</p>
-            </div>
-          </div>
-        </div>
+  <div class="sidebar-content-wrapper">
+    <div class="sidebar-header-row">
+      <h2>Discussion</h2>
+      <div class="header-icons">
+        <i class="fas fa-th-list"></i> 
+        <i class="fas fa-caret-down"></i> 
       </div>
-    </aside>
+    </div>
 
+<div class="search-input-wrapper">
+  <i class="fas fa-search"></i>
+  <input 
+  type="text" 
+  [(ngModel)]="searchTerm" 
+  (input)="filterContacts()" 
+  placeholder="Recherche ou démarrer...">
+</div>
+
+
+<div class="contacts-list" [@listAnimation]="filteredContacts.length">
+  <div *ngFor="let contact of filteredContacts" 
+       (click)="selectContact(contact)"
+       [class.active]="selectedContactId === contact.id"
+       class="contact-item"> 
+  </div>
+</div>
+
+    <div class="scrollable-contacts" [@listAnimation]="contacts.length">
+      
+      <div *ngFor="let contact of contacts" 
+           class="contact-tile" 
+           [class.active]="selectedContactId === contact.id"
+           (click)="selectContact(contact)">
+           
+        <div class="avatar-container">
+          <img [src]="contact.photoUrl || 'https://ui-avatars.com/api/?name=' + contact.prenom + '&background=random'" 
+               [alt]="contact.prenom">
+          <span class="dot" [class.online]="contact.online"></span>
+        </div>
+<div class="tile-content">
+  <div class="tile-header">
+    <strong>{{ contact.prenom }} {{ contact.nom }}</strong> 
+    <span class="time" *ngIf="messages && messages.length > 0">
+      {{ messages[messages.length - 1]?.time }}
+    </span>
+  </div>
+  
+  <p class="preview-text" *ngIf="messages && messages.length > 0">
+    {{ messages[messages.length - 1]?.contenu }}
+  </p>
+  
+  <p class="preview-text" *ngIf="!messages || messages.length === 0">
+    Aucun message récent
+  </p>
+</div>
+      </div>
+
+      <div *ngIf="contacts.length === 0" style="padding: 20px; text-align: center; color: #888;">
+        <p>Aucune conversation trouvée.</p>
+      </div>
+
+    </div>
+  </div>
+</aside>
     <main class="conversation-window">
       <header class="chat-top-bar">
         <button class="back-to-contacts" (click)="closeChat()">
-          <i class="fas fa-arrow-left" ></i>
+          <i class="fas fa-arrow-left"></i>
         </button>
-
-        <img src="https://ui-avatars.com/api/?name=Borimaru&background=28a745&color=fff" class="small-avatar" style="border-radius: 50%;">
-        <span class="current-name">Borimaru</span>
+        <img [src]="getActiveContact()?.photoUrl || 'https://ui-avatars.com/api/?name=' + getActiveContact()?.prenom" class="header-avatar" style="border-radius: 50%; width: 30px; margin-right: 10px;">
+     <span class="contact-name">{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</span>
+      <span class="contact-status" style="margin-left: 10%;">{{ getActiveContact()?.online ? 'en ligne' : 'hors ligne' }}</span>
       </header>
 
       <div class="chat-body" #scrollMe>
-        <div class="background-overlay" [style.background-image]="'url(../../assets/images/loagri.png)'"></div>
-
-        <div *ngFor="let msg of messages" 
-             [ngClass]="msg.isMe ? 'message sent' : 'message received'"
-             [@bubbleIn]>
-          
-          <div class="bubble" [class.image-bubble]="msg.image" [class.audio-bubble]="msg.audio">
-            <span class="sender" *ngIf="!msg.isMe">{{ msg.sender }}</span>
-            
-            <img *ngIf="msg.image" [src]="msg.image" class="chat-img-content">
-            
-            <div *ngIf="msg.audio" class="audio-container">
-              <audio [src]="msg.audio" controls class="chat-audio-player"></audio>
-            </div>
-
-            <p *ngIf="msg.text">{{ msg.text }}</p>
-            
-            <span class="msg-time">
-              {{ msg.time }}
-              <i class="fas fa-check-double" *ngIf="msg.isMe"></i>
-            </span>
-          </div>
+  <div *ngFor="let msg of messages" 
+       [ngClass]="msg?.isMe ? 'message sent' : 'message received'"
+       [@bubbleIn]>
+    
+    <div class="bubble">
+  
+      
+      <div class="media-content" *ngIf="msg?.type && msg?.type !== 'TEXT'">
+        <img *ngIf="msg?.type === 'IMAGE'" [src]="msg?.mediaUrl" class="chat-img-content">
+        
+        <video *ngIf="msg?.type === 'VIDEO'" [src]="msg?.mediaUrl" controls class="chat-video-content"></video>
+        
+        <div *ngIf="msg?.type === 'AUDIO'" class="audio-wrapper">
+          <audio [src]="msg?.mediaUrl" controls class="chat-audio-player"></audio>
         </div>
       </div>
+
+      <p *ngIf="msg?.text">{{ msg?.text }}</p>
+      
+     <span class="msg-time">
+    {{ msg.time }}
+    <i class="fas fa-check-double" *ngIf="msg.isMe" style="margin-left: 3px;"></i>
+  </span>
+    </div>
+  </div>
+</div>
+
+      <div class="media-preview-bar" *ngIf="mediaPreviewUrl">
+  <div class="preview-container">
+    <button class="cancel-preview" (click)="cancelPreview()">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <img *ngIf="previewType === 'IMAGE'" [src]="mediaPreviewUrl" class="preview-item">
+    <video *ngIf="previewType === 'VIDEO'" [src]="mediaPreviewUrl" class="preview-item"></video>
+    
+    <div *ngIf="previewType === 'AUDIO'" class="preview-audio-item">
+      <i class="fas fa-microphone"></i>
+      <span style="font-size: 0.8rem;">Message vocal prêt</span>
+    </div>
+  </div>
+</div>
+
+<footer class="chat-footer">
+  </footer>
 
       <footer class="chat-footer">
         <button class="action-btn" (click)="triggerImageUpload()">
           <i class="fas fa-paperclip"></i>
-          <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*">
+          <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*,video/*">
         </button>
 
         <input type="text" 
                [(ngModel)]="newMessage" 
                (keyup.enter)="sendMessage()" 
-               placeholder="Taper un message...">
+               [placeholder]="mediaPreviewUrl ? 'Ajouter une légende...' : 'Taper un message...'">
 
-        <button *ngIf="newMessage.trim().length > 0" (click)="sendMessage()" class="send-btn">
+        <button *ngIf="newMessage.trim().length > 0 || mediaPreviewUrl" (click)="sendMessage()" class="send-btn">
           <i class="fas fa-paper-plane"></i>
         </button>
 
-        <button *ngIf="newMessage.trim().length === 0" 
+        <button *ngIf="newMessage.trim().length === 0 && !mediaPreviewUrl" 
                 (click)="startVoiceRecord()" 
                 class="voice-btn"
                 [class.recording]="isRecording">

@@ -153,15 +153,25 @@
     <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
     <span>Menu</span>
   </button>
+    <button class="mobile-menu-btn d-lg-none" routerLink="/chat">
+   <i class="fas fa-comments"></i> 
+    
+  </button>
 
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
 
   <div class="sticky-sub-header">
-    <div class="tabs-container">
-      <div class="tab active">Producteur</div>
-      <div class="tab" (click)="navigateTo('/transporteur')">Transporteur</div>
-      <div class="tab" (click)="navigateTo('/acheteur')">Acheteur</div>
-    </div>
+   <div class="tabs-container">
+  <div class="tab" [class.active]="viewType === 'OFFRES'" (click)="switchView('OFFRES')">
+    <i class="fas fa-leaf"></i> Producteur
+  </div>
+  <div class="tab" [class.active]="viewType === 'VEHICULES'" (click)="switchView('VEHICULES')">
+    <i class="fas fa-truck"></i> Transporteur
+  </div>
+  <div class="tab" [class.active]="viewType === 'DEMANDES'" (click)="switchView('DEMANDES')">
+    <i class="fas fa-shopping-cart"></i> Acheteur
+  </div>
+</div>
   </div>
 
   <div class="layout-content">
@@ -194,88 +204,96 @@
       </button>
     </aside>
 
-    <main class="feed-content">
-      <div class="section-intro" *ngIf="offresFiltrees.length > 0">
-        <div *ngIf="pub">
-          <h2 class="main-title">Publications des producteurs</h2>
-          <p class="sub-text">Découvrez les offres les plus récentes du marché</p>
-        </div>
-        <div *ngIf="!pub">
-          <h2 class="main-title">Mes Publications producteur</h2>
-          <p class="sub-text">Gérez vos offres en cours</p>
-        </div>
-      </div>
+   <main class="feed-content">
+  <div class="section-intro">
+    <div *ngIf="viewType === 'OFFRES'">
+      <h2 class="main-title">{{ pub ? 'Publications des producteurs' : 'Mes Publications' }}</h2>
+      <p class="sub-text">Découvrez les offres les plus récentes du marché</p>
+    </div>
+    <div *ngIf="viewType === 'VEHICULES'">
+      <h2 class="main-title">Flotte des Transporteurs</h2>
+      <p class="sub-text">Trouvez un véhicule pour acheminer vos produits</p>
+    </div>
+    <div *ngIf="viewType === 'DEMANDES'">
+      <h2 class="main-title">Demandes des Acheteurs</h2>
+      <p class="sub-text">Consultez ce que les clients recherchent actuellement</p>
+    </div>
+  </div>
 
- <div class="marketplace-grid">
-  <ng-container *ngFor="let offre of offresFiltrees">
-    <article class="fb-card" *ngIf="offre && offre.nproduit"> 
-      
-      <div class="fb-card-media compact-media">
-        <img [src]="'http://localhost:8080/uploads/' + offre.photo" 
-             (error)="$any($event.target).src = '../../assets/images/lop.png'" 
-             class="img-fluid" 
-             alt="Image de l'offre">
-        
-        <div class="status-badge">
-          <span class="dot pulse-green"></span> {{ offre.statut || 'Disponible' }}
+  <div class="marketplace-grid">
+    
+    <ng-container *ngIf="viewType === 'OFFRES'">
+      <article class="fb-card" *ngFor="let offre of offresFiltrees">
+        <div class="fb-card-media compact-media">
+          <img [src]="getPhotoUrl(offre.photo)" (error)="$any($event.target).src = '../../assets/images/lop.png'" class="img-fluid">
+          <div class="status-badge"><span class="dot pulse-green"></span> {{ offre.statut }}</div>
+          <div class="fb-price-tag green-gradient">{{ offre.prixUnitaire }} FCFA</div>
         </div>
-        
-        <div class="fb-price-tag green-gradient">{{ offre.prixUnitaire }} FCFA</div>
-      </div>
-
-      <div class="fb-card-content">
-        <div class="content-header">
+        <div class="fb-card-content">
           <h3 class="product-title">{{ offre.nproduit }}</h3>
           <small class="category-pill">{{ offre.type_pro }}</small>
+          <p class="description-text">{{ offre.description | slice:0:85 }}...</p>
+          <div class="info-row"><span><i class="fas fa-map-marker-alt text-success"></i> {{ offre.lieuProduction }}</span></div>
         </div>
-        
-        <p class="description-text">
-          {{ offre.description ? (offre.description | slice:0:85) : 'Aucune description disponible' }}
-        </p>
-
-        <div class="info-row">
-          <span class="location">
-              <i class="fas fa-map-marker-alt text-success"></i> 
-              {{ offre.lieuProduction || 'Lieu non défini' }}
-          </span>
+        <div class="fb-card-footer">
+          <button class="btn-fb btn-green-action" *ngIf="offre.producteur?.id !== userIdConnecte">
+            <i class="fas fa-comments"></i> Discussion
+          </button>
+          <button class="btn-fb btn-edit" *ngIf="offre.producteur?.id === userIdConnecte" (click)="ouvrirGerer(offre)">
+            <i class="fas fa-tools"></i> Gérer
+          </button>
         </div>
-      </div>
+      </article>
+    </ng-container>
 
-      <div class="fb-card-footer">
-        <button class="btn-fb btn-green-action" *ngIf="offre.producteur?.id !== userIdConnecte">
-          <i class="fas fa-shopping-basket"></i> Commander
-        </button>
-        
-        <button class="btn-fb btn-edit" *ngIf="offre.producteur?.id === userIdConnecte" (click)="ouvrirGerer(offre)">
-          <i class="fas fa-tools"></i> Gérer
-        </button>
-      </div>
-    </article>
-  </ng-container>
-</div>
+    <ng-container *ngIf="viewType === 'VEHICULES'">
+      <article class="fb-card" *ngFor="let v of vehicules">
+        <div class="fb-card-media compact-media">
+          <img [src]="getPhotoUrl(v.photoVehicule)" (error)="$any($event.target).src = 'assets/images/truck-default.png'" class="img-fluid">
+          <div class="status-badge"><span class="dot pulse-blue"></span> Disponible</div>
+          <div class="fb-price-tag blue-gradient">{{ v.capaciteCharge }} Kg</div>
+        </div>
+        <div class="fb-card-content">
+          <h3 class="product-title">{{ v.typeVehicule }}</h3>
+          <small class="category-pill">Transporteur</small>
+          <p class="description-text">Localisation : {{ v.localisation }}</p>
+          <div class="info-row">
+            <span><i class="fas fa-phone text-primary"></i> Contact: {{ v.number }}</span>
+          </div>
+        </div>
+        <div class="fb-card-footer">
+          <button class="btn-fb btn-blue-action" style="background: #2980b9; color: white;">
+            <i class="fas fa-truck-loading"></i> Réserver
+          </button>
+        </div>
+      </article>
+    </ng-container>
 
-     <div *ngIf="offresFiltrees.length === 0" 
-     class="empty-state-container d-flex justify-content-center align-items-center w-100" 
-     style="min-height: 400px;">
-     
-  <div class="vide text-center"> <div class="empty-icon-wrapper mb-4">
-      <i class="fas fa-box-open fa-5x text-success floating-animation"></i>
-    </div>
-    
-    <h3 class="text-success fw-bold">
-      {{ filterType === 'TOUS' ? 'Aucune publication disponible' : 'Vous n\'avez pas encore d\'offres' }}
-    </h3>
-    
-    <p class="text-muted" *ngIf="filterType === 'MES_OFFRES'">
-      Boostez votre activité en publiant votre premier produit dès maintenant !
-    </p>
-    
-    <button class="btn btn-outline-success btn-lg mt-3 rounded-pill shadow-sm" (click)="openOffreModal()">
-      <i class="fas fa-magic"></i> Créer ma première offre
-    </button>
+    <ng-container *ngIf="viewType === 'DEMANDES'">
+      <article class="fb-card" *ngFor="let d of demandesAcheteurs">
+        <div class="fb-card-content" style="padding-top: 20px;">
+          <div class="status-badge" style="position: relative; top: 0; left: 0; margin-bottom: 10px;">
+            <span class="dot pulse-orange"></span> Recherche urgente
+          </div>
+          <h3 class="product-title">Besoin de : {{ d.nomProduit }}</h3>
+          <p class="description-text">Quantité voulue : <strong>{{ d.quantiteVoulue }}</strong></p>
+          <div class="info-row">
+            <span><i class="fas fa-wallet text-warning"></i> Budget: {{ d.budget }} FCFA</span>
+          </div>
+        </div>
+        <div class="fb-card-footer">
+          <button class="btn-fb" style="background: #e67e22; color: white;">
+            <i class="fas fa-hand-holding-usd"></i> Proposer un prix
+          </button>
+        </div>
+      </article>
+    </ng-container>
+
   </div>
-</div>
-    </main>
+
+  <div *ngIf="getFiltreLength() === 0" class="empty-state-container">
+     </div>
+</main>
   </div>
 </div>
 <div class="container-fluid bg-light py-4 border-bottom" *ngIf="isOffreModalOpen">

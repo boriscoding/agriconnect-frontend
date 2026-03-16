@@ -1,21 +1,20 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common'; // Requis pour ne pas crasher
+import { isPlatformBrowser } from '@angular/common'; 
 import { User } from '../services/user';
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private readonly STORAGE_KEY = 'currentUser';
 
-  // On injecte l'identifiant de la plateforme
   constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
 
   getUserConnected(): User | null {
-    // On ne touche au localStorage QUE si on est sur le navigateur
     if (isPlatformBrowser(this.platformId)) {
-      const data = localStorage.getItem(this.STORAGE_KEY);
+      // ✅ Utilisation de sessionStorage pour isoler l'utilisateur par onglet
+      const data = sessionStorage.getItem(this.STORAGE_KEY);
       return data ? (JSON.parse(data) as User) : null;
     }
-    return null; // Sur le serveur, on renvoie null sans crasher
+    return null;
   }
 
   getUserId(): number | null {
@@ -25,13 +24,15 @@ export class Auth {
 
   saveUser(user: User): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
+      // ✅ Sauvegarde dans la session de l'onglet uniquement
+      sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
     }
   }
 
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.STORAGE_KEY);
+      // ✅ Nettoyage de la session de l'onglet
+      sessionStorage.removeItem(this.STORAGE_KEY);
     }
   }
 }

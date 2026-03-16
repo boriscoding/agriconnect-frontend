@@ -16,6 +16,7 @@ declare var google: any;
 export class FormconnectComponent implements OnInit {
   // --- 1. VARIABLES ---
   email: string = '';
+  private serverIp = 'localhost';
   password: string = '';
   selectedCategorie: string = 'Producteur'; 
 
@@ -81,25 +82,21 @@ export class FormconnectComponent implements OnInit {
     const loginData = { email: this.email, password: this.password };
     let endpoint = '';
     let routeDestination = '';
-
-    switch (this.selectedCategorie) {
+switch (this.selectedCategorie) {
       case 'Producteur':
-        endpoint = 'http://localhost:8080/producteurs/login';
+        // 2. Utilise bien les ` (Alt Gr + 7) pour que ${this.serverIp} fonctionne
+        endpoint = `http://${this.serverIp}:8080/producteurs/login`;
         routeDestination = '/open';
         break;
       case 'Transporteur':
-        endpoint = 'http://localhost:8080/transporteurs/login';
+        endpoint = `http://${this.serverIp}:8080/transporteurs/login`;
         routeDestination = '/opentrans';
         break;
       case 'Acheteur':
-        endpoint = 'http://localhost:8080/api/acheteurs/login';
+        endpoint = `http://${this.serverIp}:8080/api/acheteurs/login`;
         routeDestination = '/openacheteur';
         break;
-      default:
-        endpoint = 'http://localhost:8080/producteurs/login';
-        routeDestination = '/open';
     }
-
     this.toastr.info(`Connexion en cours (${this.selectedCategorie})...`);
 
     this.http.post(endpoint, loginData).subscribe({
@@ -136,4 +133,9 @@ export class FormconnectComponent implements OnInit {
   goToHome() {
     this.backToHome.emit();
   }
+  // Dans ton service Auth (ou auth.ts)
+saveUser(user: any) {
+  // On utilise la clé 'user' (c'est celle que logi-chat cherche)
+  localStorage.setItem('user', JSON.stringify(user));
+}
 }

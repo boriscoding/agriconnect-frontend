@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
-// MODIFICATION : On importe OffreService et l'interface OffreData
 import { OffreService, OffreData } from '../services/offre'; 
 import { Auth } from '../services/auth';
 
@@ -15,7 +14,9 @@ import { Auth } from '../services/auth';
 })
 export class Openoffer implements OnInit {
 
-  // --- ÉTATS UI ---
+  // ✅ ADRESSE IP RÉSEAU CENTRALISÉE
+  private serverIp = 'localhost';
+
   sidebarOpen = false;
   isModalOpen = false;
   isOffreModalOpen = false;
@@ -24,12 +25,9 @@ export class Openoffer implements OnInit {
   pub = true;
   filterType: 'TOUS' | 'MES_OFFRES' = 'TOUS';
 
-  // --- DONNÉES UTILISATEUR ---
   user: any = {};
   userIdConnecte: number | null = null;
 
-  // --- DONNÉES OFFRES ---
-  // MODIFICATION : Utilisation du type OffreData pour garantir l'affichage des infos
   offres: OffreData[] = []; 
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null; 
@@ -47,10 +45,14 @@ export class Openoffer implements OnInit {
     statut: 'DISPONIBLE'
   };
 
+  // États pour les modales de gestion
+  showGererModal = false;
+  showModifierModal = false;
+  offreSelectionnee: any = null;
+
   constructor(
     private router: Router, 
     private http: HttpClient,
-    // MODIFICATION : Injection de OffreService au lieu de Offre
     private offreService: OffreService, 
     private authService: Auth,
     private toastr: ToastrService,
@@ -74,19 +76,21 @@ export class Openoffer implements OnInit {
     }
   }
 
+  // ✅ RECTIFICATION DE L'URL PROFIL
   loadUserProfile() {
     if (!this.userIdConnecte) return;
-    this.http.get(`http://localhost:8080/api/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`http://${this.serverIp}:8080/api/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: (err: any) => console.error('Erreur profil', err)
       });
   }
 
+  // ✅ RECTIFICATION DE L'URL MODIFICATION PROFIL
   saveUser() {
     if (!this.userIdConnecte) return;
     this.loading = true;
-    this.http.put(`http://localhost:8080/api/utilisateurs/modifier/${this.userIdConnecte}`, this.user)
+    this.http.put(`http://${this.serverIp}:8080/api/utilisateurs/modifier/${this.userIdConnecte}`, this.user)
       .subscribe({
         next: (res: any) => {
           this.user = res; 
@@ -101,17 +105,12 @@ export class Openoffer implements OnInit {
       });
   }
 
-  // ==========================================
-  // LOGIQUE OFFRES (PUBLICATION & FILTRES)
-  // ==========================================
   chargerToutesLesOffres() {
-    // MODIFICATION : Ajout du typage dans le next pour éviter le crash au refresh
     this.offreService.getAllOffres().subscribe({
       next: (data: OffreData[]) => this.offres = data,
       error: (err: any) => console.error('Erreur chargement offres', err)
     });
   }
-
 
   saveOffre() {
     if (!this.userIdConnecte) return;
@@ -149,7 +148,62 @@ export class Openoffer implements OnInit {
     });
   }
 
-  // --- FILTRES ---
+  // ✅ RECTIFICATION DE L'URL DES PHOTOS (Backend)
+  getPhotoUrl(photo: string | undefined): string {
+    if (!photo) {
+      return 'assets/images/default-produit.png';
+    }
+    if (photo.startsWith('http')) {
+      return photo;
+    }
+    // On utilise l'IP réseau pour charger les images sur le téléphone
+    return `http://${this.serverIp}:8080/uploads/${photo}`;
+  }
+
+  // --- GESTION DES OFFRES ---
+
+  ouvrirGerer(offre: any) {
+    this.offreSelectionnee = { ...offre }; 
+    this.showGererModal = true;
+  }
+
+  confirmerSuppression() {
+    if (this.offreSelectionnee && confirm('Voulez-vous vraiment supprimer cette offre ?')) {
+      this.offreService.supprimerOffre(this.offreSelectionnee.id).subscribe({
+        next: () => {
+          this.offres = this.offres.filter(o => o.id !== this.offreSelectionnee.id);
+          this.showGererModal = false;
+          this.toastr.success('Offre supprimée avec succès');
+        },
+        error: (err) => this.toastr.error('Erreur lors de la suppression')
+      });
+    }
+  }
+
+  ouvrirModifier() {
+    this.showGererModal = false; 
+    this.imagePreview = null; 
+    setTimeout(() => this.showModifierModal = true, 150); 
+  }
+
+  validerModification() {
+    this.isSubmitting = true;
+    this.offreService.modifierOffre(this.offreSelectionnee.id, this.offreSelectionnee).subscribe({
+      next: (res) => {
+        const index = this.offres.findIndex(o => o.id === res.id);
+        if (index !== -1) this.offres[index] = res;
+        this.toastr.success('Modification enregistrée');
+        this.showModifierModal = false;
+        this.isSubmitting = false;
+      },
+      error: () => {
+        this.toastr.error('Erreur de mise à jour');
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  // --- FILTRES ET UTILITAIRES ---
   get offresFiltrees() {
     if (this.filterType === 'MES_OFFRES') {
       return this.offres.filter(o => o.producteur?.id === this.userIdConnecte);
@@ -178,16 +232,13 @@ export class Openoffer implements OnInit {
 
   openEditModal() { this.isModalOpen = true; }
   closeModal() { this.isModalOpen = false; }
-  
   openOffreModal() { this.isOffreModalOpen = true; }
   closeOffreModal() { 
     this.isOffreModalOpen = false; 
     this.imagePreview = null;
     this.selectedFile = null;
   }
-
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
-  
   resetForm() {
     this.newOffre = {
       titre: '', nproduit: '', type_pro: 'PRODUCTEUR_DIRECT',
@@ -196,80 +247,70 @@ export class Openoffer implements OnInit {
       statut: 'DISPONIBLE'
     };
   }
-
   navigateTo(path: string) { this.router.navigate([path]); }
-
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+  // --- ÉTATS D'AFFICHAGE ---
+viewType: 'OFFRES' | 'VEHICULES' | 'DEMANDES' = 'OFFRES';
 
-  getPhotoUrl(photo: string | undefined): string {
-    if (!photo) {
-      return 'assets/images/default-produit.png';
-    }
-    if (photo.startsWith('http')) {
-      return photo;
-    }
-    return `http://localhost:8080/uploads/${photo}`;
+// --- DONNÉES ---
+vehicules: any[] = [];
+demandesAcheteurs: any[] = [];
+// ✅ MÉTHODE DE NAVIGATION MISE À JOUR
+  switchView(type: 'OFFRES' | 'VEHICULES' | 'DEMANDES') {
+      this.viewType = type;
+      this.pub = (type === 'OFFRES'); // Gère l'affichage du bouton "Publier"
+      
+      if (type === 'VEHICULES' && this.vehicules.length === 0) this.chargerVehicules();
+      if (type === 'DEMANDES' && this.demandesAcheteurs.length === 0) this.chargerDemandes();
   }
 
-  //gestion des offres
-
-  // --- ÉTATS POUR LES MODALES DE GESTION ---
-showGererModal = false;
-showModifierModal = false;
-offreSelectionnee: any = null;
-
-// Ouvrir la première modale (Gérer)
-ouvrirGerer(offre: any) {
-  // On crée une copie pour ne pas modifier l'original avant validation
-  this.offreSelectionnee = { ...offre }; 
-  this.showGererModal = true;
-}
-
-// Supprimer l'offre
-confirmerSuppression() {
-  if (this.offreSelectionnee && confirm('Voulez-vous vraiment supprimer cette offre ?')) {
-    this.offreService.supprimerOffre(this.offreSelectionnee.id).subscribe({
-      next: () => {
-        // Mise à jour de la liste source
-        this.offres = this.offres.filter(o => o.id !== this.offreSelectionnee.id);
-        this.showGererModal = false;
-        this.toastr.success('Offre supprimée avec succès');
-      },
-      error: (err) => this.toastr.error('Erreur lors de la suppression')
+  // ✅ AJOUT DE L'IP DANS LES REQUÊTES
+ chargerVehicules() {
+    this.loading = true;
+    // Utilise ta variable serverIp définie plus haut dans ton fichier
+    this.http.get(`http://${this.serverIp}:8080/api/vehicules`).subscribe({
+        next: (data: any) => {
+            this.vehicules = data;
+            this.loading = false;
+        },
+        error: (err) => {
+            console.error("Détail erreur 404 :", err);
+            this.toastr.error("Le serveur ne répond pas sur /api/vehicules");
+            this.loading = false;
+        }
     });
+}
+
+  chargerDemandes() {
+      this.loading = true;
+      this.http.get(`http://${this.serverIp}:8080/api/demandes`).subscribe({
+          next: (data: any) => {
+              this.demandesAcheteurs = data;
+              this.loading = false;
+          },
+          error: (err) => {
+              this.toastr.error("Erreur chargement demandes");
+              this.loading = false;
+          }
+      });
   }
-}
 
-// Ouvrir la deuxième modale (Modifier)
-ouvrirModifier() {
-  this.showGererModal = false; // Ferme la première modale (Gérer)
-  
-  // MODIFICATION : On réinitialise l'aperçu avant d'ouvrir
-  // pour voir la photo actuelle du produit.
-  this.imagePreview = null; 
-
-  // Petit délai pour laisser l'animation de slideUp se jouer
-  setTimeout(() => this.showModifierModal = true, 150); 
-}
-// Valider les modifications vers le Backend
-validerModification() {
-  this.isSubmitting = true;
-  this.offreService.modifierOffre(this.offreSelectionnee.id, this.offreSelectionnee).subscribe({
-    next: (res) => {
-      const index = this.offres.findIndex(o => o.id === res.id);
-      if (index !== -1) this.offres[index] = res; // Mise à jour locale
-      this.toastr.success('Modification enregistrée');
-      this.showModifierModal = false;
-      this.isSubmitting = false;
-    },
-    error: () => {
-      this.toastr.error('Erreur de mise à jour');
-      this.isSubmitting = false;
-    }
-  });
+  // ✅ UNIFORMISATION DE LA PHOTO POUR TOUT LE MONDE
+  // Cette méthode servira pour les Offres, les Véhicules et le Profil
+  getDisplayPhoto(photoName: string | undefined, type: 'PRODUIT' | 'VEHICULE' | 'USER' = 'PRODUIT'): string {
+      if (!photoName) {
+          return type === 'USER' ? 'assets/images/default-user.png' : 'assets/images/default-item.png';
+      }
+      return `http://${this.serverIp}:8080/uploads/${photoName}`;
+  }
+  getFiltreLength(): number {
+  if (this.viewType === 'OFFRES') return this.offresFiltrees.length;
+  if (this.viewType === 'VEHICULES') return this.vehicules.length;
+  if (this.viewType === 'DEMANDES') return this.demandesAcheteurs.length;
+  return 0;
 }
 
 }

@@ -1,15 +1,13 @@
-// src/app/app.module.server.ts
 import { NgModule } from '@angular/core';
 import { ServerModule } from '@angular/platform-server';
-import { AppModule } from './app.module';
+
+import { AppModule } from './app.module'; // <-- LIGNE CRITIQUE
 import { AppComponent } from './app.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations'; // Importez ceci
 
 @NgModule({
   imports: [
-    AppModule,
+    AppModule, // C'est cet import qui déclenche TS-996002 si AppModule est invalide
     ServerModule,
-    NoopAnimationsModule, // Ajoutez ceci ici pour neutraliser Toastr sur le serveur
   ],
   bootstrap: [AppComponent],
 })

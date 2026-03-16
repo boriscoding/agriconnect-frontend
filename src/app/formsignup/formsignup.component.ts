@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; // Ajout de HttpHeaders
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-formsignup',
@@ -14,8 +15,7 @@ export class FormsignupComponent {
 
   Form: boolean = true;
   isClosing: boolean = false;
-  // Crée cette variable en haut de ta classe
-triedToSubmit = false;
+  triedToSubmit = false;
   
   nom: string = '';
   prenom: string = '';
@@ -25,6 +25,9 @@ triedToSubmit = false;
 
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye';
+
+  // ✅ TON ADRESSE IP RÉSEAU
+  private serverIp = 'localhost';
 
   constructor(private router: Router, private http: HttpClient) {}
 
@@ -45,90 +48,94 @@ triedToSubmit = false;
 
   goToHome() { this.backToHome.emit(); }
 
- onSubmit(form: any): void {
-this.triedToSubmit = true; // Ceci va activer le calcul du [ngClass] dans le HTML
+  onSubmit(form: any): void {
+    this.triedToSubmit = true;
 
-  if (form.invalid) {
-    // Les bordures vont devenir rouges ici
-    alert("Veuillez remplir correctement tous les champs en rouge.");
-    return;
-  }
+    if (form.invalid) {
+      alert("Veuillez remplir correctement tous les champs.");
+      return;
+    }
 
-  // 1. D'abord, on vérifie si l'email existe déjà dans la base (Toutes tables confondues)
-  this.http.get<boolean>(`http://localhost:8080/auth/check-email?email=${this.email}`).subscribe({
-    next: (exists) => {
-      if (exists) {
-        // Si l'email existe, on arrête tout et on affiche une alerte
-        alert("Cet email est déjà utilisé. Veuillez en choisir un autre ou vous inscrire.");
-      } else {
-        // 2. Si l'email est libre, on procède à l'inscription normalement
-        this.executeRegistration();
+    // Vérification de l'email via l'IP
+    this.http.get<boolean>(`http://${this.serverIp}:8080/auth/check-email?email=${this.email}`).subscribe({
+      next: (exists) => {
+        if (exists) {
+          alert("Cet email est déjà utilisé.");
+        } else {
+          this.executeRegistration();
+        }
+      },
+      error: (err) => {
+        console.error('Erreur :', err);
+        alert("Serveur injoignable à l'adresse " + this.serverIp);
       }
-    },
-    error: (err) => {
-      console.error('Erreur lors de la vérification de l\'email :', err);
-      alert("Impossible de vérifier l'email. Vérifiez que votre serveur backend est lancé.");
-    }
-  });
-}
-
-// J'ai extrait la logique de création dans une fonction séparée pour plus de clarté
-executeRegistration(): void {
-  // Préparation de l'objet JSON
-  const userData = {
-    nom: this.nom + ' ' + this.prenom,
-    email: this.email,
-    password: this.password,
-    localisation: "Cameroun",
-    sexe: "M",
-    number: 0,
-    photosuser: "assets/images/default-avatar.png"
-  };
-
-  const httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
-
-  let endpoint = '';
-  let routeDestination = '';
-
-  switch (this.selectedCategorie) {
-    case 'Producteur':
-      endpoint = 'http://localhost:8080/producteurs';
-      routeDestination = '/open';
-      break;
-    case 'Transporteur':
-      endpoint = 'http://localhost:8080/transporteurs';
-      routeDestination = '/opentrans';
-      break;
-    case 'Acheteur':
-      endpoint = 'http://localhost:8080/api/acheteurs';
-      routeDestination = '/openacheteur';
-      break;
-    default:
-      endpoint = 'http://localhost:8080/producteurs';
-      routeDestination = '/open';
+    });
   }
 
-  // Envoi de la requête POST pour l'inscription
-  this.http.post(endpoint, userData, httpOptions).subscribe({
-    next: (response: any) => {
-      localStorage.setItem('userId', response.id); 
-      localStorage.setItem('userEmail', response.email);
-      localStorage.setItem('userFirstName', this.prenom);
-      localStorage.setItem('userRole', this.selectedCategorie);
+  executeRegistration(): void {
+    const userData = {
+      nom: this.nom + ' ' + this.prenom,
+      email: this.email,
+      password: this.password,
+      localisation: "Cameroun",
+      sexe: "M",
+      number: 0,
+      photosuser: "assets/images/default-avatar.png"
+    };
 
-      console.log('Utilisateur créé avec succès, ID récupéré :', response.id);
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
 
-      this.isClosing = true;
-      setTimeout(() => {
-        this.router.navigate([routeDestination]); 
-      }, 300);
-    },
-    error: (err) => {
-      console.error('Erreur d\'inscription :', err);
-      alert('Erreur d\'inscription : ' + (err.error?.message || 'Serveur hors ligne'));
+    let endpoint = '';
+    let routeDestination = '';
+
+    switch (this.selectedCategorie) {
+      case 'Producteur':
+        endpoint = `http://${this.serverIp}:8080/producteurs`;
+        routeDestination = '/open';
+        break;
+      case 'Transporteur':
+        endpoint = `http://${this.serverIp}:8080/transporteurs`;
+        routeDestination = '/opentrans';
+        break;
+      case 'Acheteur':
+        endpoint = `http://${this.serverIp}:8080/api/acheteurs`;
+        routeDestination = '/openacheteur';
+        break;
+      default:
+        endpoint = `http://${this.serverIp}:8080/producteurs`;
+        routeDestination = '/open';
     }
-  });
-}
+
+    this.http.post(endpoint, userData, httpOptions).subscribe({
+      next: (response: any) => {
+        // ✅ STOCKAGE CRUCIAL POUR LA PAGE SUIVANTE
+        // On crée un objet utilisateur complet pour que le service Auth soit content
+        const userToSave = {
+          id: response.id,
+          nom: response.nom,
+          email: response.email,
+          type: this.selectedCategorie
+        };
+
+        // On stocke dans 'user' car c'est ce que cherche ton logi-chat.ts (this.authService.getUserId())
+        localStorage.setItem('user', JSON.stringify(userToSave));
+        
+        // On garde tes anciens stockages au cas où d'autres composants en ont besoin
+        localStorage.setItem('userId', response.id); 
+        localStorage.setItem('userRole', this.selectedCategorie);
+
+        console.log('Inscription réussie, ID stocké :', response.id);
+
+        this.isClosing = true;
+        setTimeout(() => {
+          this.router.navigate([routeDestination]); 
+        }, 300);
+      },
+      error: (err) => {
+        alert('Erreur d\'inscription : ' + (err.error?.message || 'Serveur hors ligne'));
+      }
+    });
+  }
 }

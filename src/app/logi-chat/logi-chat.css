@@ -476,3 +476,500 @@
   background: white; /* Fond neutre pour les photos */
   border: 1px solid #ddd;
 }
+/* Style pour les vidéos dans le chat */
+.chat-video-content {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background-color: #000; /* Fond noir pendant le chargement */
+}
+
+/* Effet visuel quand on enregistre un vocal */
+.voice-btn.recording {
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(1); color: #54656f; }
+  50% { transform: scale(1.2); color: red; }
+  100% { transform: scale(1); color: #54656f; }
+}
+.media-preview-container {
+  position: absolute;
+  bottom: 70px; /* Juste au-dessus du footer */
+  left: 10px;
+  right: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.preview-content {
+  max-height: 150px;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.close-preview {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+}
+/* Conteneur global de la prévisualisation */
+.media-preview-bar {
+  background: #f0f2f5;
+  border-top: 1px solid #d1d7db;
+  padding: 15px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: slideUp 0.3s ease-out; /* Animation pour l'apparition */
+}
+
+/* Le cadre de l'image ou de la vidéo */
+.preview-container {
+  position: relative;
+  max-width: 250px; /* On limite la largeur pour ne pas envahir l'écran */
+  background: #fff;
+  border-radius: 12px;
+  padding: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.preview-item {
+  display: block;
+  max-width: 100%;
+  max-height: 180px; /* Hauteur maximale pour garder le chat visible */
+  border-radius: 8px;
+  object-fit: cover; /* Recadre l'image pour qu'elle remplisse bien le cadre */
+}
+
+/* Style spécifique pour l'audio dans la preview */
+.preview-audio-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.preview-audio-item i {
+  color: #00a884; /* Vert Agriconnect */
+  font-size: 1.5rem;
+}
+
+/* Bouton pour annuler (le X) */
+.cancel-preview {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: #ea0038;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.cancel-preview:hover {
+  transform: scale(1.1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.message-sent {
+  display: flex;
+  justify-content: flex-end; /* Pousse à DROITE */
+  margin-bottom: 10px;
+}
+
+.message-received {
+  display: flex;
+  justify-content: flex-start; /* Pousse à GAUCHE */
+  margin-bottom: 10px;
+}
+
+.message-sent .bubble {
+  background-color: #dcf8c6; /* Vert clair style WhatsApp */
+  border-radius: 15px 15px 0 15px;
+}
+
+.message-received .bubble {
+  background-color: #ffffff;
+  border-radius: 15px 15px 15px 0;
+}
+/* --- STRUCTURE DES LIGNES --- */
+.message-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+
+/* TES MESSAGES (MOI) -> À DROITE */
+.message-row.sent {
+  justify-content: flex-end; /* Pousse la bulle à droite */
+}
+
+.message-row.sent .bubble {
+  background: #e7ffdb; /* Vert WhatsApp */
+  border-radius: 15px 15px 0 15px; /* Pointe à droite */
+  border: 1px solid #d1e8c4;
+}
+
+/* MESSAGES REÇUS (EUX) -> À GAUCHE */
+.message-row.received {
+  justify-content: flex-start; /* Pousse la bulle à gauche */
+}
+
+.message-row.received .bubble {
+  background: #ffffff; /* Blanc */
+  border-radius: 15px 15px 15px 0; /* Pointe à gauche */
+  border: 1px solid #e0e0e0;
+}
+
+/* --- AJUSTEMENT DES COULEURS DE NOMS --- */
+.message-row.sent .sender-name {
+  color: #25d366; /* Vert pour toi */
+  text-align: right;
+}
+
+.message-row.received .sender-name {
+  color: #34b7f1; /* Bleu pour les autres */
+  text-align: left;
+}
+
+/* Conteneur de média dans une bulle */
+.bubble-media-content {
+  width: 100%;
+  max-width: 300px; /* Limite la taille pour éviter les bulles géantes */
+  margin-bottom: 5px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+}
+
+/* Image et Vidéo */
+.chat-img-content, .chat-video-content {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Audio Player */
+.chat-audio-content {
+  width: 100%;
+  min-width: 200px;
+  height: 35px;
+  margin-top: 5px;
+}
+/* Ajustement de la bulle pour laisser de la place au contenu */
+.bubble {
+  min-width: 60px; /* Évite que la bulle soit trop petite pour l'audio */
+  max-width: 75%;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Masquer le texte si c'est uniquement un média */
+.bubble-content .text:empty {
+  display: none;
+}
+/* Conteneur pour les fichiers dans la bulle */
+.bubble-media-content {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Images et Vidéos */
+.chat-img-content, .chat-video-content {
+  max-width: 100%;
+  max-height: 250px;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Lecteur Audio */
+.chat-audio-content {
+  width: 100%;
+  height: 40px;
+  min-width: 200px; /* Important pour que les boutons play/pause soient visibles */
+}
+
+/* Ajustement de la bulle pour les médias */
+.bubble {
+  min-width: 80px; 
+  padding: 8px 10px;
+}
+/* --- LE CONTENEUR DES MESSAGES --- */
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* --- STRUCTURE DE LA LIGNE (Flexbox) --- */
+.message {
+  display: flex;
+  width: 100%;
+}
+
+/* REÇU : À GAUCHE */
+.message.received {
+  justify-content: flex-start;
+}
+
+/* ENVOYÉ : À DROITE */
+.message.sent {
+  justify-content: flex-end;
+}
+
+/* --- STYLE DES BULLES --- */
+.bubble {
+  max-width: 75%;
+  padding: 8px 12px;
+  position: relative;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  min-width: 80px;
+}
+
+/* Couleur REÇU (Blanc) */
+.message.received .bubble {
+  background: #ffffff;
+  border-radius: 0 15px 15px 15px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Couleur ENVOYÉ (Vert WhatsApp) */
+.message.sent .bubble {
+  background: #dcf8c6;
+  border-radius: 15px 0 15px 15px;
+  border: 1px solid #c7e5b0;
+}
+
+/* --- MÉDIAS --- */
+.bubble-media-content {
+  width: 100%;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chat-img-content, .chat-video-content {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  display: block;
+}
+
+.chat-audio-player {
+  width: 100%;
+  min-width: 220px;
+  height: 40px;
+}
+
+/* --- TEXTE ET HEURE --- */
+.bubble p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.msg-time {
+  font-size: 0.75rem;
+  color: #888;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fa-check-double {
+  color: #34b7f1; /* Bleu WhatsApp pour les lus */
+}
+
+
+/* --- BULLES DE MESSAGES --- */
+.message {
+  display: flex;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0 5%;
+}
+
+/* MOI (DROITE) */
+.message.sent {
+  justify-content: flex-end;
+}
+.message.sent .bubble {
+  background-color: #005c4b; /* Vert WhatsApp Dark */
+  color: #e9edef;
+  border-radius: 8px 0 8px 8px;
+}
+
+/* LUI (GAUCHE) */
+.message.received {
+  justify-content: flex-start;
+}
+.message.received .bubble {
+  background-color: #202c33; /* Gris WhatsApp Dark */
+  color: #e9edef;
+  border-radius: 0 8px 8px 8px;
+}
+
+/* --- MÉDIAS --- */
+.bubble-media-content {
+  margin-bottom: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.chat-img-content, .chat-video-content {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  max-height: 250px;
+}
+
+.chat-audio-player {
+  width: 100%;
+  height: 35px;
+  filter: invert(100%); /* Pour qu'il soit visible sur fond sombre */
+}
+/* Le conteneur parent de la bulle */
+.message {
+  display: flex;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0 15px;
+  box-sizing: border-box; /* Évite les débordements */
+}
+
+/* --- MESSAGE REÇU (GAUCHE) --- */
+.message.received {
+  justify-content: flex-start; /* Aligne le contenu à gauche */
+}
+
+.message.received .bubble {
+  background-color: #ffffff;
+  color: #333;
+  border-radius: 0 15px 15px 15px; /* Angle carré en haut à gauche */
+  border: 1px solid #e0e0e0;
+}
+
+/* --- MESSAGE ENVOYÉ (DROITE) --- */
+.message.sent {
+  justify-content: flex-end; /* Aligne le contenu à droite */
+}
+
+.message.sent .bubble {
+  background-color: #dcf8c6; /* Vert WhatsApp */
+  color: #333;
+  border-radius: 15px 0 15px 15px; /* Angle carré en haut à droite */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* La bulle elle-même */
+.bubble {
+  max-width: 75%; /* Empêche la bulle de prendre tout l'écran */
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.chat-img-content, .chat-video-content {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.msg-time {
+  font-size: 0.7rem;
+  color: #888;
+  align-self: flex-end; /* Force l'heure à être en bas à droite de la bulle */
+  margin-top: 4px;
+}
+
+.sender {
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #075e54;
+  margin-bottom: 4px;
+}
+.bubble-media {
+  margin-bottom: 5px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 250px; /* Taille max pour les images/vidéos */
+}
+
+.chat-img-content, .chat-video-content {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.chat-audio-player {
+  width: 200px;
+  height: 35px;
+}
+/* La classe 'message' prend toute la largeur */
+.message {
+  display: flex !important;
+  width: 100% !important;
+  background: transparent !important; /* Retire les fonds parasites */
+}
+
+/* ✅ 'sent' pousse la bulle vers la DROITE */
+.message.sent {
+  justify-content: flex-end !important;
+}
+
+/* ✅ 'received' pousse la bulle vers la GAUCHE */
+.message.received {
+  justify-content: flex-start !important;
+}
+
+/* Optionnel : changer la couleur du nom 'Vous' */
+.message.sent .sender {
+  color: #25D366; /* Vert */
+  text-align: right;
+  display: block;
+}

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// --- INTERFACE OFFREDATA ---
 export interface OffreData {
   id?: number;
   nproduit: string;
@@ -11,9 +12,9 @@ export interface OffreData {
   description: string;
   lieuProduction: string;
   photo: string;
-  statut: string;     // <-- AJOUTÉ ICI pour corriger l'erreur NG9
-  region?: string;    // Optionnel
-  uniteMesure?: string; // Optionnel
+  statut: string; 
+  region?: string; 
+  uniteMesure?: string; 
   producteur?: { 
     id: number; 
     nom: string; 
@@ -23,7 +24,9 @@ export interface OffreData {
 
 @Injectable({ providedIn: 'root' })
 export class OffreService {
-  private apiUrl = 'http://localhost:8080/api/offres';
+  // ✅ REMPLACEMENT PAR L'IP RÉSEAU
+  private readonly serverIp = 'localhost';
+  private apiUrl = `http://${this.serverIp}:8080/api/offres`;
 
   constructor(private http: HttpClient) {}
 
@@ -38,15 +41,14 @@ export class OffreService {
   getOffresByProducteur(producteurId: number): Observable<OffreData[]> {
     return this.http.get<OffreData[]>(`${this.apiUrl}/producteur/${producteurId}`);
   }
-// --- NOUVELLE MÉTHODE : MODIFIER ---
+
+  // --- MODIFIER ---
   modifierOffre(id: number, offre: OffreData): Observable<OffreData> {
-    // On envoie une requête PUT à l'URL : http://localhost:8080/api/offres/modifier/ID
     return this.http.put<OffreData>(`${this.apiUrl}/modifier/${id}`, offre);
   }
 
-  // --- NOUVELLE MÉTHODE : SUPPRIMER ---
+  // --- SUPPRIMER ---
   supprimerOffre(id: number): Observable<void> {
-    // On envoie une requête DELETE à l'URL : http://localhost:8080/api/offres/supprimer/ID
     return this.http.delete<void>(`${this.apiUrl}/supprimer/${id}`);
   }
 }
