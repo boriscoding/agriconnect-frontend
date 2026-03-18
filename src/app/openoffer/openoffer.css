@@ -980,38 +980,6 @@ input:focus{
 }
 /* Cadre photo preview en 4x4 */
 /* Conteneur principal pour positionner les éléments */
-.profile-container {
-  position: relative;
-  width: 120px; /* Taille agrandie */
-  height: 120px;
-  margin: 0 auto;
-  cursor: pointer;
-}
-
-/* Le grand cercle de profil */
-.photo-circle-large {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px solid #f0f0f0;
-  background-color: #f8f9fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.profile-container:hover .photo-circle-large {
-  border-color: #28a745; /* Devient vert au survol */
-}
-
-/* Image à l'intérieur du cercle */
-.img-circle-full {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 
 /* Icône par défaut si pas de photo */
 .default-user-icon {
@@ -1036,12 +1004,6 @@ input:focus{
   font-size: 14px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
-
-.profile-container:hover .camera-badge {
-  transform: scale(1.1);
-  transition: 0.2s;
-}
-
 /* Taille de l'icône caméra si aucune photo n'est choisie */
 .placeholder-icon {
   color: #888;
@@ -1533,7 +1495,35 @@ body::-webkit-scrollbar {
   border: 1px solid #1b5e20;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
 }
+.photo-upload-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  cursor: pointer;
+}
 
+.profile-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 3px solid #00a884; /* Vert WhatsApp */
+}
+
+.camera-icon-overlay {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #00a884;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
 
 
 

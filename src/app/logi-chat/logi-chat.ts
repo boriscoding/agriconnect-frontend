@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ViewChild, ElementRef, OnDestroy ,HostListener} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser'; 
 import { MessageApi } from '../services/message-api';
@@ -23,8 +23,9 @@ export interface Contact {
   nom: string;
   prenom?: string;
   email?: string;
-  photoUrl?: string;
+photosuser?: string; // Ajouté pour correspondre à votre entité Java  
   online?: boolean;
+  dernierMessage?: any;
 }
 
 @Component({
@@ -60,7 +61,7 @@ export class LogiChat implements OnInit, OnDestroy {
   searchTerm: string = '';
   contacts: Contact[] = [];
   filteredContacts: Contact[] = []; // Liste réellement affichée
-
+serverI : string = "localhost"
   // --- VARIABLES DE CHAT ---
   newMessage: string = '';
   isChatActive: boolean = false;
@@ -102,6 +103,11 @@ export class LogiChat implements OnInit, OnDestroy {
     } else {
       console.warn("⚠️ Aucune session trouvée.");
     }
+    this.messages = [{
+    contenu: 'Bonjour, colis prêt !',
+    mediaType: 'TEXT',
+    timestamp: new Date()
+  }];
   }
 
   ngOnDestroy(): void {
@@ -153,11 +159,22 @@ export class LogiChat implements OnInit, OnDestroy {
   }
 chargerListeContacts() {
   this.messageApi.getContactsActifs(this.currentUserId).subscribe({
-    next: (data) => {
-      this.contacts = data;           // L'originale (ne bouge plus)
-      this.filteredContacts = [...data]; // La copie affichée (celle qui sera filtrée)
+    next: (data: Contact[]) => {
+      this.contacts = data;
+
+      // Pour chaque contact, on récupère le dernier message
+      this.contacts.forEach(contact => {
+        this.messageApi.getDernierMessage(this.currentUserId, contact.id).subscribe({
+          next: (msg) => {
+            contact.dernierMessage = msg; // On stocke le message (contenu, timestamp, mediaType)
+          },
+          error: (err) => console.error("Erreur dernier message pour " + contact.id, err)
+        });
+      });
+
+      this.filteredContacts = [...this.contacts];
     },
-    error: (err) => console.error("Erreur de chargement", err)
+    error: (err) => console.error("Erreur de chargement des contacts", err)
   });
 }
 filterContacts() {
@@ -180,6 +197,7 @@ filterContacts() {
     return nom.includes(search) || prenom.includes(search);
   });
 }
+
   selectContact(contact: Contact) {
     this.selectedContactId = contact.id;
     this.isChatActive = true; 
@@ -201,39 +219,40 @@ filterContacts() {
   }
 
   // --- ENVOI DE MESSAGE ---
-  sendMessage() {
-    if ((!this.newMessage.trim() && !this.selectedFile) || !this.selectedContactId) return;
+ sendMessage() {
+  // 1. Vérification de sécurité
+  if ((!this.newMessage.trim() && !this.selectedFile) || !this.selectedContactId) return;
 
-    // ✅ Affichage local instantané pour la fluidité
-    const messageLocal = {
-      id: Date.now(), 
-      sender: 'Vous',
-      text: this.newMessage,
-      time: this.formatDate(''),
-      isMe: true,
-      type: this.selectedFile ? this.previewType! : 'TEXT',
-      mediaUrl: this.mediaPreviewUrl
-    };
+  // 2. Préparation des données pour le serveur
+  const formData = new FormData();
+  formData.append('contenu', this.newMessage); 
+  formData.append('expediteurId', this.currentUserId.toString());
+  formData.append('destinataireId', this.selectedContactId.toString());
+  formData.append('mediaType', this.selectedFile ? this.previewType! : 'TEXT');
+  
+  if (this.selectedFile) {
+    formData.append('file', this.selectedFile);
+  }
 
-    this.messages.push(messageLocal);
-    this.autoScroll();
-
-    const formData = new FormData();
-    formData.append('contenu', this.newMessage); 
-    formData.append('expediteurId', this.currentUserId.toString());
-    formData.append('destinataireId', this.selectedContactId.toString());
-    formData.append('mediaType', this.selectedFile ? this.previewType! : 'TEXT');
-    if (this.selectedFile) formData.append('file', this.selectedFile);
-
-    this.messageApi.envoyer(formData).subscribe(res => {
+  // 3. Envoi simple à l'API (Base de données)
+  this.messageApi.envoyer(formData).subscribe({
+    next: (res) => {
+      // ✅ On envoie le résultat au WebSocket pour que TOUT LE MONDE 
+      // (y compris nous) reçoive le message en temps réel.
       if (this.stompClient && this.stompClient.connected) {
         this.stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(res));
       }
+
+      // 4. Nettoyage de l'interface d'écriture uniquement
       this.newMessage = '';
       this.cancelPreview();
-    });
-  }
-
+    },
+    error: (err) => {
+      console.error("Erreur lors de l'enregistrement en BD", err);
+      alert("Le message n'a pas pu être envoyé.");
+    }
+  });
+}
   // --- MÉDIAS & UTILITAIRES ---
   triggerImageUpload() { this.fileInput.nativeElement.click(); }
 
@@ -307,5 +326,142 @@ filterContacts() {
   // ✅ Ajoute cet alias pour que le HTML reconnaisse les deux noms
 onSearchChange() {
   this.filterContacts();
+}
+selectedMedia: any = null;
+zoomLevel: number = 1;
+recentMedias: any[] = []; // À remplir en filtrant tes messages par type IMAGE/VIDEO
+
+openModal(msg: any) {
+  this.selectedMedia = msg;
+  this.zoomLevel = 1;
+  // Récupérer les derniers médias pour la barre de consultation
+  this.recentMedias = this.messages.filter(m => m.type === 'IMAGE' || m.type === 'VIDEO').slice(-10);
+}
+
+
+telechargerMedia(msg: any) {
+  const link = document.createElement('a');
+  link.href = msg.url;
+  link.download = `media_agriconnect_${msg.id}`;
+  link.click();
+}
+
+// Variables à ajouter
+showTransferModal = false;
+messageToTransfer: any = null;
+
+// Lance le processus de transfert
+transfererMessage(msg: any) {
+  this.messageToTransfer = msg;
+  this.showTransferModal = true;
+  this.activeMenuIndex = -1; // Ferme le menu contextuel
+}
+
+// Alterne l'affichage du menu sur un message précis
+toggleMessageMenu(index: number): void {
+  this.activeMenuIndex = (this.activeMenuIndex === index) ? -1 : index;
+}
+
+// Ferme le menu si on clique ailleurs
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.message-options-trigger')) {
+    this.activeMenuIndex = -1;
+  }
+}
+
+
+// Pour gérer l'affichage du menu contextuel (Modifier/Supprimer)
+activeMenuIndex: number = -1; 
+// Confirme le transfert vers un contact spécifique
+confirmTransfer(contactId: number) {
+  const currentUserId = 1; // À remplacer par l'ID de l'utilisateur connecté
+  
+  this.messageApi.transfererMessage(this.messageToTransfer.id, currentUserId, contactId)
+    .subscribe({
+      next: (res) => {
+        console.log("Message transféré avec succès", res);
+        this.showTransferModal = false;
+        this.messageToTransfer = null;
+        // Optionnel: afficher une petite notification "Transféré"
+      },
+      error: (err) => console.error("Erreur lors du transfert", err)
+    });
+}
+// --- MODIFICATION ---
+modifierMessage(msg: any): void {
+  const nouveauTexte = prompt("Modifier le message :", msg.text || msg.contenu);
+  if (nouveauTexte !== null && nouveauTexte.trim() !== "") {
+    this.messageApi.modifierMessage(msg.id, nouveauTexte).subscribe({
+      next: (updatedMsg) => {
+        // Met à jour le message localement dans la liste
+        const index = this.messages.findIndex(m => m.id === msg.id);
+        if (index !== -1) {
+          this.messages[index].text = nouveauTexte;
+          this.messages[index].contenu = nouveauTexte;
+        }
+        this.activeMenuIndex = -1; // Ferme le menu
+      },
+      error: (err) => console.error("Erreur de modification", err)
+    });
+  }
+}
+
+// --- SUPPRESSION ---
+supprimerMessage(id: number, index: number): void {
+  if (confirm("Voulez-vous vraiment supprimer ce message ?")) {
+    this.messageApi.supprimerMessage(id).subscribe({
+      next: () => {
+        // Retire le message de la liste locale
+        this.messages.splice(index, 1);
+        this.activeMenuIndex = -1;
+      },
+      error: (err) => console.error("Erreur de suppression", err)
+    });
+  }
+}
+// --- GESTION DE LA MODALE MULTIMÉDIA ---
+
+openMediaModal(msg: any): void {
+  this.selectedMedia = msg;
+  this.zoomLevel = 1; // Réinitialise le zoom à chaque ouverture
+  
+  // Optionnel : On filtre les messages pour n'avoir que les photos/vidéos dans le "Tray"
+  this.recentMedias = this.messages.filter(m => m.type === 'IMAGE' || m.type === 'VIDEO');
+}
+
+closeMediaModal(): void {
+  this.selectedMedia = null;
+  this.zoomLevel = 1;
+}
+
+// --- ZOOM (On accepte l'argument $event pour stopper la propagation) ---
+
+zoomIn(event?: MouseEvent): void {
+  if (event) event.stopPropagation();
+  if (this.zoomLevel < 3) {
+    this.zoomLevel += 0.2;
+  }
+}
+
+zoomOut(event?: MouseEvent): void {
+  if (event) event.stopPropagation();
+  if (this.zoomLevel > 0.5) {
+    this.zoomLevel -= 0.2;
+  }
+}
+
+// --- TÉLÉCHARGEMENT ---
+
+downloadMedia(media: any, event?: MouseEvent): void {
+  if (event) event.stopPropagation();
+  
+  const link = document.createElement('a');
+  link.href = media.mediaUrl;
+  link.download = `media_${media.id || Date.now()}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 }

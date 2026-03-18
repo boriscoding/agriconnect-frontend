@@ -1,146 +1,301 @@
-<app-header (sidebarToggle)="sidebarOpen = $event"></app-header>
-<app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
-
-<div class="main-wrapper">
-  <button class="mobile-menu-btn d-lg-none" (click)="sidebarOpen = !sidebarOpen">
-    <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
-    <span>Menu</span>
-  </button>
-
-  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
-
-  <div class="sticky-sub-header">
-    <div class="tabs-container">
-      <div class="tab">Producteur</div>
-      <div class="tab active">Transporteur</div>
-      <div class="tab">Acheteur</div>
-    </div>
-  </div>
-
-  <div class="layout-content">
-    <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
-      <div class="sidebar-top">
-        <h4 class="producer-title" style="color: #28a745;">Transporteur</h4>
-        <div class="search-box-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" class="form-control-custom" placeholder="Rechercher un trajet...">
-        </div>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm header">
+    <div class="container-fluid align-items-center">
+      <div class="d-flex align-items-center" style="margin-left:2%;">
+        <span id="images"></span>
+        <input class="form-control search-input d-none d-md-block" placeholder="Rechercher un transporteur..." style="margin-left:10%;" />
       </div>
 
-      <ul class="nav-links">
-        <li class="nav-item">
-          <i class="fas fa-truck"></i> <span>Mes Véhicules</span>
-        </li>
-        <li class="nav-item">
-          <i class="fas fa-route"></i> <span>Mes Itinéraires</span>
-        </li>
-        <li class="nav-item">
-          <i class="fas fa-history"></i> <span>Historique</span>
-        </li>
+      <ul class="navbar-nav mx-auto d-none d-lg-flex">
+        <li class="nav-item" (click)="switchView('VEHICULES')"><i class="fas fa-truck nav-icon" [class.active]="viewType === 'VEHICULES'"></i></li>
+        <li class="nav-item" (click)="switchView('OFFRES')"><i class="fas fa-leaf nav-icon" [class.active]="viewType === 'OFFRES'"></i></li>
+        <li class="nav-item"><i class="fas fa-exchange-alt nav-icon"></i></li>
       </ul>
 
-      <button class="btn-publish pulse-animation" style="background-color: #28a745; color: #fff;" (click)="openOffreModal()">
-        <i class="fas fa-plus-circle"></i> <span>Publier un véhicule</span>
-      </button>
-    </aside>
-
-    <main class="feed-content">
-      <div class="section-intro">
-        <h2 class="main-title">Offres de transport</h2>
-        <p class="sub-text">Véhicules disponibles pour acheminer vos marchandises</p>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light icon-btn" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <img *ngIf="user?.photosuser || imagePreview" 
+               [src]="imagePreview || getPhotoUrl(user.photosuser)" 
+               class="rounded-circle border" 
+               style="width: 35px; height: 35px; cursor: pointer; object-fit: cover;" 
+               (click)="openEditModal()">
+          <i *ngIf="!user?.photosuser && !imagePreview" class="fas fa-user-circle fs-4 nav-right-icon" (click)="openEditModal()"></i>
+        </div>
       </div>
+    </div>
+  </nav>
 
-      <div class="cards-grid">
-        <article class="offer-card" *ngFor="let i of [1,2,3,4,5,6]">
-          <div class="card-img-container">
-              <img src="https://picsum.photos/seed/truck/400/300" alt="camion">
-            <div class="view-count"><i class="fas fa-road"></i> 500km</div>
-          </div>
-          <div class="card-footer-actions">
-            <button class="btn-action order" style="background-color: #28a745; color: #fff;">
-              <i class="fas fa-calendar-check"></i> Réserver
-            </button>
-            <button class="btn-action more"><i class="fas fa-info-circle"></i></button>
-          </div>
-        </article>
-      </div>
-    </main>
+ <div class="modal fade" [ngClass]="{'show d-block': isModalOpen}" tabindex="-1" *ngIf="isModalOpen"  style="width: 100% ; background-color: white; padding: 0;">
+  <div class="modal-dialog modal-fullscreen-custom" style="border: none ; box-shadow:none ; margin-top: 0.5rem;padding-top: 0;"> 
+    <div class="modal-content custom-modal-full" style=" width: 100%; border: none ; ">
+      <div class="modal-body p-4" style=" border: none ; margin-top: -0.5 ">
+          
+          <h5 class="text-center fw-bold mb-4" style="margin-top: 1em;">MODIFIER LE PROFIL</h5>
+
+          <form (ngSubmit)="saveUser()" #userForm="ngForm" class="modern-form">
+            
+
+<div class="profile-header text-center mb-4">
+  <div class="photo-upload-container">
+    <img [src]="imagePreview || (user.photosuser ? 'http://' + serverI + ':8080' + user.photosuser : 'assets/default-avatar.png')" 
+         (click)="photoInput.click()" 
+         class="rounded-circle profile-preview-img"
+         alt="Photo de profil"
+         
+         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #00a884;">
+    
+    <div class="camera-icon-overlay" (click)="photoInput.click()">
+      <i class="fas fa-camera"></i>
+    </div>
+
+    
+    <input #photoInput type="file" (change)="onPhotoSelected($event)" accept="image/*" style="display:none">
   </div>
+  <p class="text-muted small mt-2">Cliquez sur l'image pour modifier la photo</p>
 </div>
-
-<div class="modal fade" [ngClass]="{'show d-block': isOffreModalOpen}" *ngIf="isOffreModalOpen">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content custom-modal-rect shadow-lg">
-      
-      <div class="close-line">
-        <button type="button" class="btn-close-red" (click)="closeOffreModal()">×</button>
+<div class="profile-header text-center mb-4">
+              <h4 class="fw-bold text-success" *ngIf="user.surfaceExploitation !== undefined">Compte Producteur</h4>
+              <h4 class="fw-bold text-primary" *ngIf="user.typeVehicule !== undefined">Compte Transporteur</h4>
+              <h4 class="fw-bold text-secondary" *ngIf="user.surfaceExploitation === undefined && user.typeVehicule === undefined">Compte Acheteur</h4>
+            </div>
+<div class="row g-3 mb-3">
+  <div class="col-md-7">
+    <div class="input-group-modern">
+      <div class="input-icon"><i class="fas fa-user"></i></div>
+      <div class="input-content">
+        <label>Nom complet</label>
+        <input type="text" [(ngModel)]="user.nom" name="nom" required>
       </div>
-
-      <div class="modal-body p-4 pt-0">
-        <h4 class="text-center fw-bold mb-4" style="color: #28a745;">DISPONIBILITÉ VÉHICULE</h4>
-
-        <form (ngSubmit)="saveOffre()">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Type de véhicule (Ex: Camion 10T, Camionnette)</label>
-            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.vehicule" name="vehicule" required placeholder="Quel véhicule proposez-vous ?">
-          </div>
-
-          <div class="row g-2">
-            <div class="col-6">
-                <label class="small fw-bold">Capacité (Tonnes/m³)</label>
-                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.capacite" name="capacite" placeholder="Ex: 10">
-            </div>
-            <div class="col-6">
-                <label class="small fw-bold">Tarif estimé / km</label>
-                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.prixKilo" name="prix" placeholder="FCFA">
-            </div>
-          </div>
-
-          <div class="mb-3 mt-3">
-            <label class="form-label small fw-bold">Zone de service / Trajet habituel</label>
-            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.trajet" name="trajet" placeholder="Ex: Bafoussam - Douala">
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Détails techniques</label>
-            <textarea class="form-control input-rect" rows="3" [(ngModel)]="newOffre.description" name="description" placeholder="Frigo disponible, bâché, disponible immédiatement..."></textarea>
-          </div>
-
-          <div class="d-flex gap-2 mt-4">
-            <button type="button" class="btn btn-secondary flex-grow-1 btn-rect" (click)="closeOffreModal()">Annuler</button>
-            <button type="submit" class="btn flex-grow-1 btn-rect" style="background-color: #28a745; color: white; border:none;">Publier l'offre</button>
-          </div>
-        </form>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="gender-selector">
+      <label class="small-label">Sexe</label>
+      <div class="d-flex gap-2">
+        <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
+        <label class="btn btn-outline-success btn-sm w-100" for="masculin">M</label>
+        <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
+        <label class="btn btn-outline-success btn-sm w-100" for="feminin">F</label>
       </div>
     </div>
   </div>
 </div>
-<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>
-<div class="nav-fab-container">
-  <div class="nav-fab-options" [class.active]="isNavMenuOpen">
-    
-    <button class="nav-fab-child" (click)="navigateTo('/')" title="Accueil">
-      <i class="fas fa-home"></i>
-      <span class="nav-fab-label">Accueil</span>
-    </button>
+            <div class="row g-3 mb-3" *ngIf="user.surfaceExploitation !== undefined">
+              <div class="col-md-6">
+                <div class="input-group-modern">
+                  <div class="input-icon"><i class="fas fa-leaf"></i></div>
+                  <div class="input-content">
+                    <label>Type de produit</label>
+                    <input type="text" [(ngModel)]="user.typeProduit" name="typeP">
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group-modern">
+                  <div class="input-icon"><i class="fas fa-ruler-combined"></i></div>
+                  <div class="input-content">
+                    <label>Surface (m²)</label>
+                    <input type="number" [(ngModel)]="user.surfaceExploitation" name="surface">
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <button class="nav-fab-child" (click)="navigateTo('/localisation')" title="Local">
-      <i class="fas fa-map-marker-alt"></i>
-      <span class="nav-fab-label">Local</span>
-    </button>
+            <div class="row g-3 mb-3" *ngIf="user.typeVehicule !== undefined">
+              <div class="col-md-6">
+                <div class="input-group-modern">
+                  <div class="input-icon"><i class="fas fa-truck"></i></div>
+                  <div class="input-content">
+                    <label>Véhicule</label>
+                    <input type="text" [(ngModel)]="user.typeVehicule" name="vehicule">
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group-modern">
+                  <div class="input-icon"><i class="fas fa-weight-hanging"></i></div>
+                  <div class="input-content">
+                    <label>Capacité (kg)</label>
+                    <input type="number" [(ngModel)]="user.capaciteCharge" name="capacite">
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <button class="nav-fab-child" (click)="navigateTo('/Chat')" title="Discussion">
-      <i class="fas fa-comments"></i>
-      <span class="nav-fab-label">Chat</span>
-    </button>
+            <div class="input-group-modern mb-3">
+              <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div class="input-content">
+                <label>Localisation</label>
+                <input type="text" [(ngModel)]="user.localisation" name="loc">
+              </div>
+            </div>
 
-    <button class="nav-fab-child" (click)="navigateTo('/dashbord')" title="Tableau de bord">
-      <i class="fas fa-chart-line"></i>
-      <span class="nav-fab-label">Dashboard</span>
-    </button>
+            <div class="input-group-modern mb-4">
+              <div class="input-icon"><i class="fas fa-phone"></i></div>
+              <div class="input-content">
+                <label>Téléphone</label>
+                <input type="text" [(ngModel)]="user.number" name="num">
+              </div>
+            </div>
 
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="loading">Annuler</button>
+              <button type="submit" class="btn-save" [disabled]="loading"  (click)="saveUser()">
+                <span *ngIf="!loading">Mettre à jour</span>
+                <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
+
+  <div class="main-wrapper">
+    <div class="sticky-sub-header">
+      <div class="tabs-container">
+        <div class="tab" [class.active]="viewType === 'VEHICULES'" (click)="switchView('VEHICULES')">
+          <i class="fas fa-truck"></i> Ma Flotte
+        </div>
+        <div class="tab" [class.active]="viewType === 'OFFRES'" (click)="switchView('OFFRES')">
+          <i class="fas fa-leaf"></i> Marché Agricole
+        </div>
+        <div class="tab" [class.active]="viewType === 'DEMANDES'" (click)="switchView('DEMANDES')">
+          <i class="fas fa-shopping-cart"></i> Demandes
+        </div>
+      </div>
+    </div>
+
+    <div class="layout-content">
+      <aside class="inner-sidebar shadow-sm">
+        <div class="sidebar-top">
+          <h4 class="producer-title">Transporteur {{user?.nom}}</h4>
+        </div>
+        <ul class="nav-links">
+          <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
+            <i class="fas fa-globe"></i> <span>Tous les véhicules</span>
+          </li>
+          <li class="nav-item" [class.active]="filterType === 'MES_OFFRES'" (click)="mesoffres()">
+            <i class="fas fa-truck-moving"></i> <span>Mes véhicules</span>
+          </li>
+        </ul>
+        <button class="btn-publish pulse-animation" (click)="openOffreModal()">
+          <i class="fas fa-plus-circle"></i> <span>Ajouter un véhicule</span>
+        </button>
+      </aside>
+
+      <main class="feed-content">
+        <div class="section-intro">
+          <h2 class="main-title">
+            {{ viewType === 'VEHICULES' ? 'Véhicules de transport' : (viewType === 'OFFRES' ? 'Produits disponibles' : 'Besoins clients') }}
+          </h2>
+        </div>
+
+        <div class="marketplace-grid">
+          
+          <ng-container *ngIf="viewType === 'VEHICULES'">
+            <article class="fb-card" *ngFor="let v of vehiculesFiltres">
+              <div class="fb-card-media compact-media">
+                <img [src]="getPhotoUrl(v.photo)" (error)="handleImageError($event)">
+                <div class="status-badge"><span class="dot pulse-blue"></span> {{ v.statut || 'DISPONIBLE' }}</div>
+                <div class="fb-price-tag blue-gradient">{{ v.chargeMax }} Kg</div>
+              </div>
+              <div class="fb-card-content">
+                <h3 class="product-title">{{ v.marque }} {{ v.model }}</h3>
+                <small class="category-pill">{{ v.voitureType }}</small>
+                <p class="description-text">{{ v.immatriculation }}</p>
+                <div class="info-row"><span><i class="fas fa-map-marker-alt text-primary"></i> Cameroun</span></div>
+              </div>
+              <div class="fb-card-footer">
+                <button class="btn-fb btn-blue-action" *ngIf="v.proprietaire?.id !== userIdConnecte">
+                  <i class="fas fa-calendar-check"></i> Réserver
+                </button>
+                <button class="btn-fb btn-edit" *ngIf="v.proprietaire?.id === userIdConnecte" (click)="ouvrirGerer(v)">
+                  <i class="fas fa-cog"></i> Gérer
+                </button>
+              </div>
+            </article>
+          </ng-container>
+
+          <ng-container *ngIf="viewType === 'OFFRES'">
+            <article class="fb-card" *ngFor="let offre of offresProducteurs">
+              <div class="fb-card-header" style="height: 150px; overflow: hidden;">
+                <img [src]="offre.image || 'assets/default-product.png'" (error)="handleImageError($event)" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="fb-card-content" style="padding-top: 15px;">
+                <h3 class="product-title text-success">{{ offre.nproduit }}</h3>
+                <p class="description-text"><strong>{{ offre.prixUnitaire }} FCFA</strong> / {{ offre.uniteMesure }}</p>
+                <div class="info-row"><span><i class="fas fa-leaf text-success"></i> Stock: {{ offre.quantiteProduit }}</span></div>
+              </div>
+              <div class="fb-card-footer">
+                <button class="btn-fb" style="background: #27ae60; color: white;">
+                  <i class="fas fa-shopping-basket"></i> Acheter
+                </button>
+              </div>
+            </article>
+          </ng-container>
+
+        </div>
+      </main>
+    </div>
   </div>
 
-  <button class="nav-fab-main" (click)="isNavMenuOpen = !isNavMenuOpen" [class.active]="isNavMenuOpen">
-    <i class="fas" [ngClass]="isNavMenuOpen ? 'fa-times' : 'fa-compass'"></i>
-  </button>
-</div>
+  <div *ngIf="isOffreModalOpen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 9999; overflow-y: auto;">
+    <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-bold"><i class="fas fa-truck-loading me-2"></i> ENREGISTRER UN VÉHICULE</h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeOffreModal()"></button>
+    </div>
+    <div class="container py-5" style="max-width: 900px;">
+      <form (ngSubmit)="saveOffre()">
+        <div class="row g-4">
+          <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-20 p-4" style="background: #f8f9fa;">
+              <label class="form-label fw-bold text-primary small">MARQUE DU VÉHICULE</label>
+              <input type="text" class="form-control border-0 rounded-15 mb-3 p-3" [(ngModel)]="newOffre.marque" name="marque" placeholder="Ex: Mercedes, Toyota">
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Modèle</label>
+                  <input type="text" class="form-control border-0 rounded-15 p-3" [(ngModel)]="newOffre.model" name="model">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">Immatriculation</label>
+                  <input type="text" class="form-control border-0 rounded-15 p-3" [(ngModel)]="newOffre.immatriculation" name="immat">
+                </div>
+              </div>
+              <label class="form-label fw-bold small text-primary">CHARGE MAXIMALE (KG)</label>
+              <input type="number" class="form-control border-0 rounded-15 mb-3 p-3" [(ngModel)]="newOffre.chargeMax" name="charge">
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-20 p-4 mb-4 text-center">
+               <div class="upload-area border-2 border-dashed rounded-20 p-4 bg-light position-relative">
+                  <img [src]="imagePreview" *ngIf="imagePreview" class="img-fluid rounded-15">
+                  <input type="file" (change)="onFileSelected($event)" class="position-absolute top-0 start-0 w-100 h-100 opacity-0">
+               </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mt-5 mb-5">
+          <button type="button" class="btn btn-light rounded-pill px-5 py-3 fw-bold" (click)="closeOffreModal()">ANNULER</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg flex-grow-1" [disabled]="isSubmitting">AJOUTER À MA FLOTTE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showGererModal" (click)="showGererModal = false">
+    <div class="modal-content animate-in" (click)="$event.stopPropagation()">
+      <h3 class="text-primary">Gérer le véhicule</h3>
+      <p>Véhicule : <strong>{{ vehiculeSelectionne?.marque }} ({{ vehiculeSelectionne?.immatriculation }})</strong></p>
+      <div class="modal-actions">
+        <button class="btn-modify" (click)="ouvrirModifier()"><i class="fas fa-edit"></i> Modifier</button>
+        <button class="btn-delete" (click)="confirmerSuppression()"><i class="fas fa-trash"></i> Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+</body>

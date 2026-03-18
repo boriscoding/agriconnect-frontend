@@ -16,7 +16,7 @@ export class Openoffer implements OnInit {
 
   // ✅ ADRESSE IP RÉSEAU CENTRALISÉE
   private serverIp = 'localhost';
-
+serverI: string = 'localhost';
   sidebarOpen = false;
   isModalOpen = false;
   isOffreModalOpen = false;
@@ -24,7 +24,7 @@ export class Openoffer implements OnInit {
   loading = false;
   pub = true;
   filterType: 'TOUS' | 'MES_OFFRES' = 'TOUS';
-
+hasImageError: boolean = false;
   user: any = {};
   userIdConnecte: number | null = null;
 
@@ -58,7 +58,10 @@ export class Openoffer implements OnInit {
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
-
+handleImageError(event: any) {
+  // Cette fonction est appelée si l'URL de l'image renvoie une erreur
+  this.hasImageError = true;
+}
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       const storedId = this.authService.getUserId()?.toString() || localStorage.getItem('userId');
@@ -87,24 +90,56 @@ export class Openoffer implements OnInit {
   }
 
   // ✅ RECTIFICATION DE L'URL MODIFICATION PROFIL
-  saveUser() {
-    if (!this.userIdConnecte) return;
-    this.loading = true;
-    this.http.put(`http://${this.serverIp}:8080/api/utilisateurs/modifier/${this.userIdConnecte}`, this.user)
-      .subscribe({
-        next: (res: any) => {
-          this.user = res; 
-          this.closeModal();
-          this.loading = false;
-          this.toastr.success("Profil mis à jour !");
-        },
-        error: (err: any) => {
-          this.loading = false;
-          this.toastr.error("Erreur de mise à jour");
-        }
-      });
+// Variables à ajouter dans ta classe
+// Cette méthode est appelée par (change)="onPhotoSelected($event)" dans ton HTML
+onPhotoSelected(event: any) {
+  const file = event.target.files[0];
+  if (file) {
+    this.selectedFile = file;
+
+    // Créer un aperçu temporaire pour l'utilisateur dans la modale
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+saveUser() {
+  if (!this.userIdConnecte) return;
+  this.loading = true;
+
+  // Utilisation de FormData pour envoyer le MultipartFile au backend
+  const formData = new FormData();
+  
+  if (this.selectedFile) {
+    formData.append('file', this.selectedFile);
   }
 
+  // Ajout des champs texte attendus par ton nouveau contrôleur
+  formData.append('nom', this.user.nom || '');
+  formData.append('localisation', this.user.localisation || '');
+  formData.append('sexe', this.user.sexe || '');
+  formData.append('number', this.user.number ? this.user.number.toString() : '0');
+
+  this.http.put(`http://${this.serverIp}:8080/api/utilisateurs/modifier/${this.userIdConnecte}`, formData)
+    .subscribe({
+      next: (res: any) => {
+        this.user = res; // Contient maintenant le chemin correct (ex: /uploads/photo.jpg)
+        this.imagePreview = null;
+        this.selectedFile = null;
+        this.loading = false;
+        this.toastr.success("Profil mis à jour !");
+        this.closeModal();
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error("Erreur lors de la modification :", err);
+        this.toastr.error("Erreur SQL ou réseau");
+      }
+    });
+}
   chargerToutesLesOffres() {
     this.offreService.getAllOffres().subscribe({
       next: (data: OffreData[]) => this.offres = data,
@@ -230,7 +265,9 @@ export class Openoffer implements OnInit {
     }
   }
 
-  openEditModal() { this.isModalOpen = true; }
+  openEditModal() { this.isModalOpen = true;
+    this.hasImageError = false; // On réinitialise pour la prochaine tentative
+   }
   closeModal() { this.isModalOpen = false; }
   openOffreModal() { this.isOffreModalOpen = true; }
   closeOffreModal() { 
