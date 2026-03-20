@@ -12,6 +12,7 @@ import { Auth } from '../services/auth';
   templateUrl: './opentrans.html',
   styleUrl: './opentrans.css',
 })
+
 export class Opentrans implements OnInit {
   
   // ✅ CONFIGURATION SERVEUR
@@ -47,11 +48,10 @@ filterType: string = 'TOUS';
     marque: '',
     model: '',
     immatriculation: '',
-    voitureType: 'CAMION',
+    voitureType: 'CAMION', // Sera envoyé comme voiture_type
     description: '',
-    chargeMax: null
+    chargeMax: null        // Sera envoyé comme charge_max
   };
-
   constructor(
     private router: Router, 
     private http: HttpClient,
@@ -141,8 +141,7 @@ onPhotoSelected(event: any) {
       }
     });
   }
-
-  saveOffre() {
+saveOffre() {
     if (!this.userIdConnecte) {
       this.toastr.warning("Veuillez vous reconnecter");
       return;
@@ -154,31 +153,29 @@ onPhotoSelected(event: any) {
     }
 
     this.isSubmitting = true;
-    const formData = new FormData();
-    
-    if (this.selectedFile) formData.append('file', this.selectedFile);
-    formData.append('marque', this.newOffre.marque);
-    formData.append('model', this.newOffre.model);
-    formData.append('immatriculation', this.newOffre.immatriculation);
-    formData.append('voitureType', this.newOffre.voitureType);
-    formData.append('description', this.newOffre.description || '');
-    formData.append('chargeMax', this.newOffre.chargeMax?.toString() || '0');
-    formData.append('transporteurId', this.userIdConnecte.toString());
 
-    this.vehiculeService.publier(formData).subscribe({
+    // Préparation de l'objet de données avec l'ID du transporteur
+    const vehiculeData = {
+      ...this.newOffre,
+      idTransporteur: this.userIdConnecte
+    };
+
+    // Appel du service avec les deux arguments : les données et le fichier
+    this.vehiculeService.publier(vehiculeData, this.selectedFile!).subscribe({
       next: (res) => {
-        this.vehicules.unshift(res); // Ajoute le nouveau véhicule en haut de liste
-        this.toastr.success("Véhicule ajouté avec succès !");
+        this.vehicules.unshift(res); // Ajout immédiat à l'affichage
+        this.toastr.success("Véhicule ajouté à votre flotte !");
         this.closeOffreModal();
         this.isSubmitting = false;
+        this.resetForm();
       },
-      error: () => { 
+      error: (err) => { 
+        console.error("Détails erreur:", err);
         this.isSubmitting = false; 
-        this.toastr.error("Erreur lors de l'ajout du véhicule"); 
+        this.toastr.error("Erreur lors de l'ajout. Vérifiez la connexion au serveur."); 
       }
     });
   }
-
   // ✅ Correction Erreur Image
   handleImageError(event: any) {
     event.target.src = 'assets/images/default-truck.png'; 
@@ -259,12 +256,16 @@ onPhotoSelected(event: any) {
 
   // --- SECTION 4 : UTILITAIRES ET UI ---
 
-  onFileSelected(event: any) {
+ onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      
+      // Lecture du fichier pour l'aperçu (Base64)
       const reader = new FileReader();
-      reader.onload = (e: any) => this.imagePreview = e.target.result;
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
       reader.readAsDataURL(file);
     }
   }
