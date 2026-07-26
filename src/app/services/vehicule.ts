@@ -22,25 +22,11 @@ export class Vehicule {
 
   // --- 3. ENREGISTRER (PUBLIER) UN VÉHICULE ---
   // CORRECTION : On s'assure que le FormData utilise les clés SQL vues dans tes logs
-  publier(vehiculeData: any, photo: File): Observable<any> {
-    const formData = new FormData();
-    
-    // Mapping exact avec tes colonnes Hibernate : charge_max, voiture_type, id_transporteur
-    formData.append('marque', vehiculeData.marque);
-    formData.append('model', vehiculeData.model);
-    formData.append('immatriculation', vehiculeData.immatriculation);
-    formData.append('charge_max', vehiculeData.chargeMax.toString());
-    formData.append('voiture_type', vehiculeData.voitureType);
-    formData.append('id_transporteur', vehiculeData.idTransporteur.toString());
-    
-    if (photo) {
-      formData.append('photo', photo);
-    }
-
-    // Note : Vérifie si ton endpoint est /publier ou /enregistrer dans ton Controller Java
-    return this.http.post<any>(`${this.apiUrl}/enregistrer`, formData);you
-  }
-
+// vehicule.ts
+publier(formData: FormData): Observable<any> {
+  // On envoie directement le formData reçu du composant
+  return this.http.post<any>(`${this.apiUrl}/enregistrer`, formData);
+}
   // --- 4. MODIFIER UN VÉHICULE ---
   modifier(id: number, vehicule: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/modifier/${id}`, vehicule);
@@ -55,5 +41,16 @@ export class Vehicule {
   getById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
+  // services/vehicule.ts
+getPhotoUrl(photoName: string | undefined): string {
+  const serverIp = 'localhost'; // Assure-toi que c'est le même partout
+  if (!photoName || photoName === 'null') {
+    return 'assets/images/default-truck.png';
+  }
+  if (photoName.startsWith('http')) {
+    return photoName;
+  }
+  return `http://${serverIp}:8080/uploads/${photoName}`;
+}
 
 }

@@ -428,3 +428,59 @@
   
   .hud-label i { display: none; } /* On cache les icônes HUD sur mobile */
 }
+/* ══ Ajouts pour le système GPS conditionnel ══════════════════ */
+
+/* Bouton terminer livraison */
+.btn-finish {
+  background: #1565c0;
+  color: white;
+}
+.btn-finish:hover { background: #0d47a1; }
+
+/* Zone d'attente date départ */
+.date-attente {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.date-attente i {
+  color: #fbbf24;
+  font-size: 20px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Badge statut (acheteur/producteur) */
+.statut-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px;
+  color: #94a3b8;
+}
+.statut-badge i { color: #64748b; font-size: 10px; }
+.statut-badge.actif { background: rgba(0,200,83,0.12); border-color: rgba(0,200,83,0.3); color: #00c853; }
+.statut-badge.actif i { color: #00c853; }
+
+/* Lecture info zone */
+.lecture-info {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+/* Main actions flexbox */
+.main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}

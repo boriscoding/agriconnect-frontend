@@ -13,7 +13,9 @@ import { FormsignupComponent } from './formsignup/formsignup.component';
 import { LogiChat } from './logi-chat/logi-chat';
 import { Opentrans } from './opentrans/opentrans';
 import { Openachecteur } from './openachecteur/openachecteur';
+import { PaiementRetour } from './paiement-retour/paiement-retour';
 import { Local } from './local/local'; // Vérifie bien le chemin
+import { CreerDemandeTransport } from './creer-demande-transport/creer-demande-transport';
 // import { VehicleTrackerComponent } from './vehicle-tracker/vehicle-tracker.component';
 const routes: Routes = [
   { path: '', component:Loadingpage1Component },
@@ -21,6 +23,7 @@ const routes: Routes = [
   { path: 'inscrire', component:FormsignupComponent },
   { path: 'homepage', component: HomepageComponent },
   { path: 'dashbord', component: Dashbord },
+  { path: 'creer-demande-transport', component: CreerDemandeTransport },
   { path: 'rejoindre', component: Rejoindre },
   { path: 'discussion', component: Discussion },
   { path: 'open', component: Openoffer },
@@ -28,6 +31,7 @@ const routes: Routes = [
   {path: 'localisation', component: Local},
   { path: 'opentrans', component: Opentrans },
   { path: 'openacheteur', component: Openachecteur},
+  { path: 'paiement-retour', component: PaiementRetour },
   { path: '**', redirectTo: 'homepage' }
 ];
 

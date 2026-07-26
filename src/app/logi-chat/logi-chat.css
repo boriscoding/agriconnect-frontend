@@ -1,578 +1,149 @@
-/* ==========================================
-   1. STRUCTURE GLOBALE ET HEADER
-   ========================================== */
+/* ═══════════════════════════════════════════════════════
+   LOGI-CHAT — CSS PROPRE ET UNIFIÉ
+   Suppression de toutes les règles dupliquées/contradictoires
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Variables ───────────────────────────────────────── */
+:host, * { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:        #25a244;
+  --green-dark:   #128c5e;
+  --green-light:  #d9fdd3;
+  --green-bg:     #e9f5e9;
+  --bubble-me:    #d9fdd3;
+  --bubble-them:  #ffffff;
+  --chat-bg:      #efeae2;
+  --sidebar-bg:   #ffffff;
+  --header-bg:    #f0f2f5;
+  --text-primary: #111b21;
+  --text-muted:   #667781;
+  --border:       #e9edef;
+  --online:       #25d366;
+  --radius:       12px;
+  --shadow:       0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* ── Structure globale ───────────────────────────────── */
 .app-main-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--chat-bg);
 }
 
+/* ── Top bar ─────────────────────────────────────────── */
 .top-app-bar {
   height: 45px;
-  background-color: #e7f3e8; 
+  background: #e7f3e8;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 18px;
+  gap: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-.brand-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.brand-section { display: flex; align-items: center; gap: 10px; }
 
 .mini-logo {
-  height: 28px;
-  width: auto;
-  background: white;
-  padding: 2px;
-  border-radius: 4px;
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.4);
 }
 
 .app-title-text {
-  color: #28a745; 
-  font-style: italic;
-  font-weight: bold;
+  color: rgb(30, 174, 14);
+  font-weight: 700;
   font-size: 1.1rem;
+  letter-spacing: 0.5px;
 }
 
+/* ── Zone principale ─────────────────────────────────── */
 .logri-chat-app {
   flex: 1;
   display: flex;
-  background: #f0f2f5;
-  width: 100vw;
-  height: calc(100vh - 45px); /* Ajusté pour laisser la place au header */
   overflow: hidden;
+  height: calc(100vh - 100px);
 }
 
-/* ==========================================
-   2. BARRES LATÉRALES (SIDEBARS)
-   ========================================== */
+/* ── Barre latérale d'icônes ─────────────────────────── */
 .side-toolbar {
-  width: 45px;
-  background: #e7f3e8; 
+  width: 52px;
+  background:#e7f3e8;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 15px 0;
-  color: #aebac1;
+  padding: 12px 0;
+  border-right: 1px solid var(--border);
 }
+
+.nav-top, .nav-bottom { display: flex; flex-direction: column; gap: 4px; }
 
 .nav-icon {
-  font-size: 1.4rem;
-  padding: 15px 0;
+  font-size: 1.3rem;
+  padding: 14px 0;
   text-align: center;
   cursor: pointer;
+  color: #aaa;
+  transition: color 0.2s, border-left 0.2s;
+  position: relative;
 }
 
-.nav-icon.active { color: #28a745; border-left: 3px solid #28a745; }
+.nav-icon:hover { color: #25a244; }
+.nav-icon.active { color: #25a244; border-left: 3px solid #25a244; }
 
+/* ── Sidebar contacts ────────────────────────────────── */
 .contacts-sidebar {
-  width: 300px;
-  background-color: #e7f3e8; 
+  width: 360px;
+  flex-shrink: 0;
+  background:white;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top-left-radius: 10px;
 }
 
 .sidebar-content-wrapper {
-  background: white;
-  height: 100%;
-  border-radius: 20px 0 0 0; 
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 25px 10px 25px;
+  padding: 18px 20px 10px;
+  flex-shrink: 0;
 }
 
 .sidebar-header-row h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .header-icons {
   display: flex;
-  gap: 15px;
-  color: #888;
+  gap: 18px;
+  color: var(--text-muted);
   font-size: 1.1rem;
 }
 
-/* --- FILTRES ET RECHERCHE --- */
-.filters-container {
-  display: flex;
-  gap: 8px;
-  padding: 10px 20px;
-  overflow-x: auto;
-}
-
-.filter-pill {
-  background: #f0f2f5;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: #54656f;
-  white-space: nowrap;
+.header-icons i {
   cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
 }
+.header-icons i:hover { color: #25a244; transform: scale(1.15); }
 
-.filter-pill.active {
-  background: #dcf8c6;
-  color: #008069;
-  font-weight: 600;
-}
-
-.search-container {
-  padding: 10px 20px;
-}
-
-.search-input-wrapper {
-  background: #f6f6f6;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 8px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.search-input-wrapper input {
-  border: none;
-  background: transparent;
-  width: 100%;
-  outline: none;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* --- LISTE CONTACTS --- */
-.scrollable-contacts {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.contact-tile { 
-  display: flex; 
-  padding: 12px 20px; 
-  gap: 15px; 
-  border-bottom: 1px solid #f0f2f5; 
-  cursor: pointer; 
-  transition: all 0.2s ease;
-}
-
-.contact-tile:hover {
-  background-color: #f0f2f5;
-  transform: translateX(5px);
-}
-
-.contact-tile.active { background: #f0f2f5; }
-
-.avatar-container { position: relative; }
-.avatar-container img { width: 48px; height: 48px; border-radius: 50%; }
-
-.tile-content { flex: 1; display: flex; flex-direction: column; }
-.tile-header { display: flex; justify-content: space-between; align-items: center; }
-.contact-name { font-weight: 600; color: #111; }
-.time { font-size: 0.75rem; color: #667781; }
-
-.unread-badge {
-  background: #28a745;
-  color: white;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-/* ==========================================
-   3. FENÊTRE DE CHAT
-   ========================================== */
-.conversation-window { flex: 1; display: flex; flex-direction: column; position: relative; }
-
-.chat-top-bar { background: #f0f2f5; padding: 10px 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; border-bottom: 1px solid #ddd; }
-
-.back-to-contacts {
-  display: none; /* Toujours caché par défaut */
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #28a745;
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.chat-body {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background-image: url('../../assets/images/loagri.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 550px; 
-  background-attachment: fixed;
-  background-blend-mode: overlay;
-}
-
-.message { display: flex; width: 100%; margin-bottom: 5px; position: relative; z-index: 1; }
-.message.sent { justify-content: flex-end; }
-.message.received { justify-content: flex-start; }
-
-.bubble {
-  padding: 8px 15px;
-  max-width: 65%;
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  font-size: 0.95rem;
-}
-
-.sent .bubble { background: rgba(233, 220, 197, 0.4); border: 1px solid rgba(233, 220, 197, 0.6); border-radius: 15px 0 15px 15px; }
-.received .bubble { background: rgba(255, 255, 255, 0.9); border-radius: 0 15px 15px 15px; }
-
-.chat-footer { padding: 10px 15px; background: #f0f2f5; display: flex; align-items: center; gap: 8px; border-top: 1px solid #ddd; }
-.chat-footer input { flex: 1; padding: 10px 18px; border: none; border-radius: 20px; background: white; outline: none; }
-
-.send-btn {
-  background: #28a745; color: white; border: none; width: 45px; height: 45px;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: transform 0.2s ease;
-}
-
-/* ==========================================
-   4. COMPORTEMENT RESPONSIVE (MOBILE)
-   ========================================== */
-@media (max-width: 768px) {
-  /* On cache la barre latérale gauche (toolbar) sur mobile */
-  .side-toolbar { 
-    display: none !important; 
-  }
-
-  /* Par défaut : on ne voit que la liste des contacts sous le header */
-  .contacts-sidebar { 
-    width: 100% !important; 
-    display: flex !important;
-  }
-
-  .conversation-window { 
-    display: none !important; 
-  }
-
-  /* QUAND UN CONTACT EST CLIQUÉ (Classe .chat-mobile-active ajoutée via TS) */
-  .chat-mobile-active .contacts-sidebar {
-    display: none !important;
-  }
-
-  .chat-mobile-active .conversation-window {
-    display: flex !important;
-    width: 100% !important;
-  }
-
-  /* On affiche le bouton retour uniquement dans la vue discussion */
-  .chat-mobile-active .back-to-contacts {
-    display: block !important;
-  }
-
-  /* Ajustements divers mobile */
-  .bubble { max-width: 85%; }
-  .chat-body { background-size: 300px; }
-  .sidebar-content-wrapper { border-radius: 0; }
-
-  /* ==========================================
-   1. STRUCTURE GLOBALE ET HEADER
-   ========================================== */
-.app-main-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-.top-app-bar {
-  height: 45px;
-  background-color: #e7f3e8; 
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  width: 100%;
-}
-
-.brand-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mini-logo {
-  height: 28px;
-  width: auto;
-  background: white;
-  padding: 2px;
-  border-radius: 4px;
-}
-
-.app-title-text {
-  color: #28a745; 
-  font-style: italic;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* ==========================================
-   2. ZONE PRINCIPALE (MODIFIÉE POUR 100% LARGEUR)
-   ========================================== */
-.logri-chat-app {
-  flex: 1;
-  display: flex;
-  background: #f0f2f5;
-  width: 100vw;
-  height: calc(100vh - 45px);
-  overflow: hidden;
-}
-
-/* On cache totalement la barre d'outils pour que les contacts prennent toute la place */
-.side-toolbar {
-  display: none !important;
-}
-
-/* Les contacts prennent maintenant tout l'écran par défaut */
-.contacts-sidebar {
-  width: 100% !important; /* CHANGEMENT ICI : 100% au lieu de 300px */
-  background-color: #e7f3e8; 
-  display: flex;
-}
-
-.sidebar-content-wrapper {
-  background: white;
-  height: 100%;
-  width: 100%;
-  border-radius: 0; /* Retrait de l'arrondi pour le plein écran */
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 25px 10px 25px;
-}
-
-/* ==========================================
-   3. FILTRES ET LISTE (PLEINE LARGEUR)
-   ========================================== */
-.filters-container {
-  display: flex;
-  gap: 8px;
-  padding: 10px 20px;
-  overflow-x: auto;
-}
-
-.filter-pill {
-  background: #f0f2f5;
-  padding: 10px 20px;
-  border-radius: 20px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.scrollable-contacts {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.contact-tile { 
-  display: flex; 
-  padding: 15px 25px; 
-  gap: 15px; 
-  border-bottom: 1px solid #f0f2f5; 
-  cursor: pointer;
-}
-
-/* ==========================================
-   4. FENÊTRE DE CHAT (CACHÉE PAR DÉFAUT)
-   ========================================== */
-.conversation-window {
-  display: none; /* On ne voit que les contacts au début */
-  flex: 1;
-  flex-direction: column;
-}
-
-/* QUAND LE CHAT EST ACTIF */
-.chat-mobile-active .contacts-sidebar {
-  display: none !important;
-}
-
-.chat-mobile-active .conversation-window {
-  display: flex !important;
-  width: 100% !important;
-}
-
-.back-to-contacts {
-  display: block;
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #28a745;
-  margin-right: 10px;
-}
-}
-
-
-/* ==========================================
-   RECARDAGE DES IMAGES DANS LES BULLES
-   ========================================== */
-
-/* Conteneur de l'image dans la bulle */
-.image-bubble {
-  padding: 4px !important; /* Réduit le padding pour que l'image occupe plus d'espace */
-  max-width: 250px; /* Limite la largeur max sur PC */
-}
-
-.chat-img-content {
-  width: 100%;
-  height: 200px; /* Hauteur fixe pour un aspect uniforme */
-  display: block;
-  border-radius: 12px; /* Arrondi pour coller au style des bulles */
-  
-  /* C'est ici que le recadrage se passe : */
-  object-fit: cover; /* Remplit tout l'espace sans déformer l'image */
-  object-position: center; /* Centre l'image lors du recadrage */
-  
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.chat-img-content:hover {
-  opacity: 0.9;
-}
-
-/* Ajustement pour mobile */
-@media (max-width: 768px) {
-  .image-bubble {
-    max-width: 80% !important; /* Plus large sur mobile */
-  }
-  
-  .chat-img-content {
-    height: 180px; /* Légèrement plus petit sur mobile */
-  }
-}
-
-/* Style de la bulle quand elle contient uniquement une image */
-.bubble.image-bubble {
-  background: white; /* Fond neutre pour les photos */
-  border: 1px solid #ddd;
-}
-/* Style pour les vidéos dans le chat */
-.chat-video-content {
-  display: block;
-  max-width: 100%;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  background-color: #000; /* Fond noir pendant le chargement */
-}
-
-/* Effet visuel quand on enregistre un vocal */
-.voice-btn.recording {
-  animation: pulse-red 1.5s infinite;
-}
-
-@keyframes pulse-red {
-  0% { transform: scale(1); color: #54656f; }
-  50% { transform: scale(1.2); color: red; }
-  100% { transform: scale(1); color: #54656f; }
-}
-.media-preview-container {
-  position: absolute;
-  bottom: 70px; /* Juste au-dessus du footer */
-  left: 10px;
-  right: 10px;
-  background: white;
-  padding: 10px;
-  border-radius: 15px;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 10;
-}
-
-.preview-content {
-  max-height: 150px;
-  max-width: 100%;
-  border-radius: 10px;
-}
-
-.close-preview {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  cursor: pointer;
-}
-/* Conteneur global de la prévisualisation */
-.media-preview-bar {
-  background: #f0f2f5;
-  border-top: 1px solid #d1d7db;
-  padding: 15px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: slideUp 0.3s ease-out; /* Animation pour l'apparition */
-}
-
-/* Le cadre de l'image ou de la vidéo */
-.preview-container {
-  position: relative;
-  max-width: 250px; /* On limite la largeur pour ne pas envahir l'écran */
-  background: #fff;
-  border-radius: 12px;
-  padding: 5px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.preview-item {
-  display: block;
-  max-width: 100%;
-  max-height: 180px; /* Hauteur maximale pour garder le chat visible */
-  border-radius: 8px;
-  object-fit: cover; /* Recadre l'image pour qu'elle remplisse bien le cadre */
-}
-
-/* Style spécifique pour l'audio dans la preview */
-.preview-audio-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-}
-
-.preview-audio-item i {
-  color: #00a884; /* Vert Agriconnect */
-  font-size: 1.5rem;
-}
-
-/* Bouton pour annuler (le X) */
 .cancel-preview {
   position: absolute;
   top: -12px;
@@ -590,776 +161,1330 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   transition: transform 0.2s;
 }
-
-.cancel-preview:hover {
-  transform: scale(1.1);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-.message-sent {
+/* ── Barre de recherche ──────────────────────────────── */
+.search-input-wrapper {
+  margin: 6px 12px 10px;
+  background: var(--header-bg);
+  border-radius: 10px;
+  padding: 9px 14px;
   display: flex;
-  justify-content: flex-end; /* Pousse à DROITE */
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  transition: border 0.2s;
 }
 
-.message-received {
-  display: flex;
-  justify-content: flex-start; /* Pousse à GAUCHE */
-  margin-bottom: 10px;
+.search-input-wrapper:focus-within {
+  border-color: #25a244;
+  background: white;
 }
 
-.message-sent .bubble {
-  background-color: #dcf8c6; /* Vert clair style WhatsApp */
-  border-radius: 15px 15px 0 15px;
-}
+.search-input-wrapper i { color: var(--text-muted); font-size: 0.9rem; }
 
-.message-received .bubble {
-  background-color: #ffffff;
-  border-radius: 15px 15px 15px 0;
-}
-/* --- STRUCTURE DES LIGNES --- */
-.message-row {
-  display: flex;
+.search-input-wrapper input {
+  border: none;
+  background: transparent;
   width: 100%;
-  margin-bottom: 10px;
-  padding: 0 10px;
+  outline: none;
+  font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
-/* TES MESSAGES (MOI) -> À DROITE */
-.message-row.sent {
-  justify-content: flex-end; /* Pousse la bulle à droite */
-}
-
-.message-row.sent .bubble {
-  background: #e7ffdb; /* Vert WhatsApp */
-  border-radius: 15px 15px 0 15px; /* Pointe à droite */
-  border: 1px solid #d1e8c4;
-}
-
-/* MESSAGES REÇUS (EUX) -> À GAUCHE */
-.message-row.received {
-  justify-content: flex-start; /* Pousse la bulle à gauche */
-}
-
-.message-row.received .bubble {
-  background: #ffffff; /* Blanc */
-  border-radius: 15px 15px 15px 0; /* Pointe à gauche */
-  border: 1px solid #e0e0e0;
-}
-
-/* --- AJUSTEMENT DES COULEURS DE NOMS --- */
-.message-row.sent .sender-name {
-  color: #25d366; /* Vert pour toi */
-  text-align: right;
-}
-
-.message-row.received .sender-name {
-  color: #34b7f1; /* Bleu pour les autres */
-  text-align: left;
-}
-
-/* Conteneur de média dans une bulle */
-.bubble-media-content {
-  width: 100%;
-  max-width: 300px; /* Limite la taille pour éviter les bulles géantes */
-  margin-bottom: 5px;
-  border-radius: 8px;
-  overflow: hidden;
-  display: block;
-}
-
-/* Image et Vidéo */
-.chat-img-content, .chat-video-content {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Audio Player */
-.chat-audio-content {
-  width: 100%;
-  min-width: 200px;
-  height: 35px;
-  margin-top: 5px;
-}
-/* Ajustement de la bulle pour laisser de la place au contenu */
-.bubble {
-  min-width: 60px; /* Évite que la bulle soit trop petite pour l'audio */
-  max-width: 75%;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Masquer le texte si c'est uniquement un média */
-.bubble-content .text:empty {
-  display: none;
-}
-/* Conteneur pour les fichiers dans la bulle */
-.bubble-media-content {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* Images et Vidéos */
-.chat-img-content, .chat-video-content {
-  max-width: 100%;
-  max-height: 250px;
-  display: block;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Lecteur Audio */
-.chat-audio-content {
-  width: 100%;
-  height: 40px;
-  min-width: 200px; /* Important pour que les boutons play/pause soient visibles */
-}
-
-/* Ajustement de la bulle pour les médias */
-.bubble {
-  min-width: 80px; 
-  padding: 8px 10px;
-}
-/* --- LE CONTENEUR DES MESSAGES --- */
-.chat-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  position: relative;
+/* ── Liste contacts ──────────────────────────────────── */
+.scrollable-contacts {
+  flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-/* --- STRUCTURE DE LA LIGNE (Flexbox) --- */
+.contact-tile {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  gap: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  position: relative;
+}
+
+.contact-tile:hover { background: #bcdfc5; }
+.contact-tile.active { background: #f0faf4; }
+
+/* Indicateur actif sur la gauche */
+.contact-tile.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #25a244;
+  border-radius: 0 3px 3px 0;
+}
+
+.avatar-container { position: relative; flex-shrink: 0; }
+
+.avatar-container img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+/* Pastille online */
+.dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid white;
+}
+.dot.online {
+  background: var(--online);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.6); }
+  70%  { box-shadow: 0 0 0 5px rgba(37,211,102,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
+}
+
+.tile-content { flex: 1; min-width: 0; }
+
+.tile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 3px;
+}
+
+.contact-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.preview-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.preview-text.empty { font-style: italic; color: #bbb; }
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.unread-badge {
+  background: #25a244;
+  color: white;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* ── Fenêtre conversation ────────────────────────────── */
+.conversation-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgb(167, 165, 165);
+}
+
+/* ── Header conversation ─────────────────────────────── */
+.chat-top-bar {
+  background: var(--header-bg);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 60px;
+}
+
+.back-to-contacts {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #25a244;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.back-to-contacts:hover { background: rgba(37,162,68,.1); }
+
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.chat-top-bar .contact-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.contact-status {
+  font-size: 0.78rem;
+  color: #25a244;
+  margin-left: auto;
+}
+
+/* ── Corps du chat ───────────────────────────────────── */
+.chat-body {
+  flex: 1;
+  padding: 16px 5%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-image: url('../../assets/images/loagri.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 450px;
+  background-attachment: fixed;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── Messages ────────────────────────────────────────── */
 .message {
   display: flex;
   width: 100%;
+  margin-bottom: 2px;
+  animation: bubbleIn 0.18s cubic-bezier(0.175,0.885,0.32,1.275) both;
 }
 
-/* REÇU : À GAUCHE */
-.message.received {
-  justify-content: flex-start;
+@keyframes bubbleIn {
+  from { opacity: 0; transform: scale(0.85) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* ENVOYÉ : À DROITE */
-.message.sent {
-  justify-content: flex-end;
-}
+.message.sent     { justify-content: flex-end; }
+.message.received { justify-content: flex-start; }
 
-/* --- STYLE DES BULLES --- */
+
+/* ── Bulles ──────────────────────────────────────────── */
 .bubble {
-  max-width: 75%;
-  padding: 8px 12px;
+  max-width: 68%;
+  min-width: 70px;
+  padding: 8px 12px 6px;
+  border-radius: var(--radius);
   position: relative;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  min-width: 80px;
+  word-break: break-word;
 }
 
-/* Couleur REÇU (Blanc) */
-.message.received .bubble {
-  background: #ffffff;
-  border-radius: 0 15px 15px 15px;
-  border: 1px solid #e0e0e0;
-}
-
-/* Couleur ENVOYÉ (Vert WhatsApp) */
+/* Pointe sur les bulles (style WhatsApp) */
 .message.sent .bubble {
-  background: #dcf8c6;
-  border-radius: 15px 0 15px 15px;
-  border: 1px solid #c7e5b0;
+  background: var(--bubble-me);
+  border-radius: 12px 2px 12px 12px;
 }
 
-/* --- MÉDIAS --- */
-.bubble-media-content {
-  width: 100%;
-  margin-bottom: 5px;
-  border-radius: 8px;
-  overflow: hidden;
+.message.sent .bubble::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -7px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid var(--bubble-me);
+  border-top: 8px solid transparent;
 }
 
-.chat-img-content, .chat-video-content {
-  width: 100%;
-  max-height: 250px;
-  object-fit: cover;
-  display: block;
+.message.received .bubble {
+  background: var(--bubble-them);
+  border-radius: 2px 12px 12px 12px;
+  border: 1px solid var(--border);
 }
 
-.chat-audio-player {
-  width: 100%;
-  min-width: 220px;
-  height: 40px;
+.message.received .bubble::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-right: 8px solid var(--bubble-them);
+  border-top: 8px solid transparent;
 }
 
-/* --- TEXTE ET HEURE --- */
 .bubble p {
-  margin: 5px 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text-primary);
 }
 
+/* ── Heure et coches ─────────────────────────────────── */
 .msg-time {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 0.7rem;
+  color: var(--text-muted);
   align-self: flex-end;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  margin-top: 2px;
+  white-space: nowrap;
 }
 
-.fa-check-double {
-  color: #34b7f1; /* Bleu WhatsApp pour les lus */
-}
+.fa-check-double { font-size: 0.75rem; }
 
-
-/* --- BULLES DE MESSAGES --- */
-.message {
-  display: flex;
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 0 5%;
-}
-
-/* MOI (DROITE) */
-.message.sent {
-  justify-content: flex-end;
-}
-.message.sent .bubble {
-  background-color: #005c4b; /* Vert WhatsApp Dark */
-  color: #e9edef;
-  border-radius: 8px 0 8px 8px;
-}
-
-/* LUI (GAUCHE) */
-.message.received {
-  justify-content: flex-start;
-}
-.message.received .bubble {
-  background-color: #202c33; /* Gris WhatsApp Dark */
-  color: #e9edef;
-  border-radius: 0 8px 8px 8px;
-}
-
-/* --- MÉDIAS --- */
-.bubble-media-content {
+/* ── Médias dans les bulles ──────────────────────────── */
+.media-content {
   margin-bottom: 4px;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
-  max-width: 300px;
-}
-
-.chat-img-content, .chat-video-content {
-  width: 100%;
-  display: block;
-  object-fit: cover;
-  max-height: 250px;
-}
-
-.chat-audio-player {
-  width: 100%;
-  height: 35px;
-  filter: invert(100%); /* Pour qu'il soit visible sur fond sombre */
-}
-/* Le conteneur parent de la bulle */
-.message {
-  display: flex;
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 0 15px;
-  box-sizing: border-box; /* Évite les débordements */
-}
-
-/* --- MESSAGE REÇU (GAUCHE) --- */
-.message.received {
-  justify-content: flex-start; /* Aligne le contenu à gauche */
-}
-
-.message.received .bubble {
-  background-color: #ffffff;
-  color: #333;
-  border-radius: 0 15px 15px 15px; /* Angle carré en haut à gauche */
-  border: 1px solid #e0e0e0;
-}
-
-/* --- MESSAGE ENVOYÉ (DROITE) --- */
-.message.sent {
-  justify-content: flex-end; /* Aligne le contenu à droite */
-}
-
-.message.sent .bubble {
-  background-color: #dcf8c6; /* Vert WhatsApp */
-  color: #333;
-  border-radius: 15px 0 15px 15px; /* Angle carré en haut à droite */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* La bulle elle-même */
-.bubble {
-  max-width: 75%; /* Empêche la bulle de prendre tout l'écran */
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
   position: relative;
 }
-.chat-img-content, .chat-video-content {
-  max-width: 100%;
+
+.media-wrapper {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
   border-radius: 8px;
-  margin-bottom: 5px;
+}
+
+.media-wrapper:hover .media-overlay { opacity: 1; }
+
+.media-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.chat-img-content {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
   display: block;
+  border-radius: 8px;
+  transition: transform 0.3s;
+}
+.media-wrapper:hover .chat-img-content { transform: scale(1.02); }
+
+.chat-video-content {
+  width: 100%;
+  max-height: 200px;
+  display: block;
+  border-radius: 8px;
+  background: #000;
 }
 
-.msg-time {
-  font-size: 0.7rem;
-  color: #888;
-  align-self: flex-end; /* Force l'heure à être en bas à droite de la bulle */
-  margin-top: 4px;
+.audio-wrapper { padding: 4px 0; }
+
+.chat-audio-player {
+  width: 240px;
+  height: 36px;
+  border-radius: 20px;
 }
 
+/* ── Menu contextuel message ─────────────────────────── */
+.message-options-trigger {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  opacity: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  transition: opacity 0.15s;
+  z-index: 2;
+}
 
+.bubble:hover .message-options-trigger { opacity: 1; }
+
+.message-context-menu {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  padding: 6px 0;
+  z-index: 100;
+  width: 160px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  border: 1px solid var(--border);
+  animation: menuIn 0.15s ease;
+}
+
+@keyframes menuIn {
+  from { opacity: 0; transform: scale(0.9) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.message-context-menu span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.message-context-menu span:hover { background: var(--header-bg); }
+.message-context-menu span i { color: var(--text-muted); width: 14px; }
+
+/* ── Barre de prévisualisation média ─────────────────── */
+.media-preview-bar {
+  background: var(--header-bg);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+  animation: slideUp 0.25s ease;
+  flex-shrink: 0;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.media-preview-bar .preview-container {
+  position: relative;
+  max-width: 200px;
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+.media-preview-bar .preview-item {
+  display: block;
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.preview-audio-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+}
+.preview-audio-item i { color: #25a244; font-size: 1.6rem; }
+
+.cancel-preview {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+  font-size: 0.75rem;
+}
+.cancel-preview:hover { transform: scale(1.1); }
+
+/* ── Footer / zone de saisie ─────────────────────────── */
+.chat-footer {
+  padding: 10px 14px;
+  background: var(--header-bg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* On cache le premier footer vide qui était en double dans le HTML */
+.chat-footer:empty { display: none; }
+
+.chat-footer input {
+  flex: 1;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 22px;
+  background: white;
+  outline: none;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s;
+}
+
+.chat-footer input:focus { box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), 0 0 0 2px rgba(37,162,68,.2); }
+
+.action-btn, .voice-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover, .voice-btn:hover {
+  background: rgba(37,162,68,.1);
+  color: #25a244;
+}
+
+.send-btn {
+  background: #25a244;
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s;
+  box-shadow: 0 2px 6px rgba(37,162,68,.4);
+  font-size: 1rem;
+}
+
+.send-btn:hover { transform: scale(1.1); background: var(--green-dark); }
+.send-btn:active { transform: scale(0.95); }
+
+/* Animation enregistrement vocal */
+.voice-btn.recording {
+  color: #e74c3c;
+  animation: pulseRed 1.2s infinite;
+}
+
+@keyframes pulseRed {
+  0%   { transform: scale(1);   color: #e74c3c; box-shadow: 0 0 0 0 rgba(231,76,60,.5); }
+  50%  { transform: scale(1.2); color: #e74c3c; box-shadow: 0 0 0 8px rgba(231,76,60,0); }
+  100% { transform: scale(1);   color: #e74c3c; box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+}
+
+/* ── Modale "Nouvelle discussion" ────────────────────── */
+.modal-new-chat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-new-chat-card {
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  animation: modalIn 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+
+@keyframes modalIn {
+  from { transform: scale(0.88) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+
+.modal-new-chat-card .modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  color: #25a244;
+}
+
+.modal-new-chat-card .modal-header i { font-size: 1.4rem; }
+.modal-new-chat-card .modal-header h3 { font-size: 1.15rem; font-weight: 700; }
+
+.modal-new-chat-card .modal-body p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.modal-new-chat-card .input-group {
+  display: flex;
+  align-items: center;
+  background: var(--header-bg);
+  padding: 11px 14px;
+  border-radius: 10px;
+  gap: 10px;
+  border: 1.5px solid var(--border);
+  transition: border 0.2s;
+}
+
+.modal-new-chat-card .input-group:focus-within {
+  border-color: #25a244;
+  background: white;
+}
+
+.modal-new-chat-card .input-group i { color: var(--text-muted); }
+
+.modal-new-chat-card .input-group input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.modal-new-chat-card .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btn-cancel {
+  background: var(--header-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 9px 20px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-cancel:hover { background: #e4e6e9; }
+
+.btn-confirm {
+  background: #25a244;
+  color: white;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-confirm:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Modale multimédia (zoom) ────────────────────────── */
+.media-focus-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.93);
+  backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-controls {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+  z-index: 10;
+}
+
+.modal-controls .left-actions,
+.modal-controls .right-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.modal-controls button {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, transform 0.15s;
+}
+.modal-controls button:hover { background: rgba(255,255,255,0.22); transform: scale(1.05); }
+
+.focus-content {
+  max-width: 88%;
+  max-height: 72vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.focus-content img,
+.focus-content video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  transition: transform 0.3s ease;
+}
+
+/* ── Barre médias récents ─────────────────────────────── */
+.recent-media-tray {
+  position: absolute;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  max-width: 88%;
+  overflow-x: auto;
+}
+
+.tray-item {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.55;
+  border: 2px solid transparent;
+  transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.tray-item:hover { opacity: 0.85; transform: scale(1.06); }
+.tray-item.active { opacity: 1; border-color: #25a244; }
+
+.tray-item img { width: 100%; height: 100%; object-fit: cover; }
+
+.video-thumb {
+  width: 100%;
+  height: 100%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+}
+
+/* ── Modale de transfert ─────────────────────────────── */
+.transfer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+.transfer-card {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  animation: modalIn 0.22s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+
+.transfer-header {
+  padding: 16px 18px;
+  background: #25a244;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.transfer-header h3 { font-size: 1rem; font-weight: 700; }
+
+.close-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.close-btn:hover { background: rgba(255,255,255,0.3); }
+
+.transfer-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.transfer-search i { color: var(--text-muted); }
+
+.transfer-search input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.transfer-list { max-height: 380px; overflow-y: auto; }
+
+.transfer-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+
+.transfer-item:hover { background: #e7f3e8; }
+
+.mini-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.contact-info .name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.send-icon {
+  margin-left: auto;
+  color: #25a244;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 1rem;
+}
+
+.transfer-item:hover .send-icon { opacity: 1; }
+
+/* ── État vide contacts ──────────────────────────────── */
+.empty-contacts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-contacts i { font-size: 2.8rem; color: #ccc; }
+.empty-contacts p  { font-size: 0.9rem; }
+
+.btn-new-chat {
+  margin-top: 8px;
+  background: #25a244;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-new-chat:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+/* ── État "Aucun chat sélectionné" ───────────────────── */
+.no-chat-selected {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chat-bg);
+}
+
+.no-chat-content {
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.no-chat-content i    { font-size: 4rem; color: #d0d0c8; }
+.no-chat-content h3   { font-size: 1.2rem; font-weight: 600; color: #aaa; }
+.no-chat-content p    { font-size: 0.88rem; max-width: 260px; }
+
+/* ── Indicateur de chargement (dots) ────────────────── */
+.loading-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 8px;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.typing-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #25a244;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
+  30%           { transform: translateY(-8px);  opacity: 1; }
+}
+
+/* ── Responsive mobile ───────────────────────────────── */
+@media (max-width: 768px) {
+  .side-toolbar { display: none !important; }
+.contact-tile:hover { background: #bcdfc5; }
+
+  .contacts-sidebar {
+    width: 100% !important;
+    display: flex !important;
+  }
+
+  .conversation-window { display: none !important; }
+
+  /* Quand un chat est actif */
+  .chat-mobile-active .contacts-sidebar { display: none !important; }
+
+  .chat-mobile-active .conversation-window {
+    display: flex !important;
+    width: 100% !important;
+  }
+
+  .chat-mobile-active .back-to-contacts { display: flex !important; }
+
+  .bubble { max-width: 84%; }
+  .chat-body { background-size: 280px; padding: 12px 2%; }
+  .chat-audio-player { width: 190px; }
+}
+
+/* ── Lecteur audio style WhatsApp ────────────────────── */
+.audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 22px;
+  padding: 7px 12px;
+  min-width: 200px;
+}
+
+.play-audio-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #25a244;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.play-audio-btn:hover { background: var(--green-dark); }
+
+.audio-wave {
+  flex: 1;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.audio-wave span {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  background: #667781;
+  opacity: 0.5;
+}
+
+.audio-dur {
+  font-size: 11px;
+  color: #667781;
+  flex-shrink: 0;
+}
+
+/* ── Coches lues / non lues ──────────────────────────── */
+.fa-check-double       { font-size: 0.75rem; color: #aaa; }
+.fa-check-double.read  { color: #34b7f1; }
+
+/* ── Séparateur de date ──────────────────────────────── */
+.date-separator {
+  text-align: center;
+  margin: 10px 0;
+}
+.date-separator span {
+  background: #d1e8cc;
+  color: #3b6d11;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 14px;
+  border-radius: 10px;
+}
+
+/* ── Texte de la bulle ───────────────────────────────── */
+.bubble-text {
+  margin: 0 0 3px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #111b21;
+  padding-right: 8px; /* évite que le texte touche le bord droit */
+}
+
+/* ═══════════════════════════════════════════════════════
+   FENÊTRE DE CONVERSATION (ajout du wrapper manquant)
+   ═══════════════════════════════════════════════════════ */
+
+.conversation-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Header de la conversation ── */
+.chat-top-bar {
+  background: var(--header-bg);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 58px;
+}
+
+.header-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #25a244;
+  flex-shrink: 0;
+}
+
+.header-contact-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.header-contact-info .contact-name {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contact-status {
+  font-size: 0.75rem;
+  color: #25a244;
+  font-weight: 500;
+}
+
+/* ── Bouton retour mobile ── */
+.back-to-contacts {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #25a244;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  align-items: center;
+  justify-content: center;
+}
+.back-to-contacts:hover { background: rgba(37,162,68,.1); }
+
+/* ── État vide des messages ── */
+.messages-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 10px;
+  color: var(--text-muted);
+  padding: 40px;
+  text-align: center;
+}
+.messages-empty i { font-size: 2.5rem; color: #d0d0c8; }
+.messages-empty p { font-size: 0.9rem; }
+
+/* ── Séparateur de date ── */
+.date-separator {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 6px;
+}
+.date-separator span {
+  background: rgba(225,245,254,0.9);
+  color: #546e7a;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* ── Lecteur audio style WhatsApp ── */
+.audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  min-width: 200px;
+}
+
+.play-audio-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #25a244;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  transition: background 0.2s, transform 0.15s;
+}
+.play-audio-btn:hover { background: var(--green-dark); transform: scale(1.08); }
+
+.audio-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+.audio-wave span {
+  width: 3px;
+  border-radius: 2px;
+  background: #25a244;
+  opacity: 0.7;
+  transition: height 0.1s;
+}
+
+.audio-dur {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Indicateur typing ── */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+.typing-indicator .bubble {
+  padding: 10px 14px;
+  background: var(--bubble-them);
+  border-radius: 2px 12px 12px 12px;
+  border: 1px solid var(--border);
+}
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #25a244;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+  30%           { transform: translateY(-6px); opacity: 1;   }
+}
+
+/* ── Coche "lu" ── */
+.fa-check-double { font-size: 0.72rem; color: var(--text-muted); }
+.fa-check-double.read { color: #34b7f1; }
+
+/* ── Prévisualisation avant envoi ── */
+.media-preview-bar {
+  background: var(--header-bg);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+  animation: slideUp 0.25s ease;
+  flex-shrink: 0;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.media-preview-bar .preview-container {
+  position: relative;
+  max-width: 200px;
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+.media-preview-bar .preview-item {
+  display: block;
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.preview-audio-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+}
+.preview-audio-item i { color: #25a244; font-size: 1.6rem; }
+.cancel-preview {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+.cancel-preview:hover { transform: scale(1.1); }
+
+/* ── Mobile : conversation-window cachée par défaut ── */
+@media (max-width: 768px) {
+  .conversation-window { display: none !important; }
+  .chat-mobile-active .contacts-sidebar  { display: none !important; }
+  .chat-mobile-active .conversation-window {
+    display: flex !important;
+    width: 100% !important;
+  }
+  .chat-mobile-active .back-to-contacts { display: flex !important; }
+}
 .sender {
   font-weight: bold;
   font-size: 0.8rem;
   color: #075e54;
   margin-bottom: 4px;
 }
-.bubble-media {
-  margin-bottom: 5px;
-  border-radius: 8px;
-  overflow: hidden;
-  max-width: 250px; /* Taille max pour les images/vidéos */
-}
+/* Avant */
+.message.sent .bubble    { background: var(--bubble-me); }
+.message.received .bubble { background: var(--bubble-them); }
 
-.chat-img-content, .chat-video-content {
-  width: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.chat-audio-player {
-  width: 200px;
-  height: 35px;
-}
-/* La classe 'message' prend toute la largeur */
-.message {
-  display: flex !important;
-  width: 100% !important;
-  background: transparent !important; /* Retire les fonds parasites */
-}
-
-/* ✅ 'sent' pousse la bulle vers la DROITE */
-.message.sent {
-  justify-content: flex-end !important;
-}
-
-/* ✅ 'received' pousse la bulle vers la GAUCHE */
-.message.received {
-  justify-content: flex-start !important;
-}
-
-/* Optionnel : changer la couleur du nom 'Vous' */
-.message.sent .sender {
-  color: #25D366; /* Vert */
-  text-align: right;
-  display: block;
-}
-/* --- MODALE MULTIMÉDIA --- */
-.media-focus-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.92); /* Fond très sombre */
-  backdrop-filter: blur(10px); /* Effet de flou sur le chat derrière */
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-controls {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-}
-
-.modal-controls button {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  margin: 0 15px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.modal-controls button:hover {
-  transform: scale(1.2);
-  color: #00a884; /* Vert WhatsApp */
-}
-
-.focus-content {
-  max-width: 90%;
-  max-height: 70%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.focus-content img, .focus-content video {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  transition: transform 0.3s ease; /* Pour le zoom fluide */
-}
-
-/* --- BARRE DES MÉDIAS RÉCENTS (TRAY) --- */
-.recent-media-tray {
-  position: absolute;
-  bottom: 20px;
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  max-width: 90%;
-  overflow-x: auto;
-}
-
-.tray-item {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  opacity: 0.6;
-  border: 2px solid transparent;
-}
-
-.tray-item.active {
-  opacity: 1;
-  border-color: #00a884;
-}
-
-.tray-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* --- MENU CONTEXTUEL DES MESSAGES --- */
-.message-options-trigger {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  opacity: 0;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.bubble:hover .message-options-trigger {
-  opacity: 1;
-}
-
-.message-context-menu {
-  position: absolute;
-  top: 20px;
-  right: 0;
-  background: #233138; /* Couleur sombre WhatsApp */
-  border-radius: 8px;
-  padding: 8px 0;
-  z-index: 100;
-  width: 150px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.message-context-menu span {
-  display: block;
-  padding: 10px 15px;
-  color: #e9edef;
-  font-size: 0.9rem;
-}
-
-.message-context-menu span:hover {
-  background: #182229;
-}
-/* Modale de Transfert */
-.transfer-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 10000;
-}
-
-.transfer-card {
-  background: #233138; /* Couleur sombre WhatsApp */
-  width: 90%; max-width: 400px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-.transfer-header {
-  padding: 15px;
-  background: #2a3942;
-  display: flex; justify-content: space-between; align-items: center;
-  color: white; border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.transfer-list { max-height: 400px; overflow-y: auto; }
-
-.transfer-item {
-  display: flex; align-items: center; padding: 12px 15px;
-  cursor: pointer; transition: background 0.2s; color: #e9edef;
-}
-
-.transfer-item:hover { background: #111b21; }
-
-.transfer-item .mini-avatar {
-  width: 40px; height: 40px; border-radius: 50%; margin-right: 15px;
-}
-
-.transfer-item i { margin-left: auto; color: #00a884; opacity: 0; }
-.transfer-item:hover i { opacity: 1; }
-/* Fond de la modale multimédia */
-.media-focus-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(11, 20, 26, 0.95); /* Couleur sombre WhatsApp */
-    display: flex;
-    flex-direction: column;
-    z-index: 2000;
-}
-
-/* Style des boutons de contrôle en haut à droite */
-.modal-controls {
-    display: flex;
-    justify-content: flex-end;
-    padding: 20px;
-    gap: 20px;
-    color: #aebac1;
-    font-size: 1.2rem;
-}
-
-/* Image ou Vidéo centrée */
-.focus-content img {
-    max-width: 80%;
-    max-height: 70vh;
-    margin: auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-/* Container de l'audio */
-.audio-wrapper {
-  padding: 5px 0;
-  display: flex;
-  justify-content: center;
-  width: 100%; /* S'assure de ne pas dépasser la bulle */
-  overflow: hidden;
-}
-
-/* Le lecteur audio lui-même */
-.chat-audio-player {
-  width: 240px; /* Largeur fixe pour éviter le débordement vu sur ta capture */
-  height: 35px;
-  filter: sepia(20%) saturate(70%) grayscale(1) contrast(90%) invert(12%); /* Optionnel : pour l'assombrir un peu */
-  border-radius: 20px;
-}
-
-
-.message.received .bubble {
-  background-color: #ffffff; /* Couleur blanche pour le reçu */
-}/* Conteneur principal de chaque ligne de message */
-.message {
-  display: flex;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 0 10px;
-}
-
-/* Alignement à DROITE pour tes messages (envoyés) */
-.message.sent {
-  justify-content: flex-end; /* Pousse la bulle à droite */
-}
-
-/* Alignement à GAUCHE pour les messages reçus */
-.message.received {
-  justify-content: flex-start;
-}
-
-/* La bulle elle-même */
-.bubble {
-  max-width: 80%; /* Empêche la bulle de prendre toute la largeur sur mobile */
-  padding: 8px 12px;
-  border-radius: 12px;
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* Style spécifique envoyé pour qu'il se distingue */
-.message.sent .bubble {
-  background-color: #d9fdd3; /* Vert clair WhatsApp */
-  border-top-right-radius: 2px; /* Petit effet de pointe */
-}
-
-/* Style spécifique reçu */
-.message.received .bubble {
-  background-color: #ffffff;
-  border-top-left-radius: 2px;
-}
-.msg-time {
-  font-size: 11px;
-  color: #667781;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-/* Pour les images, on s'assure qu'elles ne déforment pas la bulle */
-.chat-img-content {
-  width: 100%;
-  border-radius: 8px;
-  display: block;
-}.tile-content {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 5px;
-  width: 100%;
-}
-
-.tile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.contact-name {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #333;
-  /* Assure que le nom ne pousse pas la date hors de l'écran */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.time {
-  font-size: 0.75rem;
-  color: #888;
-  min-width: fit-content;
-}
-
-.preview-container {
-  display: flex;
-  align-items: center;
-}
-
-.preview-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.icon-media {
-  font-size: 0.85rem;
-  color: #999;
-}
-
-.preview-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-  color: #666;
-}
-
-.text-only {
-  font-size: 0.9rem;
-}
-
-.voice-duration {
-  font-size: 0.8rem;
-  color: #999;
-}
-
-.empty {
-  font-style: italic;
-  font-size: 0.85rem;
-  color: #bbb;
-}
-/* Style pour différencier le Transporteur (Bleu) */
-.text-primary {
-  color: #2980b9 !important;
-}
-
-.blue-gradient {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-weight: bold;
-}
-
-.btn-blue-action {
-  background-color: #2980b9;
-  border: none;
-  transition: transform 0.2s;
-}
-
-.btn-blue-action:hover {
-  background-color: #1f6391;
-  transform: translateY(-2px);
-}
-
-/* Animation pour les badges de statut */
-.pulse-blue {
-  background-color: #3498db;
-  box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
-  animation: pulse-blue 2s infinite;
-}
-
-@keyframes pulse-blue {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
-}
-
-/* Design des inputs "Modern" */
-.input-group-modern {
-  background: #f1f3f5;
-  border-radius: 12px;
-  padding: 10px 15px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.input-group-modern:focus-within {
-  background: #fff;
-  box-shadow: 0 0 0 2px #00a884;
-}
+/* Après */
+.message.sent .bubble    { background: #d9fdd3 !important; z-index: 1; }
+.message.received .bubble { background: #ffffff !important; z-index: 1; }

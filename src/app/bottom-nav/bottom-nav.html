@@ -1,0 +1,40 @@
+<nav class="bottom-nav">
+
+  <!-- Accueil -->
+  <a class="nav-item" routerLink="/open" routerLinkActive="active">
+    <div class="nav-icon-wrap">
+      <i class="fas fa-home"></i>
+      <span class="nav-badge" *ngIf="false"></span>
+    </div>
+    <span class="nav-label">Accueil</span>
+  </a>
+
+  <!-- Chat -->
+  <a class="nav-item" routerLink="/chat" routerLinkActive="active">
+    <div class="nav-icon-wrap">
+      <i class="fas fa-comment-alt"></i>
+      <span class="nav-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+    </div>
+    <span class="nav-label">Chat</span>
+  </a>
+
+  <!-- Localisation (bouton central surélevé) -->
+  <a class="nav-item nav-center" routerLink="/localisation" routerLinkActive="active">
+    <div class="nav-center-btn">
+      <i class="fas fa-map-marker-alt"></i>
+    </div>
+    <span class="nav-label">Carte</span>
+  </a>
+
+  <!-- Profil -->
+  <a class="nav-item" routerLink="/profil" routerLinkActive="active">
+    <div class="nav-icon-wrap">
+      <i class="fas fa-user-circle"></i>
+    </div>
+    <span class="nav-label">Profil</span>
+  </a>
+
+</nav>
+
+<!-- Espace réservé pour éviter que le contenu passe derrière la navbar -->
+<div class="bottom-nav-spacer"></div>

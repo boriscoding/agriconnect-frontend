@@ -1,267 +1,258 @@
 <div class="app-main-container">
+
   <header class="top-app-bar">
     <div class="brand-section">
-      <img src="../../assets/images/lop.png" class="mini-logo">
-      <span class="app-title-text">chat</span>
+      <img src="../../assets/images/lop.png" class="mini-logo" alt="Logo">
+      <span class="app-title-text">AgriChat</span>
     </div>
   </header>
 
   <div class="logri-chat-app" [class.chat-mobile-active]="isChatActive">
-    
+
     <nav class="side-toolbar">
       <div class="nav-top">
-        <div class="nav-icon active"><i class="fas fa-comment-alt"></i></div>
-        <div class="nav-icon" routerLink="/open"><i class="fas fa-home"></i></div>
-        <div class="nav-icon"><i class="fas fa-compass" routerLink="/localisation"></i></div>
+        <div class="nav-icon active" title="Discussions"><i class="fas fa-comment-alt"></i></div>
+        <div class="nav-icon" routerLink="/open" title="Accueil"><i class="fas fa-home"></i></div>
+        <div class="nav-icon" routerLink="/localisation" title="Carte"><i class="fas fa-compass"></i></div>
       </div>
       <div class="nav-bottom">
-        <div class="nav-icon"><i class="fas fa-cog"></i></div>
-        <div class="nav-icon profile-icon"><i class="fas fa-user-circle"></i></div>
+        <div class="nav-icon" title="Paramètres"><i class="fas fa-cog"></i></div>
+        <div class="nav-icon profile-icon" title="Profil"><i class="fas fa-user-circle"></i></div>
       </div>
     </nav>
 
+    <!-- SIDEBAR -->
     <aside class="contacts-sidebar">
-  <div class="sidebar-content-wrapper">
-    <div class="sidebar-header-row">
-      <h2>Discussion</h2>
-      <div class="header-icons">
-        <i class="fas fa-th-list"></i> 
-        <i class="fas fa-caret-down"></i> 
-      </div>
-    </div>
-
-<div class="search-input-wrapper">
-  <i class="fas fa-search"></i>
-  <input 
-  type="text" 
-  [(ngModel)]="searchTerm" 
-  (input)="filterContacts()" 
-  placeholder="Recherche ou démarrer...">
-</div>
-
-
-<div class="contacts-list" [@listAnimation]="filteredContacts.length">
-  <div *ngFor="let contact of filteredContacts" 
-       (click)="selectContact(contact)"
-       [class.active]="selectedContactId === contact.id"
-       class="contact-item">
-  </div>
-</div>
-
-    <div class="scrollable-contacts" [@listAnimation]="contacts.length">
-      
-      <div *ngFor="let contact of contacts" 
-           class="contact-tile" 
-           [class.active]="selectedContactId === contact.id"
-           (click)="selectContact(contact)">
-           
-  <div class="avatar-container">
-  <img *ngIf="contact.photosuser; else fallbackAvatar" 
-       [src]="'http://' + serverI + ':8080' + contact.photosuser" 
-       [alt]="contact.prenom"
-       class="contact-img"
-       style="object-fit: cover;">
-
-  <ng-template #fallbackAvatar>
-    <img [src]="'https://ui-avatars.com/api/?name=' + contact.prenom + '+' + contact.nom + '&background=random&color=fff'" 
-         [alt]="contact.prenom">
-  </ng-template>
-
-  <span class="dot" [class.online]="contact.online"></span>
-</div>
-<div class="tile-content">
-  <div class="tile-header">
-    <span class="contact-name">{{ contact?.prenom }} {{ contact?.nom }}</span>
-    <span class="time" *ngIf="contact.dernierMessage">
-      {{ contact.dernierMessage.timestamp | date:'HH:mm' }}
-    </span>
-  </div>
-
-  <div class="preview-container">
-    <div *ngIf="contact.dernierMessage; else noMessage">
-      
-      <div [ngSwitch]="contact.dernierMessage.mediaType">
-        
-        <div class="preview-row" *ngSwitchCase="'IMAGE'">
-          <span style="color: #3498db; font-weight: bold;">📷 Photo</span> 
-          <span class="preview-text" *ngIf="contact.dernierMessage.contenu">
-            : {{ contact.dernierMessage.contenu | slice:0:15 }}...
-          </span>
+      <div class="sidebar-content-wrapper">
+        <div class="sidebar-header-row">
+          <h2>Discussions</h2>
+          <div class="header-icons">
+            <i class="fas fa-user-plus" (click)="showNewChatModal = true" title="Nouvelle discussion"></i>
+            <i class="fas fa-ellipsis-v" title="Plus d'options"></i>
+          </div>
         </div>
-
-        <div class="preview-row" *ngSwitchCase="'AUDIO'">
-          <span style="color: #2ecc71; font-weight: bold;">🎤 Message vocal</span>
+        <div class="search-input-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="filterContacts()" placeholder="Rechercher ou démarrer...">
         </div>
-
-        <div class="preview-row" *ngSwitchCase="'VIDEO'">
-          <span style="color: #e74c3c; font-weight: bold;">🎥 Vidéo</span>
+        <div class="scrollable-contacts" [@listAnimation]="filteredContacts.length">
+          <div *ngIf="filteredContacts.length === 0 && !searchTerm" class="empty-contacts">
+            <i class="fas fa-comments"></i>
+            <p>Aucune discussion pour l'instant</p>
+            <button (click)="showNewChatModal = true" class="btn-new-chat">
+              <i class="fas fa-plus"></i> Nouvelle discussion
+            </button>
+          </div>
+          <div *ngIf="filteredContacts.length === 0 && searchTerm" class="empty-contacts">
+            <i class="fas fa-search"></i>
+            <p>Aucun résultat pour "{{ searchTerm }}"</p>
+          </div>
+          <div *ngFor="let contact of filteredContacts"
+               class="contact-tile"
+               [class.active]="selectedContactId === contact.id"
+               (click)="selectContact(contact)">
+            <div class="avatar-container">
+              <img *ngIf="contact.photosuser; else fallbackAvatar"
+                   [src]="'http://' + serverI + ':8080' + contact.photosuser"
+                   [alt]="contact.prenom" class="contact-img"
+                   (error)="$any($event.target).src = 'https://ui-avatars.com/api/?name=' + contact.prenom + '+' + contact.nom + '&background=random&color=fff'">
+              <ng-template #fallbackAvatar>
+                <img [src]="'https://ui-avatars.com/api/?name=' + (contact.prenom || '') + '+' + (contact.nom || '') + '&background=random&color=fff'" [alt]="contact.nom">
+              </ng-template>
+              <span class="dot" [class.online]="contact.online"></span>
+            </div>
+            <div class="tile-content">
+              <div class="tile-header">
+                <span class="contact-name">{{ contact?.prenom }} {{ contact?.nom }}</span>
+                <span class="time" *ngIf="contact.dernierMessage">{{ contact.dernierMessage.timestamp | date:'HH:mm' }}</span>
+              </div>
+              <div class="preview-container">
+                <div *ngIf="contact.dernierMessage; else noMessage">
+                  <div [ngSwitch]="contact.dernierMessage.mediaType">
+                    <div class="preview-row" *ngSwitchCase="'IMAGE'"><i class="fas fa-image" style="color:#3498db;font-size:.8rem;"></i><span class="preview-text">Photo</span></div>
+                    <div class="preview-row" *ngSwitchCase="'AUDIO'"><i class="fas fa-microphone" style="color:#27ae60;font-size:.8rem;"></i><span class="preview-text">Message vocal</span></div>
+                    <div class="preview-row" *ngSwitchCase="'VIDEO'"><i class="fas fa-video" style="color:#e74c3c;font-size:.8rem;"></i><span class="preview-text">Vidéo</span></div>
+                    <p class="preview-text text-only" *ngSwitchDefault>{{ contact.dernierMessage.contenu | slice:0:35 }}{{ contact.dernierMessage.contenu?.length > 35 ? '...' : '' }}</p>
+                  </div>
+                </div>
+                <ng-template #noMessage><p class="preview-text empty">Démarrer une conversation...</p></ng-template>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <p class="preview-text text-only" *ngSwitchDefault>
-          {{ contact.dernierMessage.contenu | slice:0:30 }}{{ contact.dernierMessage.contenu?.length > 30 ? '...' : '' }}
-        </p>
       </div>
+    </aside>
 
-    </div>
-  </div>
-
-  <ng-template #noMessage>
-    <p class="preview-text empty">Démarrer une conversation...</p>
-  </ng-template>
-</div>
-      </div>
-
-      <div *ngIf="contacts.length === 0" style="padding: 20px; text-align: center; color: #888;">
-        <p>Aucune conversation trouvée.</p>
-      </div>
-
-    </div>
-  </div>
-</aside>
+    <!-- ════ CONVERSATION WINDOW (wrapper manquant, cause du bug) ════ -->
     <main class="conversation-window">
-      <header class="chat-top-bar">
-        <button class="back-to-contacts" (click)="closeChat()">
-          <i class="fas fa-arrow-left"></i>
-        </button>
-        <img [src]="getActiveContact()?.photosuser || 'https://ui-avatars.com/api/?name=' + getActiveContact()?.prenom" class="header-avatar" style="border-radius: 50%; width: 30px; margin-right: 10px;">
-     <span class="contact-name">{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</span>
-      <span class="contact-status" style="margin-left: 10%;">{{ getActiveContact()?.online ? 'en ligne' : 'hors ligne' }}</span>
+
+      <!-- Header -->
+      <header class="chat-top-bar" style="background-color:white;;">
+        <button class="back-to-contacts" (click)="closeChat()"><i class="fas fa-arrow-left"></i></button>
+        <img [src]="getActiveContact()?.photosuser
+                    ? 'http://' + serverI + ':8080' + getActiveContact()?.photosuser
+                    : 'https://ui-avatars.com/api/?name=' + (getActiveContact()?.prenom || 'U') + '+' + (getActiveContact()?.nom || '') + '&background=25a244&color=fff'"
+             class="header-avatar" [alt]="getActiveContact()?.prenom">
+        <div class="header-contact-info">
+          <span class="contact-name">{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</span>
+          <span class="contact-status">{{ getActiveContact()?.online ? '● en ligne' : 'hors ligne' }}</span>
+        </div>
       </header>
 
+      <!-- Corps messages -->
       <div class="chat-body" #scrollMe>
-  <div *ngFor="let msg of messages; let i = index" 
-       [ngClass]="msg?.isMe ? 'message sent' : 'message received'"
-       [@bubbleIn]>
-    
-    <div class="bubble">
-          <div class="message-options-trigger" (click)="toggleMessageMenu(i)">
-            <i class="fas fa-chevron-down"></i>
-            <div class="message-context-menu" *ngIf="activeMenuIndex === i">
-              <span (click)="transfererMessage(msg)"><i class="fas fa-share"></i> Transférer</span>
-              <span *ngIf="msg.isMe" (click)="modifierMessage(msg)"><i class="fas fa-pen"></i> Modifier</span>
-              <span (click)="supprimerMessage(msg.id, i)"><i class="fas fa-trash"></i> Supprimer</span>
-            </div>
-          </div>
 
-          <div class="media-content" *ngIf="msg?.type && msg?.type !== 'TEXT'">
-            <div class="media-wrapper" (click)="openMediaModal(msg)">
-              <img *ngIf="msg?.type === 'IMAGE'" [src]="msg?.mediaUrl" class="chat-img-content">
-              <video *ngIf="msg?.type === 'VIDEO'" [src]="msg?.mediaUrl" class="chat-video-content"></video>
+        <div class="date-separator"><span>Aujourd'hui</span></div>
+
+        <div class="typing-indicator" *ngIf="isContactTyping">
+          <div class="bubble received">
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+
+        <div *ngFor="let msg of messages; let i = index"
+             [ngClass]="msg?.isMe ? 'message sent' : 'message received'"
+             [@bubbleIn]>
+          <div class="bubble">
+
+            <div class="message-options-trigger" (click)="toggleMessageMenu(i); $event.stopPropagation()">
+              <i class="fas fa-chevron-down"></i>
+              <div class="message-context-menu" *ngIf="activeMenuIndex === i">
+                <span (click)="transfererMessage(msg)"><i class="fas fa-share"></i> Transférer</span>
+                <span *ngIf="msg.isMe" (click)="modifierMessage(msg)"><i class="fas fa-pen"></i> Modifier</span>
+                <span (click)="supprimerMessage(msg.id, i)"><i class="fas fa-trash"></i> Supprimer</span>
+              </div>
+            </div>
+
+            <div class="media-wrapper" *ngIf="msg?.type === 'IMAGE'" (click)="openMediaModal(msg)">
+              <img [src]="msg?.mediaUrl" class="chat-img-content" loading="lazy">
               <div class="media-overlay"><i class="fas fa-expand"></i></div>
             </div>
-            
-            <div *ngIf="msg?.type === 'AUDIO'" class="audio-wrapper">
-              <audio [src]="msg?.mediaUrl" controls class="chat-audio-player"></audio>
+
+            <div class="media-wrapper" *ngIf="msg?.type === 'VIDEO'" (click)="openMediaModal(msg)">
+              <video [src]="msg?.mediaUrl" class="chat-video-content" preload="metadata"></video>
+              <div class="media-overlay"><i class="fas fa-play-circle"></i></div>
             </div>
+
+            <div class="audio-wrapper" *ngIf="msg?.type === 'AUDIO'">
+              <div class="audio-bar">
+                <button class="play-audio-btn" (click)="playAudio($event, msg)"><i class="fas fa-play"></i></button>
+                <div class="audio-wave">
+                  <span *ngFor="let h of [8,14,10,20,6,16,12,18,8,14,10,20,16,8,12]" [style.height.px]="h"></span>
+                </div>
+                <span class="audio-dur">0:{{ msg.duration || '00' }}</span>
+              </div>
+            </div>
+
+            <!-- ✅ <p> et non .bubble-text pour correspondre au CSS .bubble p -->
+            <p *ngIf="msg?.text">{{ msg?.text }}</p>
+
+            <span class="msg-time">
+              {{ msg.time }}
+              <i class="fas fa-check-double" *ngIf="msg.isMe" [class.read]="msg.read"></i>
+            </span>
+
           </div>
-
-          <p *ngIf="msg?.text">{{ msg?.text }}</p>
-          
-          <span class="msg-time">
-            {{ msg.time }}
-            <i class="fas fa-check-double" *ngIf="msg.isMe" [style.color]="msg.read ? '#34b7f1' : '#888'"></i>
-          </span>
         </div>
-  </div>
-</div>
 
+        <div *ngIf="messages.length === 0 && selectedContactId" class="messages-empty">
+          <i class="fas fa-comment-dots"></i>
+          <p>Commencez la conversation !</p>
+        </div>
+      </div>
+
+      <!-- Preview avant envoi -->
       <div class="media-preview-bar" *ngIf="mediaPreviewUrl">
-  <div class="preview-container">
-    <button class="cancel-preview" (click)="cancelPreview()">
-      <i class="fas fa-times"></i>
-    </button>
-    
-    <img *ngIf="previewType === 'IMAGE'" [src]="mediaPreviewUrl" class="preview-item">
-    <video *ngIf="previewType === 'VIDEO'" [src]="mediaPreviewUrl" class="preview-item"></video>
-    
-    <div *ngIf="previewType === 'AUDIO'" class="preview-audio-item">
-      <i class="fas fa-microphone"></i>
-      <span style="font-size: 0.8rem;">Message vocal prêt</span>
-    </div>
-  </div>
-</div>
+        <div class="preview-container">
+          <button class="cancel-preview" (click)="cancelPreview()"><i class="fas fa-times"></i></button>
+          <img *ngIf="previewType === 'IMAGE'" [src]="mediaPreviewUrl" class="preview-item">
+          <video *ngIf="previewType === 'VIDEO'" [src]="mediaPreviewUrl" class="preview-item" controls></video>
+          <div *ngIf="previewType === 'AUDIO'" class="preview-audio-item">
+            <i class="fas fa-microphone"></i>
+            <span>Message vocal prêt</span>
+          </div>
+        </div>
+      </div>
 
-<footer class="chat-footer">
-  </footer>
-
+      <!-- Footer saisie -->
       <footer class="chat-footer">
-        <button class="action-btn" (click)="triggerImageUpload()">
+        <button class="action-btn" (click)="triggerImageUpload()" title="Joindre">
           <i class="fas fa-paperclip"></i>
-          <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept="image/*,video/*">
+          <input type="file" #fileInput style="display:none" (change)="onFileSelected($event)" accept="image/*,video/*">
         </button>
-
-        <input type="text" 
-               [(ngModel)]="newMessage" 
-               (keyup.enter)="sendMessage()" 
+        <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" (input)="onMessageInput()"
                [placeholder]="mediaPreviewUrl ? 'Ajouter une légende...' : 'Taper un message...'">
-
         <button *ngIf="newMessage.trim().length > 0 || mediaPreviewUrl" (click)="sendMessage()" class="send-btn">
           <i class="fas fa-paper-plane"></i>
         </button>
-
-        <button *ngIf="newMessage.trim().length === 0 && !mediaPreviewUrl" 
-                (click)="startVoiceRecord()" 
-                class="voice-btn"
-                [class.recording]="isRecording">
+        <button *ngIf="newMessage.trim().length === 0 && !mediaPreviewUrl"
+                (click)="startVoiceRecord()" class="voice-btn" [class.recording]="isRecording">
           <i class="fas" [ngClass]="isRecording ? 'fa-stop-circle' : 'fa-microphone'"></i>
         </button>
       </footer>
-    </main>
+
+    </main><!-- ═══ fin .conversation-window ═══ -->
+
+    <!-- Modales (en dehors de main, dans logri-chat-app) -->
     <div class="media-focus-modal" *ngIf="selectedMedia" (click)="closeMediaModal()">
-  <div class="modal-controls" (click)="$event.stopPropagation()">
-    <div class="left-actions">
-      <button (click)="zoomIn($event)"><i class="fas fa-search-plus"></i></button>
-      <button (click)="zoomOut($event)"><i class="fas fa-search-minus"></i></button>
-    </div>
-    <div class="right-actions">
-      <button (click)="downloadMedia(selectedMedia, $event)"><i class="fas fa-download"></i> Enregistrer</button>
-      <button (click)="transfererMessage(selectedMedia)"><i class="fas fa-share"></i></button>
-      <button (click)="closeMediaModal()"><i class="fas fa-times"></i></button>
-    </div>
-  </div>
-
-  <div class="focus-content" (click)="$event.stopPropagation()">
-    <img *ngIf="selectedMedia.type === 'IMAGE'" 
-         [src]="selectedMedia.mediaUrl" 
-         [style.transform]="'scale(' + zoomLevel + ')'">
-    
-    <video *ngIf="selectedMedia.type === 'VIDEO'" 
-           [src]="selectedMedia.mediaUrl" 
-           controls autoplay></video>
-  </div>
-
-  <div class="recent-media-tray" (click)="$event.stopPropagation()">
-    <div *ngFor="let m of recentMedias" 
-         class="tray-item" 
-         [class.active]="m.id === selectedMedia.id"
-         (click)="selectedMedia = m">
-      <img *ngIf="m.type === 'IMAGE'" [src]="m.mediaUrl">
-      <div *ngIf="m.type === 'VIDEO'" class="video-thumb"><i class="fas fa-play"></i></div>
-    </div>
-  </div>
-</div>
-
-<div class="transfer-overlay" *ngIf="showTransferModal" (click)="showTransferModal = false">
-  <div class="transfer-card" (click)="$event.stopPropagation()">
-    <div class="transfer-header">
-      <h3>Transférer à...</h3>
-      <button class="close-btn" (click)="showTransferModal = false"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="transfer-search">
-      <i class="fas fa-search"></i>
-      <input type="text" placeholder="Rechercher un contact...">
-    </div>
-    <div class="transfer-list">
-      <div *ngFor="let contact of contacts" class="transfer-item" (click)="confirmTransfer(contact.id)">
-        <img [src]="contact.photosuser || 'https://ui-avatars.com/api/?name=' + contact.prenom" class="mini-avatar">
-        <div class="contact-info">
-          <span class="name">{{ contact.prenom }} {{ contact.nom }}</span>
+      <div class="modal-controls" (click)="$event.stopPropagation()">
+        <div class="left-actions">
+          <button (click)="zoomIn($event)"><i class="fas fa-search-plus"></i></button>
+          <button (click)="zoomOut($event)"><i class="fas fa-search-minus"></i></button>
         </div>
-        <i class="fas fa-paper-plane send-icon"></i>
+        <div class="right-actions">
+          <button (click)="downloadMedia(selectedMedia, $event)"><i class="fas fa-download"></i> Enregistrer</button>
+          <button (click)="transfererMessage(selectedMedia)"><i class="fas fa-share"></i></button>
+          <button (click)="closeMediaModal()"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="focus-content" (click)="$event.stopPropagation()">
+        <img *ngIf="selectedMedia.type === 'IMAGE'" [src]="selectedMedia.mediaUrl" [style.transform]="'scale(' + zoomLevel + ')'">
+        <video *ngIf="selectedMedia.type === 'VIDEO'" [src]="selectedMedia.mediaUrl" controls autoplay></video>
+      </div>
+      <div class="recent-media-tray" (click)="$event.stopPropagation()">
+        <div *ngFor="let m of recentMedias" class="tray-item" [class.active]="m.id === selectedMedia.id" (click)="selectedMedia = m">
+          <img *ngIf="m.type === 'IMAGE'" [src]="m.mediaUrl">
+          <div *ngIf="m.type === 'VIDEO'" class="video-thumb"><i class="fas fa-play"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="transfer-overlay" *ngIf="showTransferModal" (click)="showTransferModal = false">
+      <div class="transfer-card" (click)="$event.stopPropagation()">
+        <div class="transfer-header">
+          <h3>Transférer à...</h3>
+          <button class="close-btn" (click)="showTransferModal = false"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="transfer-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un contact..."></div>
+        <div class="transfer-list">
+          <div *ngFor="let contact of contacts" class="transfer-item" (click)="confirmTransfer(contact.id)">
+            <img [src]="contact.photosuser ? 'http://' + serverI + ':8080' + contact.photosuser : 'https://ui-avatars.com/api/?name=' + (contact.prenom || 'U')" class="mini-avatar">
+            <div class="contact-info"><span class="name">{{ contact.prenom }} {{ contact.nom }}</span></div>
+            <i class="fas fa-paper-plane send-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-new-chat-overlay" *ngIf="showNewChatModal" (click)="showNewChatModal = false">
+      <div class="modal-new-chat-card" (click)="$event.stopPropagation()">
+        <div class="modal-header"><i class="fas fa-user-plus"></i><h3>Nouvelle discussion</h3></div>
+        <div class="modal-body">
+          <p>Entrez l'adresse email de l'utilisateur :</p>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" [(ngModel)]="emailSearch" placeholder="exemple@agriconnect.cm" (keyup.enter)="creerNouvelleDiscussion()">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="showNewChatModal = false">Annuler</button>
+          <button class="btn-confirm" (click)="creerNouvelleDiscussion()" [disabled]="!emailSearch.trim()">
+            <i class="fas fa-search"></i> Rechercher
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-  </div>
-  
-</div>
+</div> 
+ <app-bottom-nav ></app-bottom-nav>

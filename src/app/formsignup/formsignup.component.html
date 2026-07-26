@@ -1,4 +1,5 @@
-<div class="main-container-form" *ngIf="Form">
+<div class="main-container-form" *ngIf="!isClosing">
+  
   <div class="signup-card" [ngClass]="{ 'slide-out': isClosing }">
     
     <div class="brand-section-left">
@@ -14,48 +15,61 @@
       </div>
 
       <form #registrationForm="ngForm" class="actual-form">
-       <div class="input-group">
-    
-    <input type="text" placeholder="Nom" name="nom" [(ngModel)]="nom" 
-           #nomRef="ngModel" required
-           [ngClass]="{'is-invalid': (nomRef.invalid && registrationForm.submitted)}"
-           style="border-radius: 45px;" class="form-control-custom"/>
+        <div class="input-group">
+          
+          <input type="text" placeholder="Nom" name="nom" [(ngModel)]="nom" 
+                 #nomRef="ngModel" required
+                 [ngClass]="{'is-invalid': (nomRef.invalid && registrationForm.submitted)}"
+                 style="border-radius: 45px;" class="form-control-custom"/>
 
-    <input type="text" placeholder="Prénom" name="prenom" [(ngModel)]="prenom" 
-           #prenomRef="ngModel" required
-           [ngClass]="{'is-invalid': (prenomRef.invalid && registrationForm.submitted)}"
-           style="border-radius: 45px;" class="form-control-custom"/>
+          <input type="text" placeholder="Prénom" name="prenom" [(ngModel)]="prenom" 
+                 #prenomRef="ngModel" required
+                 [ngClass]="{'is-invalid': (prenomRef.invalid && registrationForm.submitted)}"
+                 style="border-radius: 45px;" class="form-control-custom"/>
 
-    <input type="email" placeholder="Email" name="email" [(ngModel)]="email" 
-           #emailRef="ngModel" required email
-           [ngClass]="{'is-invalid': (emailRef.invalid && registrationForm.submitted)}"
-           style="border-radius: 45px;" class="form-control-custom"/>
-    
-    <div class="password-field" [ngClass]="{'is-invalid': (passRef.invalid && registrationForm.submitted)}">
-      <input [type]="passwordType" placeholder="Password" name="password" 
-             [(ngModel)]="password" #passRef="ngModel" required/>
-      <i [class]="passwordIcon" (click)="viewpass()"></i>
-    </div>
+          <input type="email" placeholder="Email" name="email" [(ngModel)]="email" 
+                 #emailRef="ngModel" required email
+                 [ngClass]="{'is-invalid': (emailRef.invalid && registrationForm.submitted)}"
+                 style="border-radius: 45px;" class="form-control-custom"/>
+          
+          <div class="password-field" [ngClass]="{'is-invalid': (passRef.invalid && registrationForm.submitted)}">
+            <input [type]="passwordType" placeholder="Password" name="password" 
+                   [(ngModel)]="password" #passRef="ngModel" required/>
+            <i [class]="passwordIcon" (click)="viewpass()" style="cursor: pointer;"></i>
+          </div>
 
-    <select name="categorie" [(ngModel)]="selectedCategorie" 
-            #catRef="ngModel" required
-            [ngClass]="{'is-invalid': (catRef.invalid && registrationForm.submitted)}"
-            style="border-radius: 45px;" class="form-control-custom">
-      <option value="Producteur">Producteur</option>
-      <option value="Transporteur">Transporteur</option>
-      <option value="Acheteur">Acheteur</option>
-    </select>
-  </div>
+          <select name="categorie" [(ngModel)]="selectedCategorie" 
+                  #catRef="ngModel" required
+                  [ngClass]="{'is-invalid': (catRef.invalid && registrationForm.submitted)}"
+                  style="border-radius: 45px;" class="form-control-custom">
+            <option value="Producteur">Producteur</option>
+            <option value="Transporteur">Transporteur</option>
+            <option value="Acheteur">Acheteur</option>
+          </select>
+        </div>
 
         <div class="action-buttons">
-          <button type="submit" class="inscrire" (click)="onSubmit(registrationForm)">S'inscrire</button>
-          <button type="button" class="btn-submit" routerLink="/opentrans">Se connecter</button>
+          <button 
+            type="submit" 
+            class="inscrire" 
+            [disabled]="loading || registrationForm.invalid" 
+            (click)="onSubmit(registrationForm)">
+            
+            <span *ngIf="!loading">S'inscrire</span>
+            <span *ngIf="loading">
+              <i class="fas fa-spinner fa-spin"></i> En cours...
+            </span>
+          </button>
+
+          <button type="button" class="btn-submit" (click)="goToLogin()"  routerLink="/connecter
+          
+          ">Se connecter</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-<!-- Button retour au homepage -->
-<button class="floating-back-btn" routerLink="/homepage" (click)="goToHome()">
+
+<button class="floating-back-btn" (click)="goToHome()">
   <i class="fas fa-arrow-left"></i>
 </button>

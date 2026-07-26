@@ -25,11 +25,18 @@ export interface OffreData {
 @Injectable({ providedIn: 'root' })
 export class OffreService {
   // ✅ REMPLACEMENT PAR L'IP RÉSEAU
-  private readonly serverIp = 'localhost';
+ private readonly serverIp = 'localhost'; // À changer par ton IP si tu testes sur mobile
   private apiUrl = `http://${this.serverIp}:8080/api/offres`;
+  private colisUrl = `http://${this.serverIp}:8080/api/colis`; // Ajout de l'URL pour les colis
 
   constructor(private http: HttpClient) {}
 
+  // ... (autres méthodes)
+
+  // Utilise cette méthode centralisée pour tes appels
+  finaliserCommande(donnees: any): Observable<any> {
+    return this.http.post<any>(`${this.colisUrl}/commander`, donnees);
+  }
   creerOffre(formData: FormData): Observable<OffreData> {
     return this.http.post<OffreData>(`${this.apiUrl}/publier`, formData);
   }
@@ -50,5 +57,15 @@ export class OffreService {
   // --- SUPPRIMER ---
   supprimerOffre(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/supprimer/${id}`);
+  }
+  
+
+  // ✅ Alias conservé pour compatibilité avec app-commande.ts ancien
+  enregistrerTransactionFinale(commandeComplete: any): Observable<any> {
+    return this.finaliserCommande(commandeComplete);
+  }
+
+  initierPaiement(infosPaiement: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/paiement/init`, infosPaiement);
   }
 }

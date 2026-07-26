@@ -1,146 +1,338 @@
-<app-header (sidebarToggle)="sidebarOpen = $event"></app-header>
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm header">
+  <div class="container-fluid align-items-center">
+    <div class="d-flex align-items-center" style="margin-left:2%;">
+      <span id="images"></span>
+      <input class="form-control search-input d-none d-md-block"
+             placeholder="Rechercher sur Agriconnect"
+             style="margin-left:10%;" />
+    </div>
+
+    <ul class="navbar-nav mx-auto d-none d-lg-flex" routerLink="/" routerLinkActive="active">
+      <li class="nav-item" routerLink="/acheteur"><i class="fas fa-home nav-icon active"></i></li>
+      <li class="nav-item"><i class="fas fa-users nav-icon"></i></li>
+      <li class="nav-item" routerLink="/chat"><i class="fas fa-comments nav-icon"></i></li>
+    </ul>
+
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-light icon-btn" (click)="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="d-flex align-items-center gap-3">
+        <img *ngIf="imagePreview || (user && user.photosuser)"
+             [src]="imagePreview || ('http://' + serverI + ':8080' + user.photosuser)"
+             class="rounded-circle border"
+             style="width:35px;height:35px;cursor:pointer;object-fit:cover;"
+             (click)="openEditModal()"
+             (error)="handleImageError($event)">
+        <i *ngIf="!imagePreview && (!user || !user.photosuser)"
+           class="fas fa-user-circle fs-4 nav-right-icon"
+           style="cursor:pointer;color:#555;"
+           (click)="openEditModal()"></i>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ MODALE PROFIL ══════════════════════════════════════════════════════════ -->
+<div class="modal fade" [ngClass]="{'show d-block': isModalOpen}" tabindex="-1"
+     *ngIf="isModalOpen"
+     style="width:100%;background-color:white;padding:0;">
+  <div class="modal-dialog modal-fullscreen-custom"
+       style="border:none;box-shadow:none;margin-top:0.5rem;padding-top:0;">
+    <div class="modal-content custom-modal-full" style="width:100%;border:none;">
+      <div class="modal-body p-4" style="border:none;">
+
+        <h5 class="text-center fw-bold mb-4" style="margin-top:1em;">MODIFIER LE PROFIL</h5>
+
+        <form (ngSubmit)="saveUser()" #userForm="ngForm" class="modern-form">
+
+  <div class="profile-header text-center mb-4">
+    <div class="photo-upload-container">
+      <img [src]="imagePreview || (user.photosuser 
+            ? 'http://' + serverI + ':8080' + user.photosuser 
+            : 'assets/default-avatar.png')"
+           (click)="photoInput.click()"
+           class="rounded-circle profile-preview-img"
+           style="width:120px;height:120px;object-fit:cover;border:3px solid #00a884; cursor:pointer;">
+      
+      <div class="camera-icon-overlay" (click)="photoInput.click()">
+        <i class="fas fa-camera"></i>
+      </div>
+      <input #photoInput type="file" (change)="onPhotoSelected($event)"
+             accept="image/*" style="display:none">
+    </div>
+    <p class="text-muted small mt-2">Cliquez pour modifier la photo</p>
+  </div>
+
+  <div class="text-center mb-4">
+    <h4 class="fw-bold text-warning">Compte Acheteur</h4>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-7">
+      <div class="input-group-modern">
+        <div class="input-icon"><i class="fas fa-user"></i></div>
+        <div class="input-content">
+          <label>Nom complet</label>
+          <input type="text" [(ngModel)]="user.nom" name="nom" required placeholder="Votre nom">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="gender-selector">
+        <label class="small-label">Sexe</label>
+        <div class="d-flex gap-2">
+          <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
+          <label class="btn btn-outline-success btn-sm w-100" for="masculin">M</label>
+          
+          <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
+          <label class="btn btn-outline-success btn-sm w-100" for="feminin">F</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-group-modern mb-3">
+    <div class="input-icon"><i class="fas fa-envelope"></i></div>
+    <div class="input-content">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="user.email" name="email" placeholder="exemple@mail.com">
+    </div>
+  </div>
+
+  <div class="input-group-modern mb-3">
+    <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
+    <div class="input-content">
+      <label>Localisation</label>
+      <input type="text" [(ngModel)]="user.localisation" name="loc" placeholder="Ville, Quartier">
+    </div>
+  </div>
+
+  <div class="input-group-modern mb-4">
+    <div class="input-icon"><i class="fas fa-phone"></i></div>
+    <div class="input-content">
+      <label>Téléphone</label>
+      <input type="text" [(ngModel)]="user.number" name="num" placeholder="Ex: 6XXXXXXXX">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="loading">
+      Annuler
+    </button>
+    <button type="submit" class="btn-save" [disabled]="loading || !userForm.form.valid">
+      <span *ngIf="!loading">Mettre à jour</span>
+      <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+    </button>
+  </div>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="isModalOpen" (click)="closeModal()"></div>
+
+<!-- ══ LAYOUT PRINCIPAL ═══════════════════════════════════════════════════════ -->
 <app-sidebar [isOpen]="sidebarOpen" (closeSidebar)="sidebarOpen = false"></app-sidebar>
 
 <div class="main-wrapper">
-  <button class="mobile-menu-btn d-lg-none" (click)="sidebarOpen = !sidebarOpen">
-    <i class="fas" [ngClass]="sidebarOpen ? 'fa-times' : 'fa-bars'"></i>
-    <span>Menu</span>
-  </button>
 
+  <!-- Bouton burger mobile -->
+
+
+  <!-- Overlay sidebar mobile -->
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
 
+  <!-- ── Tabs ─────────────────────────────────────────────────────────────── -->
   <div class="sticky-sub-header">
     <div class="tabs-container">
-      <div class="tab" >Producteur</div>
-      <div class="tab">Transporteur</div>
-      <div class="tab active">Acheteur</div>
+      <div class="tab" [class.active]="viewType === 'OFFRES'" (click)="switchView('OFFRES')">
+        <i class="fas fa-store"></i> Marché
+      </div>
+      <div class="tab" [class.active]="viewType === 'MES_DEMANDES'" (click)="switchView('MES_DEMANDES')">
+        <i class="fas fa-clipboard-list"></i> Mes commandes
+      </div>
     </div>
   </div>
 
   <div class="layout-content">
+
+    <!-- ── Sidebar gauche ──────────────────────────────────────────────────── -->
     <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
       <div class="sidebar-top">
-        <h4 class="producer-title" style="color: #ffc107;">Acheteur</h4>
+        <h4 class="producer-title">Acheteur {{user?.nom}}</h4>
         <div class="search-box-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="form-control-custom" placeholder="Rechercher un besoin...">
+          <input type="text" class="form-control-custom" placeholder="Rechercher un produit">
         </div>
       </div>
 
       <ul class="nav-links">
-        <li class="nav-item">
+        <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
+          <i class="fas fa-th-large"></i> <span>Toutes les offres</span>
+        </li>
+        <li class="nav-item" [class.active]="viewType === 'MES_DEMANDES'"
+            (click)="switchView('MES_DEMANDES'); sidebarOpen = false">
+          <i class="fas fa-shopping-bag"></i> <span>Mes commandes</span>
+        </li>
+        <li class="nav-item" (click)="openEditModal(); sidebarOpen = false">
           <i class="fas fa-user-circle"></i> <span>Mon Profil</span>
         </li>
-        <li class="nav-item">
-          <i class="fas fa-headset"></i> <span>Assistance</span>
+        <li class="nav-item" (click)="navigateTo('/chat')">
+          <i class="fas fa-comments"></i> <span>Messagerie</span>
+        </li>
+        <li class="nav-item" (click)="logout()" style="color:#dc3545;cursor:pointer;">
+          <i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span>
         </li>
       </ul>
 
-      <button class="btn-publish pulse-animation" style="background-color: #ffc107; color: #000;" (click)="openOffreModal()">
-        <i class="fas fa-bullhorn"></i> <span>Publier un besoin</span>
+      <!-- Bouton action principal pour un acheteur : rafraîchir le marché -->
+      <button class="btn-publish pulse-animation" (click)="chargerOffres()">
+        <i class="fas fa-sync-alt bounce-icon"></i> <span>Rafraîchir le marché</span>
       </button>
     </aside>
 
+    <!-- ── Contenu principal ───────────────────────────────────────────────── -->
     <main class="feed-content">
+
+      <!-- En-tête de section -->
       <div class="section-intro">
-        <h2 class="main-title">Demandes des acheteurs</h2>
-        <p class="sub-text">Consultez ce que les clients recherchent actuellement</p>
+        <div *ngIf="viewType === 'OFFRES'">
+          <h2 class="main-title">Marché des producteurs</h2>
+          <p class="sub-text">Découvrez les offres fraîches du marché agricole</p>
+        </div>
+        <div *ngIf="viewType === 'MES_DEMANDES'">
+          <h2 class="main-title">Mes commandes en cours</h2>
+          <p class="sub-text">Suivez l'état de vos demandes d'achat</p>
+        </div>
       </div>
 
-      <div class="cards-grid">
-        <article class="offer-card" *ngFor="let i of [1,2,3,4,5,6]">
-          <div class="card-img-container">
-              <img src="https://picsum.photos/seed/buying/400/300" alt="besoin">
-            <div class="view-count"><i class="fas fa-eye"></i> 1.2k</div>
-          </div>
-          <div class="card-footer-actions">
-            <button class="btn-action order" style="background-color: #ffc107; color: #000;">
-              <i class="fas fa-handshake"></i> Proposer
-            </button>
-            <button class="btn-action more"><i class="fas fa-plus"></i></button>
-          </div>
-        </article>
+      <!-- ── Grille des cartes ─────────────────────────────────────────────── -->
+      <div class="marketplace-grid" *ngIf="getFiltreLength() > 0">
+
+        <!-- OFFRES -->
+        <ng-container *ngIf="viewType === 'OFFRES'">
+          <article class="fb-card" *ngFor="let offre of offresFiltrees">
+            <div class="fb-card-media compact-media">
+              <img [src]="getPhotoUrl(offre.photo)"
+                   (error)="$any($event.target).src = 'assets/images/lop.png'"
+                   class="img-fluid">
+              <div class="status-badge">
+                <span class="dot" [ngClass]="offre.statut === 'DISPONIBLE' ? 'pulse-green' : 'pulse-red'"></span>
+                {{ offre.statut }}
+              </div>
+              <div class="fb-price-tag green-gradient">{{ offre.prixUnitaire }} FCFA</div>
+            </div>
+
+            <div class="fb-card-content">
+              <h3 class="product-title">{{ offre.nproduit }}</h3>
+              <small class="category-pill">{{ offre.type_pro }}</small>
+              <p class="description-text">{{ (offre.description || '') | slice:0:85 }}...</p>
+              <div class="info-row">
+                <span><i class="fas fa-map-marker-alt text-success"></i> {{ offre.lieuProduction }}</span>
+                <span><i class="fas fa-weight-hanging text-muted"></i> {{ offre.quantiteProduit }} kg</span>
+              </div>
+            </div>
+
+            <div class="fb-card-footer">
+              <!-- Offre d'un autre producteur -->
+              <ng-container *ngIf="offre.producteur?.id !== userIdConnecte">
+                <button class="btn-fb"
+                        style="border:1px solid #27ae60;color:#27ae60;"
+                        (click)="initierDiscussion(offre.producteur?.id, offre.nproduit)">
+                  <i class="fas fa-comments"></i> Discussion
+                </button>
+                <button class="btn-fb btn-green-action" (click)="ouvrirCommande(offre)" >
+                  <i class="fas fa-shopping-cart"></i> Commander
+                </button>
+              </ng-container>
+
+              <!-- Propre offre — ne devrait pas arriver pour un pur acheteur -->
+              <button class="btn-fb btn-edit"
+                      *ngIf="offre.producteur?.id === userIdConnecte"
+                      (click)="ouvrirGerer(offre)">
+                <i class="fas fa-tools"></i> Gérer
+              </button>
+            </div>
+          </article>
+        </ng-container>
+
+        <!-- MES DEMANDES -->
+        <ng-container *ngIf="viewType === 'MES_DEMANDES'">
+          <article class="fb-card" *ngFor="let d of demandesAcheteur">
+            <div class="fb-card-content" style="padding-top:20px;">
+              <div class="status-badge" style="position:static;margin-bottom:10px;">
+                <span class="dot"
+                      [ngClass]="{
+                        'pulse-green':  d.statut === 'ACCEPTEE',
+                        'pulse-orange': d.statut === 'EN_ATTENTE',
+                        'pulse-red':    d.statut === 'REFUSEE'
+                      }"></span>
+                {{ d.statut || 'EN ATTENTE' }}
+              </div>
+              <h3 class="product-title">{{ d.libelle || 'Commande #' + d.id }}</h3>
+              <p class="description-text">
+                Quantité : <strong>{{ d.quantite }} kg</strong>
+              </p>
+              <div class="info-row">
+                <span><i class="fas fa-calendar-alt text-muted"></i> {{ d.dateCreation | date:'dd/MM/yyyy' }}</span>
+                <span *ngIf="d.offre?.prixUnitaire">
+                  <i class="fas fa-wallet text-warning"></i>
+                  {{ d.quantite * d.offre.prixUnitaire | number }} FCFA
+                </span>
+              </div>
+            </div>
+            <div class="fb-card-footer">
+              <button class="btn-fb btn-edit" (click)="ouvrirGerer(d)">
+                <i class="fas fa-eye"></i> Voir les détails
+              </button>
+            </div>
+          </article>
+        </ng-container>
+
       </div>
+
+      <!-- ── État vide ─────────────────────────────────────────────────────── -->
+      <div *ngIf="getFiltreLength() === 0"
+           class="empty-state-container d-flex justify-content-center align-items-center w-100"
+           style="min-height:450px;">
+        <div class="vide text-center">
+
+          <ng-container *ngIf="viewType === 'OFFRES'">
+            <div class="empty-icon-wrapper mb-4">
+              <i class="fas fa-store fa-5x text-success floating-animation"></i>
+            </div>
+            <h3 class="text-success fw-bold">Aucune offre disponible</h3>
+            <p class="text-muted">Les producteurs n'ont pas encore publié d'offres pour le moment.</p>
+            <button class="btn btn-outline-success btn-lg mt-3 rounded-pill shadow-sm"
+                    (click)="chargerOffres()">
+              <i class="fas fa-sync-alt"></i> Actualiser le marché
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="viewType === 'MES_DEMANDES'">
+            <div class="empty-icon-wrapper mb-4">
+              <i class="fas fa-shopping-bag fa-5x text-warning floating-animation"></i>
+            </div>
+            <h3 class="text-warning fw-bold">Aucune commande en cours</h3>
+            <p class="text-muted">Parcourez le marché et passez votre première commande !</p>
+            <button class="btn btn-outline-success btn-lg mt-3 rounded-pill shadow-sm"
+                    (click)="switchView('OFFRES')">
+              <i class="fas fa-store"></i> Parcourir le marché
+            </button>
+          </ng-container>
+
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
 
-<div class="modal fade" [ngClass]="{'show d-block': isOffreModalOpen}" *ngIf="isOffreModalOpen">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content custom-modal-rect shadow-lg">
-      
-      <div class="close-line">
-        <button type="button" class="btn-close-red" (click)="closeOffreModal()">×</button>
-      </div>
-
-      <div class="modal-body p-4 pt-0">
-        <h4 class="text-center fw-bold mb-4" style="color: #ffc107;">NOUVEAU BESOIN</h4>
-
-        <form (ngSubmit)="saveOffre()">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Produit recherché (Ex: 2 Tonnes de Maïs)</label>
-            <input type="text" class="form-control input-rect" [(ngModel)]="newOffre.produit" name="produit" required placeholder="Que recherchez-vous ?">
-          </div>
-
-          <div class="row g-2">
-            <div class="col-6">
-                <label class="small fw-bold">Quantité voulue</label>
-                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.quantiteProduit" name="quantite">
-            </div>
-            <div class="col-6">
-                <label class="small fw-bold">Budget estimé (FCFA)</label>
-                <input type="number" class="form-control input-rect" [(ngModel)]="newOffre.prixUnitaire" name="prix">
-            </div>
-          </div>
-
-          <div class="mb-3 mt-3">
-            <label class="form-label small fw-bold">Urgence de la demande</label>
-            <select class="form-select input-rect" [(ngModel)]="newOffre.statut" name="statut">
-              <option value="URGENT">🔴 Urgent (Moins de 48h)</option>
-              <option value="NORMAL">🟡 Normal (1 semaine)</option>
-              <option value="PLANIFIE">🟢 Planifié (Long terme)</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Détails de la demande</label>
-            <textarea class="form-control input-rect" rows="3" [(ngModel)]="newOffre.description" name="description" placeholder="Précisez la zone de livraison, la qualité souhaitée..."></textarea>
-          </div>
-
-          <div class="d-flex gap-2 mt-4">
-            <button type="button" class="btn btn-secondary flex-grow-1 btn-rect" (click)="closeOffreModal()">Annuler</button>
-            <button type="submit" class="btn flex-grow-1 btn-rect" style="background-color: #ffc107; border:none;">Publier mon besoin</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
- <div class="nav-fab-options" [class.active]="isNavMenuOpen">
-    
-    <button class="nav-fab-child" (click)="navigateTo('/')" title="Accueil">
-      <i class="fas fa-home"></i>
-      <span class="nav-fab-label">Accueil</span>
-    </button>
-
-    <button class="nav-fab-child" (click)="navigateTo('/local')" title="Local">
-      <i class="fas fa-map-marker-alt"></i>
-      <span class="nav-fab-label">Local</span>
-    </button>
-
-    <button class="nav-fab-child" (click)="navigateTo('/discussion')" title="Discussion">
-      <i class="fas fa-comments"></i>
-      <span class="nav-fab-label">Chat</span>
-    </button>
-
-    <button class="nav-fab-child" (click)="navigateTo('/dashbord')" title="Tableau de bord">
-      <i class="fas fa-chart-line"></i>
-      <span class="nav-fab-label">Dashboard</span>
-    </button>
-
-  </div>
-
-  <button class="nav-fab-main" (click)="isNavMenuOpen = !isNavMenuOpen" [class.active]="isNavMenuOpen">
-    <i class="fas" [ngClass]="isNavMenuOpen ? 'fa-times' : 'fa-compass'"></i>
-  </button>
-<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>
+<!-- ══ MODALE COMMANDE (app-commande) ════════════════════════════════════════ -->
+<app-app-commande
+  *ngIf="offreSelectionnee"
+  [offre]="offreSelectionnee"
+  (close)="fermerCommande()">
+</app-app-commande>
+ <app-bottom-nav></app-bottom-nav>

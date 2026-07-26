@@ -1,7 +1,10 @@
 import { Component, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { ToastrService } from 'ngx-toastr';
+import { Auth } from '../services/auth';
+import { User } from '../services/user';
 
 @Component({
   selector: 'app-formsignup',
@@ -9,27 +12,33 @@ import { isPlatformBrowser } from '@angular/common';
   styleUrls: ['./formsignup.component.css']
 })
 export class FormsignupComponent {
-  
-  @Output() requestLogin = new EventEmitter<void>();
-  @Output() backToHome = new EventEmitter<void>();
 
+  @Output() requestLogin = new EventEmitter<void>();
+  @Output() backToHome   = new EventEmitter<void>();
+
+  loading: boolean = false;
   Form: boolean = true;
   isClosing: boolean = false;
   triedToSubmit = false;
-  
+
   nom: string = '';
   prenom: string = '';
-  email: string = ''; 
+  email: string = '';
   password: string = '';
-  selectedCategorie: string = 'Producteur'; 
+  selectedCategorie: string = 'Producteur';
 
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye';
 
-  // ✅ TON ADRESSE IP RÉSEAU
-  private serverIp = 'localhost';
+  private apiUrl = 'http://localhost:8080';
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(
+    private router:      Router,
+    private http:        HttpClient,
+    private toastr:      ToastrService,
+    private authService: Auth,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   viewpass(): void {
     if (this.passwordType === 'password') {
@@ -43,98 +52,99 @@ export class FormsignupComponent {
 
   goToLogin(): void {
     this.isClosing = true;
-    setTimeout(() => { this.requestLogin.emit(); }, 300);
+    setTimeout(() => this.requestLogin.emit(), 300);
   }
 
   goToHome() { this.backToHome.emit(); }
 
   onSubmit(form: any): void {
     this.triedToSubmit = true;
-
     if (form.invalid) {
-      alert("Veuillez remplir correctement tous les champs.");
+      this.toastr.warning('Veuillez remplir correctement tous les champs.');
       return;
     }
+    this.loading = true;
 
-    // Vérification de l'email via l'IP
-    this.http.get<boolean>(`http://${this.serverIp}:8080/auth/check-email?email=${this.email}`).subscribe({
+    const checkUrl = `${this.apiUrl}/auth/check-email?email=${this.email}`;
+    this.http.get<boolean>(checkUrl).subscribe({
       next: (exists) => {
         if (exists) {
-          alert("Cet email est déjà utilisé.");
+          this.toastr.error('Cet email est déjà utilisé.');
+          this.loading = false;
         } else {
           this.executeRegistration();
         }
       },
-      error: (err) => {
-        console.error('Erreur :', err);
-        alert("Serveur injoignable à l'adresse " + this.serverIp);
+      error: () => {
+        // ✅ Si l'endpoint check-email n'existe pas encore, on tente l'inscription directement
+        this.executeRegistration();
       }
     });
   }
 
   executeRegistration(): void {
-    const userData = {
-      nom: this.nom + ' ' + this.prenom,
-      email: this.email,
-      password: this.password,
-      localisation: "Cameroun",
-      sexe: "M",
-      number: 0,
-      photosuser: "assets/images/default-avatar.png"
-    };
-
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-    };
-
-    let endpoint = '';
+    let endpoint        = '';
     let routeDestination = '';
 
     switch (this.selectedCategorie) {
       case 'Producteur':
-        endpoint = `http://${this.serverIp}:8080/producteurs`;
+        endpoint         = `${this.apiUrl}/producteurs`;
         routeDestination = '/open';
         break;
       case 'Transporteur':
-        endpoint = `http://${this.serverIp}:8080/transporteurs`;
+        endpoint         = `${this.apiUrl}/transporteurs`;
         routeDestination = '/opentrans';
         break;
       case 'Acheteur':
-        endpoint = `http://${this.serverIp}:8080/api/acheteurs`;
+        // ✅ CORRECTION : l'endpoint Acheteur attend multipart/form-data
+        endpoint         = `${this.apiUrl}/acheteurs/inscription`;
         routeDestination = '/openacheteur';
         break;
       default:
-        endpoint = `http://${this.serverIp}:8080/producteurs`;
+        endpoint         = `${this.apiUrl}/producteurs`;
         routeDestination = '/open';
     }
 
-    this.http.post(endpoint, userData, httpOptions).subscribe({
+    // ✅ CORRECTION : on envoie avec FormData pour tous les types
+    // car Spring attend multipart/form-data (consumes = {"multipart/form-data"})
+    const formData = new FormData();
+    formData.append('nom',           this.nom + ' ' + this.prenom);
+    formData.append('email',         this.email);
+    formData.append('password',      this.password);
+    formData.append('localisation',  'Cameroun');
+    formData.append('sexe',          'M');
+    formData.append('number',        '0');
+
+    // Champ spécifique à l'Acheteur
+    if (this.selectedCategorie === 'Acheteur') {
+      formData.append('adresseLivraison', '');
+    }
+
+    this.http.post(endpoint, formData).subscribe({
       next: (response: any) => {
-        // ✅ STOCKAGE CRUCIAL POUR LA PAGE SUIVANTE
-        // On crée un objet utilisateur complet pour que le service Auth soit content
-        const userToSave = {
-          id: response.id,
-          nom: response.nom,
-          email: response.email,
-          type: this.selectedCategorie
-        };
+        if (isPlatformBrowser(this.platformId)) {
+          const userToSave: User = {
+            id:    response.id,
+            nom:   response.nom || (this.nom + ' ' + this.prenom),
+            email: response.email || this.email,
+            type:  this.selectedCategorie
+          };
 
-        // On stocke dans 'user' car c'est ce que cherche ton logi-chat.ts (this.authService.getUserId())
-        localStorage.setItem('user', JSON.stringify(userToSave));
-        
-        // On garde tes anciens stockages au cas où d'autres composants en ont besoin
-        localStorage.setItem('userId', response.id); 
-        localStorage.setItem('userRole', this.selectedCategorie);
+          // ✅ CORRECTION : on utilise le service Auth (écrit dans localStorage)
+          // au lieu de sessionStorage — openacheteur.ts lit dans localStorage
+          this.authService.saveUser(userToSave);
+        }
 
-        console.log('Inscription réussie, ID stocké :', response.id);
-
+        this.toastr.success('Inscription réussie !');
         this.isClosing = true;
         setTimeout(() => {
-          this.router.navigate([routeDestination]); 
-        }, 300);
+          this.loading = false;
+          this.router.navigate([routeDestination]);
+        }, 500);
       },
       error: (err) => {
-        alert('Erreur d\'inscription : ' + (err.error?.message || 'Serveur hors ligne'));
+        this.loading = false;
+        this.toastr.error('Erreur d\'inscription : ' + (err.error?.message || 'Serveur hors ligne'));
       }
     });
   }

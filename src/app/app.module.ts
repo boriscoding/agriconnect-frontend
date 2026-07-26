@@ -23,6 +23,10 @@ import { LogiChat } from './logi-chat/logi-chat';
 import { Local } from './local/local';
 import { Opentrans } from './opentrans/opentrans';
 import { Openachecteur } from './openachecteur/openachecteur';
+import { AppCommande } from './app-commande/app-commande';
+import { CreerDemandeTransport } from './creer-demande-transport/creer-demande-transport';
+import { BottomNav } from './bottom-nav/bottom-nav';
+import { PaiementRetour } from './paiement-retour/paiement-retour';
 
 registerLocaleData(localfr, 'fr');
 
@@ -42,7 +46,11 @@ registerLocaleData(localfr, 'fr');
     LogiChat,
     Local,
     Opentrans,
-    Openachecteur
+    Openachecteur,
+    AppCommande,
+    CreerDemandeTransport,
+    BottomNav,
+    PaiementRetour
   ],
   imports: [
     BrowserModule,

@@ -1,5 +1,9 @@
 <div class="app-layout">
+
+  <!-- ══ SIDEBAR ═════════════════════════════════════════════ -->
   <aside class="sidebar">
+
+    <!-- Vitesse -->
     <div class="speed-section">
       <div class="speed-circle">
         <span class="value">{{ (gps.speed$ | async) || 0 }}</span>
@@ -7,26 +11,75 @@
       </div>
     </div>
 
-    <div class="mode-section">
+    <!-- Mode transport (transporteur uniquement) -->
+    <div class="mode-section" *ngIf="!enLecture">
       <h3>Mode de transport</h3>
       <div class="mode-grid">
-        <button *ngFor="let mode of modes" 
+        <button *ngFor="let mode of modes"
                 [class.active]="activeMode === mode"
-                (click)="setMode(mode)" class="btn-mode">
+                (click)="setMode(mode)"
+                class="btn-mode">
           {{ mode }}
         </button>
       </div>
     </div>
 
-    <div class="main-actions">
-      <button class="btn btn-start" (click)="gps.startTracking()">DÉMARRER</button>
-      <button class="btn btn-stop" (click)="gps.stopTracking()">ARRÊTER</button>
+    <!-- ──────────────────────────────────────────────────────
+         BOUTONS CONTRÔLE — TRANSPORTEUR SEULEMENT
+         Le bouton DÉMARRER n'est visible que si :
+           1. L'utilisateur est un transporteur
+           2. La date de départ prévue est atteinte
+         ────────────────────────────────────────────────────── -->
+    <div class="main-actions" *ngIf="!enLecture">
+
+      <!-- Date pas encore atteinte -->
+      <div class="date-attente" *ngIf="!peutDemarrer && !debut">
+        <i class="fas fa-clock"></i>
+        <span>Départ prévu :<br><strong>{{ dateDepart | date:'dd/MM à HH:mm' }}</strong></span>
+        <p style="font-size:11px;color:#94a3b8;margin:4px 0 0;">
+          Le bouton Démarrer s'activera à l'heure prévue.
+        </p>
+      </div>
+
+      <!-- Bouton DÉMARRER (date atteinte + pas encore démarré) -->
+      <button class="btn btn-start"
+              *ngIf="peutDemarrer && !debut"
+              (click)="demarrerTrajet()">
+        <i class="fas fa-play-circle"></i> DÉMARRER
+      </button>
+
+      <!-- Bouton ARRÊTER + TERMINER (en cours) -->
+      <ng-container *ngIf="debut">
+        <button class="btn btn-stop" (click)="arreterTrajet()">
+          <i class="fas fa-pause"></i> PAUSE
+        </button>
+        <button class="btn btn-finish" (click)="terminerLivraison()">
+          <i class="fas fa-flag-checkered"></i> TERMINER
+        </button>
+      </ng-container>
     </div>
+
+    <!-- ──────────────────────────────────────────────────────
+         VUE LECTURE — ACHETEUR / PRODUCTEUR
+         Pas de bouton démarrer, juste le statut
+         ────────────────────────────────────────────────────── -->
+    <div class="lecture-info" *ngIf="enLecture">
+      <div class="statut-badge" [class.actif]="(gps.status$ | async) === 'Actif'">
+        <i class="fas fa-circle"></i>
+        {{ (gps.status$ | async) === 'Actif' ? 'Transporteur en route' : 'En attente du départ' }}
+      </div>
+      <p style="font-size:11px;color:#94a3b8;margin-top:8px;">
+        La position se met à jour automatiquement toutes les 5 secondes.
+      </p>
+    </div>
+
   </aside>
 
+  <!-- ══ CARTE ════════════════════════════════════════════════ -->
   <main class="map-wrapper">
     <div id="map"></div>
 
+    <!-- HUD flottant -->
     <div class="hud-stats">
       <div class="hud-card">
         <span class="hud-label">Altitude</span>
@@ -34,14 +87,21 @@
       </div>
       <div class="hud-card">
         <span class="hud-label">Distance</span>
-        <span class="hud-value">{{ (gps.distance$ | async)?.toFixed(2) || 0 }} km</span>
+        <span class="hud-value">{{ (gps.distance$ | async)?.toFixed(2) || '0.00' }} km</span>
       </div>
       <div class="hud-card">
         <span class="hud-label">Statut</span>
-        <span class="hud-value status" [style.color]="(gps.status$ | async) === 'Actif' ? '#00c853' : '#ff9100'">
+        <span class="hud-value"
+              [style.color]="(gps.status$ | async) === 'Actif' ? '#00c853' : '#ff9100'">
           {{ gps.status$ | async }}
         </span>
       </div>
+      <div class="hud-card" *ngIf="cheminOptimal.length > 1">
+        <span class="hud-label">Itinéraire (Dijkstra)</span>
+        <span class="hud-value" style="font-size:0.75rem;">{{ cheminOptimal.join(' → ') }}</span>
+      </div>
     </div>
   </main>
+
 </div>
+ <app-bottom-nav></app-bottom-nav>

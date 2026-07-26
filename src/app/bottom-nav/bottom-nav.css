@@ -1,0 +1,226 @@
+:root {
+  --nav-bg:        rgba(30, 30, 40, 0.92);
+  --nav-active:    #ffffff;
+  --nav-inactive:  rgba(255,255,255,0.45);
+  --nav-accent:    #4caf50;
+  --nav-height:    62px;
+  --nav-transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Barre flottante style Telegram ───────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 480px;
+  height: var(--nav-height);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+  border-radius: 24px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+  z-index: 1000;
+  isolation: isolate;
+}
+
+/* Pas de ligne décorative — le style Telegram n'en a pas */
+.bottom-nav::before { display: none; }
+
+/* ── Espace réservé ───────────────────────────────────── */
+.bottom-nav-spacer {
+  height: calc(var(--nav-height) + 32px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+}
+
+/* ── Item de navigation ───────────────────────────────── */
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 6px 4px;
+  border-radius: 16px;
+  transition: var(--nav-transition);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  animation: navItemIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.05s; }
+.nav-item:nth-child(2) { animation-delay: 0.10s; }
+.nav-item:nth-child(3) { animation-delay: 0.15s; }
+.nav-item:nth-child(4) { animation-delay: 0.20s; }
+
+.nav-item:active { transform: scale(0.88); }
+
+/* Ripple */
+.nav-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+.nav-item:active::before { background: rgba(255,255,255,0.07); }
+
+/* ── Icône wrapper ────────────────────────────────────── */
+.nav-icon-wrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon-wrap i {
+  font-size: 1.35rem;
+  color: var(--nav-inactive);
+  transition: var(--nav-transition);
+}
+
+/* ── Label ────────────────────────────────────────────── */
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--nav-inactive);
+  letter-spacing: 0.3px;
+  transition: var(--nav-transition);
+  white-space: nowrap;
+}
+
+/* ── État ACTIF ───────────────────────────────────────── */
+.nav-item.active {
+  background: rgba(76, 175, 80, 0.15);
+}
+
+.nav-item.active .nav-icon-wrap i {
+  color: var(--nav-accent);
+  transform: scale(1.1);
+}
+
+.nav-item.active .nav-label {
+  color: var(--nav-accent);
+  font-weight: 700;
+}
+
+/* Point actif sous l'icône */
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--nav-accent);
+  border-radius: 50%;
+  animation: dotPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── BADGE ────────────────────────────────────────────── */
+.nav-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  background: #e53935;
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid rgba(30, 30, 40, 0.92);
+  line-height: 1;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── BOUTON CENTRAL (Carte) ───────────────────────────── */
+.nav-center {
+  flex: 1.2;
+  margin-top: -24px;
+}
+
+.nav-center .nav-label {
+  margin-top: 4px;
+  color: var(--nav-inactive);
+}
+
+.nav-center-btn {
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(145deg, #2e7d32, #4caf50);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 16px rgba(76, 175, 80, 0.5),
+    0 0 0 3px rgba(30, 30, 40, 0.92),
+    0 0 0 4px rgba(76, 175, 80, 0.25);
+  transition: var(--nav-transition);
+}
+
+.nav-center-btn i {
+  font-size: 1.4rem;
+  color: #ffffff;
+  transition: var(--nav-transition);
+}
+
+.nav-center:hover .nav-center-btn,
+.nav-center.active .nav-center-btn {
+  background: linear-gradient(145deg, #1b5e20, #388e3c);
+  transform: scale(1.1) translateY(-2px);
+  box-shadow:
+    0 6px 24px rgba(76, 175, 80, 0.6),
+    0 0 0 3px rgba(30, 30, 40, 0.92),
+    0 0 0 5px rgba(76, 175, 80, 0.35);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes navItemIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dotPop {
+  from { transform: translateX(-50%) scale(0); opacity: 0; }
+  to   { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+/* ── Desktop : masquer ────────────────────────────────── */
+@media (min-width: 769px) {
+  .bottom-nav,
+  .bottom-nav-spacer { display: none; }
+}
+
+/* ── Safe area iOS ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .bottom-nav {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}

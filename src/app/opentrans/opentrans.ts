@@ -5,7 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { Vehicule } from '../services/vehicule';
 import { Auth } from '../services/auth';
-
+import { OffreService, OffreData } from '../services/offre';
 @Component({
   selector: 'app-opentrans',
   standalone: false,
@@ -56,6 +56,7 @@ filterType: string = 'TOUS';
     private router: Router, 
     private http: HttpClient,
     private vehiculeService: Vehicule, // Ton service Angular
+    private offreService: OffreService, // ✅ Injection du service Offre
     private authService: Auth,
     private toastr: ToastrService,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -86,28 +87,48 @@ filterType: string = 'TOUS';
       });
   }
 
-  saveUser() {
-    if (!this.userIdConnecte) return;
-    this.loading = true;
-    const formData = new FormData();
-    if (this.selectedFile) formData.append('file', this.selectedFile);
-    
-    formData.append('nom', this.user.nom || '');
-    formData.append('localisation', this.user.localisation || '');
-    formData.append('sexe', this.user.sexe || '');
-    formData.append('number', this.user.number?.toString() || '0');
-
-    this.http.put(`http://${this.serverIp}:8080/api/utilisateurs/modifier/${this.userIdConnecte}`, formData)
-      .subscribe({
-        next: (res: any) => {
-          this.user = res;
-          this.toastr.success("Profil mis à jour !");
-          this.closeModal();
-          this.loading = false;
-        },
-        error: () => { this.loading = false; this.toastr.error("Erreur mise à jour profil"); }
-      });
+ saveUser() {
+  if (!this.userIdConnecte) {
+    this.toastr.error("Transporteur non identifié");
+    return;
   }
+
+  this.loading = true;
+  const formData = new FormData();
+
+  // 1. Photo de profil
+  if (this.selectedFile) {
+    formData.append('file', this.selectedFile);
+  }
+
+  // 2. Champs hérités de Utilisateur (Sans prénom)
+  formData.append('nom', this.user.nom || ''); 
+  formData.append('email', this.user.email || '');
+  formData.append('localisation', this.user.localisation || '');
+  formData.append('sexe', this.user.sexe || '');
+  formData.append('number', (this.user.number || 0).toString());
+
+  // 3. Champs spécifiques au Transporteur
+  formData.append('typeVehicule', this.user.typeVehicule || '');
+  formData.append('capaciteMax', (this.user.capaciteMax || 0).toString());
+
+  // 4. Envoi vers l'URL des transporteurs (Ajuste si tu utilises /api ou non)
+  const url = `http://localhost:8080/transporteurs/modifier/${this.userIdConnecte}`;
+
+  this.http.put(url, formData).subscribe({
+    next: (res: any) => {
+      this.user = res;
+      this.loading = false;
+      this.toastr.success("Profil transporteur mis à jour !");
+      this.closeModal();
+    },
+    error: (err) => {
+      this.loading = false;
+      console.error("Erreur :", err);
+      this.toastr.error("Erreur lors de la mise à jour du transporteur");
+    }
+  });
+}
 
   // --- SECTION 2 : CRUD VÉHICULES ---
 
@@ -142,40 +163,50 @@ onPhotoSelected(event: any) {
     });
   }
 saveOffre() {
-    if (!this.userIdConnecte) {
-      this.toastr.warning("Veuillez vous reconnecter");
-      return;
-    }
-    
-    if (!this.newOffre.marque || !this.newOffre.immatriculation) {
-      this.toastr.error("Marque et Immatriculation requises");
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    // Préparation de l'objet de données avec l'ID du transporteur
-    const vehiculeData = {
-      ...this.newOffre,
-      idTransporteur: this.userIdConnecte
-    };
-
-    // Appel du service avec les deux arguments : les données et le fichier
-    this.vehiculeService.publier(vehiculeData, this.selectedFile!).subscribe({
-      next: (res) => {
-        this.vehicules.unshift(res); // Ajout immédiat à l'affichage
-        this.toastr.success("Véhicule ajouté à votre flotte !");
-        this.closeOffreModal();
-        this.isSubmitting = false;
-        this.resetForm();
-      },
-      error: (err) => { 
-        console.error("Détails erreur:", err);
-        this.isSubmitting = false; 
-        this.toastr.error("Erreur lors de l'ajout. Vérifiez la connexion au serveur."); 
-      }
-    });
+  if (!this.userIdConnecte) {
+    this.toastr.warning("Session expirée, veuillez vous reconnecter");
+    return;
   }
+
+  this.isSubmitting = true;
+  const formData = new FormData();
+
+  // ⚠️ TRÈS IMPORTANT : Les noms à gauche doivent être IDENTIQUES 
+  // aux @RequestParam de ton VehiculeController.java
+  
+  // Utilise 'file' car c'est ce que ton Java attend : @RequestParam("file")
+  if (this.selectedFile) {
+    formData.append('file', this.selectedFile);
+  }
+
+  formData.append('marque', this.newOffre.marque || '');
+  formData.append('model', this.newOffre.model || '');
+  formData.append('immatriculation', this.newOffre.immatriculation || '');
+  formData.append('voitureType', this.newOffre.voitureType || 'CAMION');
+  formData.append('description', this.newOffre.description || '');
+  
+  // Conversion forcée en string pour le FormData
+  const charge = this.newOffre.chargeMax ? this.newOffre.chargeMax.toString() : '0';
+  formData.append('chargeMax', charge);
+  
+  // Ton Java attend 'transporteurId' : @RequestParam("transporteurId")
+  formData.append('transporteurId', this.userIdConnecte.toString());
+
+  this.vehiculeService.publier(formData).subscribe({
+    next: (res) => {
+      this.vehicules.unshift(res);
+      this.toastr.success("Véhicule ajouté avec succès !");
+      this.closeOffreModal();
+      this.isSubmitting = false;
+      this.resetForm();
+    },
+    error: (err) => {
+      console.error("Détails de l'erreur 400 :", err);
+      this.isSubmitting = false;
+      this.toastr.error("Erreur de validation des données (400)");
+    }
+  });
+}
   // ✅ Correction Erreur Image
   handleImageError(event: any) {
     event.target.src = 'assets/images/default-truck.png'; 
@@ -228,12 +259,20 @@ saveOffre() {
     }
   }
 
-  chargerOffres() {
-    this.http.get(`http://${this.serverIp}:8080/api/offres/toutes`).subscribe({
-      next: (data: any) => this.offresProducteurs = data,
-      error: () => this.toastr.error("Erreur chargement des offres agricoles")
-    });
-  }
+ chargerOffres() {
+  this.loading = true; // Active le spinner si tu en as un
+  this.offreService.getAllOffres().subscribe({
+    next: (data: OffreData[]) => {
+      this.offresProducteurs = data;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error("Erreur chargement offres agricoles:", err);
+      this.toastr.error("Impossible de charger les produits agricoles");
+      this.loading = false;
+    }
+  });
+}
 
   chargerDemandes() {
     this.http.get(`http://${this.serverIp}:8080/api/demandes`).subscribe({
@@ -271,10 +310,18 @@ saveOffre() {
   }
 
   // ✅ Formate l'URL de l'image pour le Backend
-  getPhotoUrl(photo: string | undefined): string {
-    if (!photo) return 'assets/images/default-truck.png';
-    return photo.startsWith('http') ? photo : `http://${this.serverIp}:8080/uploads/${photo}`;
+ // ✅ Remplace ta fonction getPhotoUrl par celle-ci pour plus de polyvalence
+getDisplayPhoto(photo: string | undefined, type: 'PRODUIT' | 'VEHICULE' = 'PRODUIT'): string {
+  if (!photo || photo === 'null') {
+    return type === 'VEHICULE' ? 'assets/images/default-truck.png' : 'assets/images/default-produit.png';
   }
+  
+  // Si l'URL est déjà complète
+  if (photo.startsWith('http')) return photo;
+
+  // Sinon construction avec l'IP du serveur
+  return `http://${this.serverI}:8080/uploads/${photo}`;
+}
 
   resetForm() {
     this.newOffre = { marque: '', model: '', immatriculation: '', voitureType: 'CAMION', description: '', chargeMax: null };
@@ -308,4 +355,41 @@ saveOffre() {
   navigateTo(path: string) { 
     this.router.navigate([path]); 
   }
+  // opentrans.ts
+
+// 1. On charge les données via le service
+chargerOffresProducteurs() {
+  this.offreService.getAllOffres().subscribe({
+    next: (data) => this.offresProducteurs = data,
+    error: (err) => this.toastr.error("Erreur de récupération des offres")
+  });
+}
+// ✅ Importer Router en haut du fichier si ce n'est pas fait
+// import { Router } from '@angular/router';
+
+initierCommande(destinataireId: number | undefined, titreProduit: string) {
+  if (!this.userIdConnecte) {
+    this.toastr.warning("Veuillez vous connecter pour passer commande");
+    this.router.navigate(['/login']);
+    return;
+  }
+
+  if (destinataireId === this.userIdConnecte) {
+    this.toastr.info("C'est votre propre publication !");
+    return;
+  }
+
+  // On prépare le message automatique
+  const messageAuto = `Bonjour, je suis intéressé par votre offre : "${titreProduit}". Est-elle toujours disponible ?`;
+
+  // Redirection vers le chat avec les paramètres
+  this.router.navigate(['/chat'], { 
+    queryParams: { 
+      contactId: destinataireId,
+      message: messageAuto 
+    } 
+  });
+}
+
+
 }
