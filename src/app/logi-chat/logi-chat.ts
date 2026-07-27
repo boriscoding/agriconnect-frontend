@@ -8,7 +8,7 @@ import { MessageApi } from '../services/message-api';
 import { Auth } from '../services/auth';
 import { NgZone } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import * as Stomp from 'stompjs';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import {
   trigger, transition, style, animate, query, stagger
@@ -132,24 +132,31 @@ export class LogiChat implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    if (this.stompClient?.connected) {
-      this.stompClient.disconnect();
+ngOnDestroy(): void {
+    if (this.stompClient) {
+      this.stompClient.deactivate();
     }
   }
 
   // ─── WebSocket ─────────────────────────────────────────────
   initialiserSocket(): void {
     this.zone.runOutsideAngular(() => {
-      const socket = new SockJS('http://localhost:8080/ws-chat');
-      this.stompClient = Stomp.over(socket);
-      this.stompClient.debug = null; // Supprime les logs STOMP en console
-
-      this.stompClient.connect({}, () => {
-        this.stompClient.subscribe('/topic/messages', (payload: any) => {
-          this.zone.run(() => this.onMessageReceived(JSON.parse(payload.body)));
-        });
+      // Configuration moderne du client STOMP avec SockJS
+      this.stompClient = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws-chat'),
+        debug: (str) => {
+          // Décommentez la ligne suivante si vous souhaitez voir les logs en dev
+          // console.log(str);
+        },
+        reconnectDelay: 5000,
+        onConnect: (frame) => {
+          this.stompClient.subscribe('/topic/messages', (payload: any) => {
+            this.zone.run(() => this.onMessageReceived(JSON.parse(payload.body)));
+          });
+        },
       });
+
+      this.stompClient.activate();
     });
   }
 
@@ -251,16 +258,19 @@ export class LogiChat implements OnInit, OnDestroy {
     formData.append('mediaType',       this.selectedFile ? this.previewType! : 'TEXT');
     if (this.selectedFile) formData.append('file', this.selectedFile);
 
-    this.messageApi.envoyer(formData).subscribe({
-      next: (res) => {
-        if (this.stompClient?.connected) {
-          this.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(res));
-        }
-        this.newMessage = '';
-        this.cancelPreview();
-      },
-      error: () => alert("Le message n'a pas pu être envoyé.")
-    });
+this.messageApi.envoyer(formData).subscribe({
+    next: (res) => {
+      if (this.stompClient?.connected) {
+        this.stompClient.publish({
+          destination: '/app/chat.sendMessage',
+          body: JSON.stringify(res)
+        });
+      }
+      this.newMessage = '';
+      this.cancelPreview();
+    },
+    error: () => alert("Le message n'a pas pu être envoyé.")
+  });
   }
 
   modifierMessage(msg: any): void {
@@ -424,12 +434,15 @@ export class LogiChat implements OnInit, OnDestroy {
     }
   }
   // Émet l'événement "en train d'écrire" via WebSocket
-  onMessageInput(): void {
+ onMessageInput(): void {
     if (this.stompClient?.connected && this.selectedContactId) {
-      this.stompClient.send('/app/chat.typing', {}, JSON.stringify({
-        senderId: this.currentUserId,
-        receiverId: this.selectedContactId
-      }));
+      this.stompClient.publish({
+        destination: '/app/chat.typing',
+        body: JSON.stringify({
+          senderId: this.currentUserId,
+          receiverId: this.selectedContactId
+        })
+      });
     }
   }
 
