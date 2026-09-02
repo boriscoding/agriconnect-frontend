@@ -11,6 +11,7 @@ import { Openoffer } from './openoffer/openoffer';
 import { FormconnectComponent } from './formconnect/formconnect.component';
 import { FormsignupComponent } from './formsignup/formsignup.component';
 import { LogiChat } from './logi-chat/logi-chat';
+import { ProfilComponent } from './profil/profil';
 import { Opentrans } from './opentrans/opentrans';
 import { Openachecteur } from './openachecteur/openachecteur';
 import { PaiementRetour } from './paiement-retour/paiement-retour';
@@ -32,7 +33,8 @@ const routes: Routes = [
   { path: 'opentrans', component: Opentrans },
   { path: 'openacheteur', component: Openachecteur},
   { path: 'paiement-retour', component: PaiementRetour },
-  { path: '**', redirectTo: 'homepage' }
+  { path: '**', redirectTo: 'homepage' },
+  
 ];
 
 @NgModule({

@@ -1,23 +1,22 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Agriconnect</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body style="background-color: rgb(240, 245, 220)">
-  <app-root></app-root>
-  <script src="https://maps.googleapis.com/maps/api/js?key=TON_CODE_API"></script>
-
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-  if (global === undefined) {
-    var global = window;
-  }
-</script>
-<script>eruda.init();</script>
-</body>
-</html>
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Agriconnect</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+  </head>
+  <body style="background-color: rgb(240, 245, 220)">
+    <app-root></app-root>
+<script src="https://maps.googleapis.com/maps/api/js?key=TON_CODE_API&loading=async" async></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>
+    if (global === undefined) {
+      var global = window;
+    }
+  </script>
+  <script>eruda.init();</script>
+  </body>
+  </html>

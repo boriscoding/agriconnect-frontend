@@ -4,6 +4,7 @@
       <span id="images"></span>
       <input class="form-control search-input d-none d-md-block"
              placeholder="Rechercher sur Agriconnect"
+             [(ngModel)]="searchTerm" name="headerSearch"
              style="margin-left:10%;" />
     </div>
 
@@ -18,8 +19,9 @@
         <i class="fas fa-bars"></i>
       </button>
       <div class="d-flex align-items-center gap-3">
+        <!-- ⚠️ Correction : utilisation de serverIp au lieu de serverI -->
         <img *ngIf="imagePreview || (user && user.photosuser)"
-             [src]="imagePreview || ('http://' + serverI + ':8080' + user.photosuser)"
+             [src]="imagePreview || ('http://' + serverIp + ':8080' + user.photosuser)"
              class="rounded-circle border"
              style="width:35px;height:35px;cursor:pointer;object-fit:cover;"
              (click)="openEditModal()"
@@ -46,86 +48,87 @@
 
         <form (ngSubmit)="saveUser()" #userForm="ngForm" class="modern-form">
 
-  <div class="profile-header text-center mb-4">
-    <div class="photo-upload-container">
-      <img [src]="imagePreview || (user.photosuser 
-            ? 'http://' + serverI + ':8080' + user.photosuser 
-            : 'assets/default-avatar.png')"
-           (click)="photoInput.click()"
-           class="rounded-circle profile-preview-img"
-           style="width:120px;height:120px;object-fit:cover;border:3px solid #00a884; cursor:pointer;">
-      
-      <div class="camera-icon-overlay" (click)="photoInput.click()">
-        <i class="fas fa-camera"></i>
-      </div>
-      <input #photoInput type="file" (change)="onPhotoSelected($event)"
-             accept="image/*" style="display:none">
-    </div>
-    <p class="text-muted small mt-2">Cliquez pour modifier la photo</p>
-  </div>
+          <div class="profile-header text-center mb-4">
+            <div class="photo-upload-container">
+              <!-- ⚠️ Correction : utilisation de serverIp au lieu de serverI -->
+              <img [src]="imagePreview || (user.photosuser 
+                    ? 'http://' + serverIp + ':8080' + user.photosuser 
+                    : 'assets/default-avatar.png')"
+                   (click)="photoInput.click()"
+                   class="rounded-circle profile-preview-img"
+                   style="width:120px;height:120px;object-fit:cover;border:3px solid #00a884; cursor:pointer;">
+              
+              <div class="camera-icon-overlay" (click)="photoInput.click()">
+                <i class="fas fa-camera"></i>
+              </div>
+              <input #photoInput type="file" (change)="onPhotoSelected($event)"
+                     accept="image/*" style="display:none">
+            </div>
+            <p class="text-muted small mt-2">Cliquez pour modifier la photo</p>
+          </div>
 
-  <div class="text-center mb-4">
-    <h4 class="fw-bold text-warning">Compte Acheteur</h4>
-  </div>
+          <div class="text-center mb-4">
+            <h4 class="fw-bold text-warning">Compte Acheteur</h4>
+          </div>
 
-  <div class="row g-3 mb-3">
-    <div class="col-md-7">
-      <div class="input-group-modern">
-        <div class="input-icon"><i class="fas fa-user"></i></div>
-        <div class="input-content">
-          <label>Nom complet</label>
-          <input type="text" [(ngModel)]="user.nom" name="nom" required placeholder="Votre nom">
-        </div>
-      </div>
-    </div>
-    <div class="col-md-5">
-      <div class="gender-selector">
-        <label class="small-label">Sexe</label>
-        <div class="d-flex gap-2">
-          <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
-          <label class="btn btn-outline-success btn-sm w-100" for="masculin">M</label>
-          
-          <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
-          <label class="btn btn-outline-success btn-sm w-100" for="feminin">F</label>
-        </div>
-      </div>
-    </div>
-  </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-7">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-user"></i></div>
+                <div class="input-content">
+                  <label>Nom complet</label>
+                  <input type="text" [(ngModel)]="user.nom" name="nom" required placeholder="Votre nom">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="gender-selector">
+                <label class="small-label">Sexe</label>
+                <div class="d-flex gap-2">
+                  <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
+                  <label class="btn btn-outline-success btn-sm w-100" for="masculin">M</label>
+                  
+                  <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
+                  <label class="btn btn-outline-success btn-sm w-100" for="feminin">F</label>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <div class="input-group-modern mb-3">
-    <div class="input-icon"><i class="fas fa-envelope"></i></div>
-    <div class="input-content">
-      <label>Email</label>
-      <input type="email" [(ngModel)]="user.email" name="email" placeholder="exemple@mail.com">
-    </div>
-  </div>
+          <div class="input-group-modern mb-3">
+            <div class="input-icon"><i class="fas fa-envelope"></i></div>
+            <div class="input-content">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="user.email" name="email" placeholder="exemple@mail.com">
+            </div>
+          </div>
 
-  <div class="input-group-modern mb-3">
-    <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
-    <div class="input-content">
-      <label>Localisation</label>
-      <input type="text" [(ngModel)]="user.localisation" name="loc" placeholder="Ville, Quartier">
-    </div>
-  </div>
+          <div class="input-group-modern mb-3">
+            <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="input-content">
+              <label>Localisation</label>
+              <input type="text" [(ngModel)]="user.localisation" name="loc" placeholder="Ville, Quartier">
+            </div>
+          </div>
 
-  <div class="input-group-modern mb-4">
-    <div class="input-icon"><i class="fas fa-phone"></i></div>
-    <div class="input-content">
-      <label>Téléphone</label>
-      <input type="text" [(ngModel)]="user.number" name="num" placeholder="Ex: 6XXXXXXXX">
-    </div>
-  </div>
+          <div class="input-group-modern mb-4">
+            <div class="input-icon"><i class="fas fa-phone"></i></div>
+            <div class="input-content">
+              <label>Téléphone</label>
+              <input type="text" [(ngModel)]="user.number" name="num" placeholder="Ex: 6XXXXXXXX">
+            </div>
+          </div>
 
-  <div class="form-actions">
-    <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="loading">
-      Annuler
-    </button>
-    <button type="submit" class="btn-save" [disabled]="loading || !userForm.form.valid">
-      <span *ngIf="!loading">Mettre à jour</span>
-      <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
-    </button>
-  </div>
-</form>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="loading">
+              Annuler
+            </button>
+            <button type="submit" class="btn-save" [disabled]="loading || !userForm.form.valid">
+              <span *ngIf="!loading">Mettre à jour</span>
+              <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -137,9 +140,6 @@
 
 <div class="main-wrapper">
 
-  <!-- Bouton burger mobile -->
-
-
   <!-- Overlay sidebar mobile -->
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
 
@@ -149,7 +149,8 @@
       <div class="tab" [class.active]="viewType === 'OFFRES'" (click)="switchView('OFFRES')">
         <i class="fas fa-store"></i> Marché
       </div>
-      <div class="tab" [class.active]="viewType === 'MES_DEMANDES'" (click)="switchView('MES_DEMANDES')">
+      <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
+      <div class="tab" [class.active]="viewType === 'DEMANDES'" (click)="switchView('DEMANDES')">
         <i class="fas fa-clipboard-list"></i> Mes commandes
       </div>
     </div>
@@ -163,7 +164,9 @@
         <h4 class="producer-title">Acheteur {{user?.nom}}</h4>
         <div class="search-box-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="form-control-custom" placeholder="Rechercher un produit">
+          <input type="text" class="form-control-custom" placeholder="Rechercher un produit"
+                 [(ngModel)]="searchTerm" name="sidebarSearch">
+          <i class="fas fa-times search-clear" *ngIf="searchTerm" (click)="clearSearch()"></i>
         </div>
       </div>
 
@@ -171,8 +174,9 @@
         <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
           <i class="fas fa-th-large"></i> <span>Toutes les offres</span>
         </li>
-        <li class="nav-item" [class.active]="viewType === 'MES_DEMANDES'"
-            (click)="switchView('MES_DEMANDES'); sidebarOpen = false">
+        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
+        <li class="nav-item" [class.active]="viewType === 'DEMANDES'"
+            (click)="switchView('DEMANDES'); sidebarOpen = false">
           <i class="fas fa-shopping-bag"></i> <span>Mes commandes</span>
         </li>
         <li class="nav-item" (click)="openEditModal(); sidebarOpen = false">
@@ -186,7 +190,6 @@
         </li>
       </ul>
 
-      <!-- Bouton action principal pour un acheteur : rafraîchir le marché -->
       <button class="btn-publish pulse-animation" (click)="chargerOffres()">
         <i class="fas fa-sync-alt bounce-icon"></i> <span>Rafraîchir le marché</span>
       </button>
@@ -201,7 +204,8 @@
           <h2 class="main-title">Marché des producteurs</h2>
           <p class="sub-text">Découvrez les offres fraîches du marché agricole</p>
         </div>
-        <div *ngIf="viewType === 'MES_DEMANDES'">
+        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
+        <div *ngIf="viewType === 'DEMANDES'">
           <h2 class="main-title">Mes commandes en cours</h2>
           <p class="sub-text">Suivez l'état de vos demandes d'achat</p>
         </div>
@@ -235,19 +239,17 @@
             </div>
 
             <div class="fb-card-footer">
-              <!-- Offre d'un autre producteur -->
               <ng-container *ngIf="offre.producteur?.id !== userIdConnecte">
                 <button class="btn-fb"
                         style="border:1px solid #27ae60;color:#27ae60;"
                         (click)="initierDiscussion(offre.producteur?.id, offre.nproduit)">
                   <i class="fas fa-comments"></i> Discussion
                 </button>
-                <button class="btn-fb btn-green-action" (click)="ouvrirCommande(offre)" >
+                <button class="btn-fb btn-green-action" (click)="ouvrirCommande(offre)">
                   <i class="fas fa-shopping-cart"></i> Commander
                 </button>
               </ng-container>
 
-              <!-- Propre offre — ne devrait pas arriver pour un pur acheteur -->
               <button class="btn-fb btn-edit"
                       *ngIf="offre.producteur?.id === userIdConnecte"
                       (click)="ouvrirGerer(offre)">
@@ -257,9 +259,10 @@
           </article>
         </ng-container>
 
-        <!-- MES DEMANDES -->
-        <ng-container *ngIf="viewType === 'MES_DEMANDES'">
-          <article class="fb-card" *ngFor="let d of demandesAcheteur">
+        <!-- MES DEMANDES (DEMANDES) -->
+        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
+        <ng-container *ngIf="viewType === 'DEMANDES'">
+          <article class="fb-card" *ngFor="let d of demandesFiltrees">
             <div class="fb-card-content" style="padding-top:20px;">
               <div class="status-badge" style="position:static;margin-bottom:10px;">
                 <span class="dot"
@@ -310,7 +313,8 @@
             </button>
           </ng-container>
 
-          <ng-container *ngIf="viewType === 'MES_DEMANDES'">
+          <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
+          <ng-container *ngIf="viewType === 'DEMANDES'">
             <div class="empty-icon-wrapper mb-4">
               <i class="fas fa-shopping-bag fa-5x text-warning floating-animation"></i>
             </div>
@@ -330,9 +334,9 @@
 </div>
 
 <!-- ══ MODALE COMMANDE (app-commande) ════════════════════════════════════════ -->
-<app-app-commande
+<app-commande
   *ngIf="offreSelectionnee"
   [offre]="offreSelectionnee"
   (close)="fermerCommande()">
-</app-app-commande>
- <app-bottom-nav></app-bottom-nav>
+</app-commande>
+<app-bottom-nav></app-bottom-nav>

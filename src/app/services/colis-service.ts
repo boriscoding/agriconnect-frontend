@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 /**
  * Interface CommandeOffreDTO
@@ -12,7 +13,7 @@ export interface CommandeOffreDTO {
   producteurId: number;
   
   // Gestion du Colis
-  colisId?: number | null;           // Si existant
+  colisId?: number | null;          // Si existant
   nomNouveauColis?: string | null;   // Si création
   villeDepart?: string;
   villeArrivee?: string;
@@ -32,8 +33,8 @@ export interface CommandeOffreDTO {
 })
 export class ColisService {
   
-  // URL de ton API Spring Boot (ajuste le port si nécessaire, ex: 8080)
-  private apiUrl = 'http://localhost:8080/api/colis'; 
+  // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
+  private apiUrl = `${environment.apiUrl}/colis`; 
 
   constructor(private http: HttpClient) { }
 
@@ -51,7 +52,7 @@ export class ColisService {
    */
   traiterCommande(dto: CommandeOffreDTO): Observable<any> {
     console.log("Données envoyées au serveur (DTO) :", dto);
-    // On appelle l'endpoint @PostMapping("/commander") de ton contrôleur Java
+    // On appelle l'endpoint @PostMapping("/commander") de ton contrôleur Java[cite: 1]
     return this.http.post<any>(`${this.apiUrl}/commander`, dto);
   }
 

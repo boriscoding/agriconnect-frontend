@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 @Injectable({
   providedIn: 'root',
 })
 export class Vehicule {
-  private apiUrl = 'http://localhost:8080/api/vehicules';
+  
+  // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
+  private apiUrl = `${environment.apiUrl}/vehicules`;
 
   constructor(private http: HttpClient) {}
 
@@ -21,12 +24,11 @@ export class Vehicule {
   }
 
   // --- 3. ENREGISTRER (PUBLIER) UN VÉHICULE ---
-  // CORRECTION : On s'assure que le FormData utilise les clés SQL vues dans tes logs
-// vehicule.ts
-publier(formData: FormData): Observable<any> {
-  // On envoie directement le formData reçu du composant
-  return this.http.post<any>(`${this.apiUrl}/enregistrer`, formData);
-}
+  publier(formData: FormData): Observable<any> {
+    // On envoie directement le formData reçu du composant
+    return this.http.post<any>(`${this.apiUrl}/enregistrer`, formData);
+  }
+
   // --- 4. MODIFIER UN VÉHICULE ---
   modifier(id: number, vehicule: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/modifier/${id}`, vehicule);
@@ -41,16 +43,18 @@ publier(formData: FormData): Observable<any> {
   getById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
-  // services/vehicule.ts
-getPhotoUrl(photoName: string | undefined): string {
-  const serverIp = 'localhost'; // Assure-toi que c'est le même partout
-  if (!photoName || photoName === 'null') {
-    return 'assets/images/default-truck.png';
-  }
-  if (photoName.startsWith('http')) {
-    return photoName;
-  }
-  return `http://${serverIp}:8080/uploads/${photoName}`;
-}
 
+  // --- 7. URL DE LA PHOTO DU VÉHICULE ---
+  getPhotoUrl(photoName: string | undefined): string {
+    if (!photoName || photoName === 'null') {
+      return 'assets/images/default-truck.png';
+    }
+    if (photoName.startsWith('http')) {
+      return photoName;
+    }
+    
+    // Extrait l'URL de base du serveur en supprimant '/api' à la fin de environment.apiUrl
+    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${serverBaseUrl}/uploads/${photoName}`;
+  }
 }

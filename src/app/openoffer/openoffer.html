@@ -3,7 +3,13 @@
     <div class="container-fluid align-items-center">
       <div class="d-flex align-items-center" style="margin-left:2%;">
         <span id="images"></span>
-        <input class="form-control search-input d-none d-md-block" placeholder="Rechercher sur Agriconnect" style="margin-left:10%;" />
+        <div class="header-search-wrapper d-none d-md-block" style="margin-left:10%;">
+          <input class="form-control search-input" placeholder="Rechercher sur Agriconnect"
+                 [(ngModel)]="searchTerm" name="headerSearch" />
+          <button *ngIf="searchTerm" type="button" class="search-clear-btn" (click)="clearSearch()" title="Effacer">
+            <i class="fas fa-times-circle"></i>
+          </button>
+        </div>
       </div>
 
       <ul class="navbar-nav mx-auto d-none d-lg-flex" routerLink="/" routerLinkActive="active">
@@ -17,8 +23,9 @@
           <i class="fas fa-bars"></i>
         </button>
        <div class="d-flex align-items-center gap-3">
+  <!-- 👈 Utilisation de getDisplayPhoto au lieu de serverI -->
   <img *ngIf="imagePreview || (user && user.photosuser)" 
-       [src]="imagePreview || ('http://' + serverI + ':8080' + user.photosuser)" 
+       [src]="imagePreview || getDisplayPhoto(user.photosuser, 'USER')" 
        class="rounded-circle border" 
        style="width: 35px; height: 35px; cursor: pointer; object-fit: cover;" 
        (click)="openEditModal()"
@@ -44,7 +51,8 @@
 
   <div class="profile-header text-center mb-4">
     <div class="photo-upload-container position-relative d-inline-block">
-      <img [src]="imagePreview || (user.photosuser ? 'http://' + serverI + ':8080' + user.photosuser : 'assets/default-avatar.png')" 
+      <!-- 👈 Utilisation de getDisplayPhoto ici aussi -->
+      <img [src]="imagePreview || getDisplayPhoto(user.photosuser, 'USER')" 
            (click)="photoInput.click()" 
            class="rounded-circle profile-preview-img shadow"
            alt="Photo de profil"
@@ -209,9 +217,13 @@
     <aside class="inner-sidebar shadow-sm" [class.mobile-open]="sidebarOpen">
       <div class="sidebar-top">
         <h4 class="producer-title">Producteur {{user?.nom}}</h4>
-        <div class="search-box-wrapper">
+        <div class="search-box-wrapper sidebar-search-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="form-control-custom" placeholder="Rechercher une offre">
+          <input type="text" class="form-control-custom" placeholder="Rechercher une offre"
+                 [(ngModel)]="searchTerm" name="sidebarSearch">
+          <button *ngIf="searchTerm" type="button" class="search-clear-btn" (click)="clearSearch()" title="Effacer">
+            <i class="fas fa-times-circle"></i>
+          </button>
         </div>
       </div>
       
@@ -222,7 +234,7 @@
         <li class="nav-item" [class.active]="filterType === 'MES_OFFRES'" (click)="mesoffres()">
           <i class="fas fa-tags"></i> <span>Mes offres</span>
         </li>
-        <li class="nav-item" (click)="openEditModal()" (click)="sidebarOpen = !sidebarOpen">
+        <li class="nav-item" (click)="openEditModal(); sidebarOpen = false">
           <i class="fas fa-user-circle"></i> <span>Mon Profil</span>
         </li>
         <li class="nav-item" (click)="logout()" style="color: #dc3545; cursor: pointer;">
@@ -251,7 +263,16 @@
     </div>
   </div>
 
-  <div class="marketplace-grid" *ngIf="getFiltreLength() > 0">
+  <!-- Squelette de chargement -->
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let s of [1,2,3,4,5,6,7,8]">
+      <div class="skeleton-media"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  </div>
+
+  <div class="marketplace-grid" *ngIf="!loading && getFiltreLength() > 0">
     
    <ng-container *ngIf="viewType === 'OFFRES'">
   <article class="fb-card" *ngFor="let offre of offresFiltrees">
@@ -291,14 +312,14 @@
   </article>
 </ng-container>
 
-<app-app-commande 
+<app-commande 
   *ngIf="offreSelectionnee" 
   [offre]="offreSelectionnee"
   (close)="fermerCommande()">
-</app-app-commande>
+</app-commande>
 
     <ng-container *ngIf="viewType === 'VEHICULES'">
-      <article class="fb-card" *ngFor="let v of vehicules">
+      <article class="fb-card" *ngFor="let v of vehiculesFiltres">
         <div class="fb-card-media compact-media">
           <img [src]="getVehiculePhoto(v.photo || v.photoVehicule)" (error)="handleImageError($event)" class="img-fluid">
           <div class="status-badge"><span class="dot pulse-blue"></span> Disponible</div>
@@ -324,7 +345,7 @@
     </ng-container>
 
     <ng-container *ngIf="viewType === 'DEMANDES'">
-      <article class="fb-card" *ngFor="let d of demandesAcheteurs">
+      <article class="fb-card" *ngFor="let d of demandesFiltrees">
         <div class="fb-card-content" style="padding-top: 20px;">
           <div class="status-badge" style="position: static; margin-bottom: 10px;">
             <span class="dot pulse-orange"></span> Recherche urgente
@@ -344,7 +365,7 @@
     </ng-container>
   </div>
 
-  <div *ngIf="getFiltreLength() === 0" class="empty-state-container d-flex justify-content-center align-items-center w-100" style="min-height: 450px;">
+  <div *ngIf="!loading && getFiltreLength() === 0" class="empty-state-container d-flex justify-content-center align-items-center w-100" style="min-height: 450px;">
     <div class="vide text-center">
       
       <ng-container *ngIf="viewType === 'OFFRES'">
@@ -389,114 +410,6 @@
 </main>
   </div>
 </div>
-<div class="container-fluid bg-light py-4 border-bottom" *ngIf="isOffreModalOpen">
-  <div class="container" style="max-width: 900px;">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h3 class="fw-bold text-success mb-0">NOUVELLE PUBLICATION</h3>
-        <p class="text-muted small">Remplissez les détails pour mettre votre produit en ligne</p>
-      </div>
-      <button type="button" class="btn btn-outline-secondary rounded-circle" (click)="closeOffreModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-   <form (ngSubmit)="saveOffre()" #offreForm="ngForm">
-  <div class="row g-4">
-    
-    <div class="col-md-7">
-      <div class="card border-0 shadow-sm rounded-20 p-4 mb-3">
-        <label class="form-label fw-bold text-success small">NOM DU PRODUIT</label>
-        <input type="text" class="form-control border-light bg-light rounded-15 mb-3 p-3" 
-               [(ngModel)]="newOffre.nproduit" name="nproduit" required placeholder="Ex: Manioc blanc">
-        
-        <div class="row g-2 mb-3">
-          <div class="col-7">
-            <label class="form-label fw-bold small">Quantité</label>
-            <input type="number" class="form-control border-light bg-light rounded-15 p-3" 
-                   [(ngModel)]="newOffre.quantiteProduit" name="quantiteProduit">
-          </div>
-          <div class="col-5">
-            <label class="form-label fw-bold small">Unité</label>
-            <select class="form-select border-light bg-light rounded-15 p-3" 
-                    [(ngModel)]="newOffre.uniteMesure" name="uniteMesure">
-              <option value="Kg">Kg</option>
-              <option value="Sac">Sacs</option>
-              <option value="Tonne">Tonnes</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-           <div class="col-6">
-              <label class="form-label fw-bold small text-success">PRIX UNITAIRE (FCFA)</label>
-              <input type="number" class="form-control border-light bg-light rounded-15 p-3" 
-                     [(ngModel)]="newOffre.prixUnitaire" name="prixUnitaire">
-           </div>
-           <div class="col-6">
-              <label class="form-label fw-bold small text-success">LIEU DE RÉCOLTE</label>
-              <input type="text" class="form-control border-light bg-light rounded-15 p-3" 
-                     [(ngModel)]="newOffre.localisation" name="localisation" placeholder="Ex: Njombé, Penja">
-           </div>
-        </div>
-        
-        <label class="form-label fw-bold small">DESCRIPTION / QUALITÉ</label>
-        <textarea class="form-control border-light bg-light rounded-15 p-3" rows="3" 
-                  [(ngModel)]="newOffre.description" name="description" 
-                  placeholder="Détails sur la récolte, date de péremption, bio..."></textarea>
-      </div>
-    </div>
-
-    <div class="col-md-5">
-      <div class="card border-0 shadow-sm rounded-20 p-4 mb-3 text-center">
-        <label class="form-label fw-bold small text-success mb-3">PHOTO DU PRODUIT</label>
-        <div class="upload-area border-2 border-dashed rounded-20 p-4 bg-white position-relative" 
-             style="min-height: 200px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-          
-          <div *ngIf="!imagePreview">
-            <i class="fas fa-cloud-upload-alt fa-3x text-success mb-2"></i>
-            <p class="small text-muted">Cliquez pour importer</p>
-          </div>
-          
-          <img [src]="imagePreview" *ngIf="imagePreview" class="img-fluid rounded-15 shadow-sm" style="max-height: 180px;">
-          
-          <input type="file" (change)="onFileSelected($event)" 
-                 class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
-        </div>
-      </div>
-
-      <div class="card border-0 shadow-sm rounded-20 p-4 mb-3">
-        <label class="form-label fw-bold small">TYPE DE VENDEUR</label>
-        <select class="form-select border-light bg-light rounded-15 p-3" [(ngModel)]="newOffre.type_pro" name="type_pro">
-          <option value="PRODUCTEUR_DIRECT">Producteur Direct</option>
-          <option value="GROSSISTE">Grossiste</option>
-        </select>
-      </div>
-      
-      <div class="alert alert-success border-0 rounded-20 small d-flex align-items-center">
-        <i class="fas fa-check-circle me-2 fs-4"></i>
-        <span>Votre offre sera publiée dans le catalogue AgriConnect.</span>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="d-flex gap-3 mt-4 mb-5">
-    <button type="button" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="closeOffreModal()">
-      ANNULER
-    </button>
-    <button type="submit" class="btn btn-success rounded-pill px-5 py-3 fw-bold shadow flex-grow-1" 
-            [disabled]="isSubmitting || !offreForm.form.valid">
-      <span *ngIf="!isSubmitting">PUBLIER L'OFFRE MAINTENANT</span>
-      <span *ngIf="isSubmitting"><i class="fas fa-spinner fa-spin me-2"></i>Traitement...</span>
-    </button>
-  </div>
-</form>
-  </div>
-</div>
-<div class="modal-backdrop fade show" *ngIf="isOffreModalOpen" (click)="closeOffreModal()"></div>
-
 
 
 <div class="modal-overlay f-modal-v2" *ngIf="showModifierModal" (click)="showModifierModal = false">

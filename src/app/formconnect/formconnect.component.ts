@@ -5,6 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { Auth } from '../services/auth';
 import { User } from '../services/user';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 declare var google: any;
 
@@ -24,7 +25,7 @@ export class FormconnectComponent implements OnInit {
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye-slash';
 
-  private serverIp = 'localhost';
+  private apiUrl = environment.apiUrl; // 👈 Utilisation de l'URL centralisée
 
   @Output() backToHome = new EventEmitter<void>();
 
@@ -65,68 +66,70 @@ export class FormconnectComponent implements OnInit {
       this.passwordIcon = 'fas fa-eye-slash';
     }
   }
-onSubmit(): void {
-  if (!this.selectedCategorie) {
-    this.toastr.error('Veuillez choisir une catégorie.');
-    return;
-  }
-  this.loading = true;
 
-  const loginData = { email: this.email, password: this.password };
-  let endpoint = '';
-  let routeDestination = '';
-
-  switch (this.selectedCategorie) {
-    case 'Producteur':
-      endpoint = `http://${this.serverIp}:8080/producteurs/login`;
-      routeDestination = '/open';
-      break;
-    case 'Transporteur':
-      endpoint = `http://${this.serverIp}:8080/transporteurs/login`;
-      routeDestination = '/opentrans';
-      break;
-    case 'Acheteur':
-      endpoint = `http://${this.serverIp}:8080/acheteurs/login`;
-      routeDestination = '/openacheteur';
-      break;
-  }
-
-  this.http.post(endpoint, loginData).subscribe({
-    next: (user: any) => {
-      this.loading = false;
-      
-      // ✅ Sécurité : On vérifie que l'ID existe avant de continuer
-      if (!user || (!user.id && !user.userId)) {
-        this.toastr.error("Erreur : Données utilisateur incomplètes.");
-        return;
-      }
-
-      const userId = user.id || user.userId;
-
-      // ✅ Stockage explicite de l'ID pour que Openachecteur puisse le lire au ngOnInit
-      localStorage.setItem('userId', userId.toString());
-
-      const userToSave: User = {
-        id: userId,
-        nom: user.nom,
-        email: user.email,
-        type: this.selectedCategorie
-      };
-
-      this.authService.saveUser(userToSave);
-      this.toastr.success(`Bienvenue, ${user.nom || 'Acheteur'}`);
-
-      this.isClosing = true;
-      // On laisse un petit délai pour l'animation et le stockage LocalStorage
-      setTimeout(() => this.router.navigate([routeDestination]), 500);
-    },
-    error: (err) => {
-      this.loading = false;
-      console.error('Erreur Login:', err);
-      this.toastr.error('Email ou mot de passe incorrect.');
+  onSubmit(): void {
+    if (!this.selectedCategorie) {
+      this.toastr.error('Veuillez choisir une catégorie.');
+      return;
     }
-  });
-}
+    this.loading = true;
+
+    const loginData = { email: this.email, password: this.password };
+    let endpoint = '';
+    let routeDestination = '';
+
+    switch (this.selectedCategorie) {
+      case 'Producteur':
+        endpoint = `${this.apiUrl}/producteurs/login`; // 👈 Utilisation dynamique
+        routeDestination = '/open';
+        break;
+      case 'Transporteur':
+        endpoint = `${this.apiUrl}/transporteurs/login`; // 👈 Utilisation dynamique
+        routeDestination = '/opentrans';
+        break;
+      case 'Acheteur':
+        endpoint = `${this.apiUrl}/acheteurs/login`; // 👈 Utilisation dynamique
+        routeDestination = '/openacheteur';
+        break;
+    }
+
+    this.http.post(endpoint, loginData).subscribe({
+      next: (user: any) => {
+        this.loading = false;
+        
+        // ✅ Sécurité : On vérifie que l'ID existe avant de continuer
+        if (!user || (!user.id && !user.userId)) {
+          this.toastr.error("Erreur : Données utilisateur incomplètes.");
+          return;
+        }
+
+        const userId = user.id || user.userId;
+
+        // ✅ Stockage explicite de l'ID pour que Openachecteur puisse le lire au ngOnInit
+        localStorage.setItem('userId', userId.toString());
+
+        const userToSave: User = {
+          id: userId,
+          nom: user.nom,
+          email: user.email,
+          type: this.selectedCategorie
+        };
+
+        this.authService.saveUser(userToSave);
+        this.toastr.success(`Bienvenue, ${user.nom || 'Acheteur'}`);
+
+        this.isClosing = true;
+        // On laisse un petit délai pour l'animation et le stockage LocalStorage
+        setTimeout(() => this.router.navigate([routeDestination]), 500);
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Erreur Login:', err);
+        this.toastr.error('Email ou mot de passe incorrect.');
+      }
+    });
+  }
+
   handleGoogleLogin(response: any) {
     this.toastr.success('Connexion Google réussie !');
     this.zone.run(() => this.router.navigate(['/open']));

@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, interval, Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 @Injectable({ providedIn: 'root' })
 export class Transaction {
 
-  private apiUrl   = 'http://localhost:8080/api/transactions';
-  private paiemUrl = 'http://localhost:8080/api/paiement';
+  // 👈 URLs dynamiques : s'ajustent automatiquement selon l'environnement (Local vs Render)
+  private apiUrl   = `${environment.apiUrl}/transactions`;
+  private paiemUrl = `${environment.apiUrl}/paiement`;
 
   readonly NUMERO_MARCHAND = '672017303';
 
@@ -36,26 +38,26 @@ export class Transaction {
    * retourne { payment_url, transactionId }
    */
   initierPaiement(donnees: {
-    montant:                number;
-    telephone:              string;
-    operateur:              'ORANGE' | 'MTN';
-    description:            string;
-    nomAcheteur?:           string;
-    emailAcheteur?:         string;
+    montant:                    number;
+    telephone:                  string;
+    operateur:                  'ORANGE' | 'MTN';
+    description:                string;
+    nomAcheteur?:               string;
+    emailAcheteur?:             string;
     // ── Infos commande complètes ──
-    offreId:                number;
-    quantite:               number;
-    acheteurId:             number;
-    villeDestination:       string;
-    nomDestinataire:        string;
-    telephoneDestinataire:  string;
-    choixColis:             string;
-    selectedColisId?:       number | null;
-    nomNouveauColis?:       string;
-    dateDepartChoisie:      string;
-    transactionExistanteId?: number | null;
-    vehiculeId?:            number | null;
-    transporteurId?:        number | null;
+    offreId:                    number;
+    quantite:                   number;
+    acheteurId:                 number;
+    villeDestination:           string;
+    nomDestinataire:            string;
+    telephoneDestinataire:      string;
+    choixColis:                 string;
+    selectedColisId?:           number | null;
+    nomNouveauColis?:           string;
+    dateDepartChoisie:          string;
+    transactionExistanteId?:    number | null;
+    vehiculeId?:                number | null;
+    transporteurId?:            number | null;
   }): Observable<any> {
     return this.http.post<any>(`${this.paiemUrl}/initier`, {
       ...donnees,

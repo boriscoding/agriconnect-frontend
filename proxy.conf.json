@@ -1,0 +1,38 @@
+{
+  "/api": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/auth": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/offres": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/demandes": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/messages": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/utilisateurs": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ws-chat": {
+    "target": "http://agriconnect-backend-g7p8.onrender.com",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true
+  }
+}

@@ -1,0 +1,165 @@
+<div class="profile-page-container container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+
+      <!-- Navigation d'en-tête -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <button class="btn btn-light rounded-circle shadow-sm icon-nav-btn" routerLink="/">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h5 class="fw-bold mb-0 text-dark">Mon Profil</h5>
+        <div style="width: 40px;"></div>
+      </div>
+
+      <!-- Carte d'identité / Photo de profil -->
+      <div class="card border-0 rounded-4 shadow-sm p-4 text-center mb-4 bg-white">
+        <div class="profile-container mb-3" (click)="fileInput.click()">
+          <div class="photo-circle-large">
+            <img [src]="user.photosuser" *ngIf="user.photosuser" class="img-circle-full">
+            <div *ngIf="!user.photosuser" class="default-user-icon">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+          <div class="camera-badge"><i class="fas fa-camera"></i></div>
+          <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="d-none">
+        </div>
+
+        <h4 class="fw-bold text-dark mb-1">{{ user.nom || 'Utilisateur' }}</h4>
+        <p class="text-muted small mb-3">
+          <i class="fas fa-map-marker-alt me-1 text-success"></i>{{ user.localisation || 'Localisation non renseignée' }}
+        </p>
+
+        <!-- Statut du compte -->
+        <div class="d-flex justify-content-center">
+          <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 rounded-pill" *ngIf="user.surfaceExploitation !== undefined">
+            <i class="fas fa-leaf me-1"></i> Compte Producteur
+          </span>
+          <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2 rounded-pill" *ngIf="user.typeVehicule !== undefined">
+            <i class="fas fa-truck me-1"></i> Compte Transporteur
+          </span>
+          <span class="badge bg-secondary-subtle text-secondary fs-6 px-3 py-2 rounded-pill" *ngIf="user.surfaceExploitation === undefined && user.typeVehicule === undefined">
+            <i class="fas fa-shopping-basket me-1"></i> Compte Acheteur
+          </span>
+        </div>
+      </div>
+
+      <!-- Formulaire de modification -->
+      <form (ngSubmit)="saveUser()" #userForm="ngForm">
+        
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white">
+          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-edit me-2 text-success"></i>Informations Personnelles</h6>
+          
+          <div class="row g-3">
+            <!-- Nom -->
+            <div class="col-12">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-user"></i></div>
+                <div class="input-content">
+                  <label>Nom complet</label>
+                  <input type="text" [(ngModel)]="user.nom" name="nom" required placeholder="Ex: Jean Dupont">
+                </div>
+              </div>
+            </div>
+
+            <!-- Téléphone -->
+            <div class="col-md-7">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-phone"></i></div>
+                <div class="input-content">
+                  <label>Téléphone</label>
+                  <input type="text" [(ngModel)]="user.number" name="num" placeholder="+237 ...">
+                </div>
+              </div>
+            </div>
+
+            <!-- Sexe -->
+            <div class="col-md-5">
+              <div class="gender-selector">
+                <label class="small-label">Sexe</label>
+                <div class="d-flex gap-2">
+                  <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
+                  <label class="btn btn-outline-success btn-sm w-100 py-2 rounded-3" for="masculin">M</label>
+
+                  <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
+                  <label class="btn btn-outline-success btn-sm w-100 py-2 rounded-3" for="feminin">F</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Localisation -->
+            <div class="col-12">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="input-content">
+                  <label>Localisation</label>
+                  <input type="text" [(ngModel)]="user.localisation" name="loc" placeholder="Ville, Région">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Spécifique Producteur -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white" *ngIf="user.surfaceExploitation !== undefined">
+          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-seedling me-2 text-success"></i>Exploitation Agricole</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-leaf"></i></div>
+                <div class="input-content">
+                  <label>Type de produit</label>
+                  <input type="text" [(ngModel)]="user.typeProduit" name="typeP">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-ruler-combined"></i></div>
+                <div class="input-content">
+                  <label>Surface (m²)</label>
+                  <input type="number" [(ngModel)]="user.surfaceExploitation" name="surface">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Spécifique Transporteur -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white" *ngIf="user.typeVehicule !== undefined">
+          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-truck me-2 text-success"></i>Informations Transport</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-truck"></i></div>
+                <div class="input-content">
+                  <label>Véhicule</label>
+                  <input type="text" [(ngModel)]="user.typeVehicule" name="vehicule">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group-modern">
+                <div class="input-icon"><i class="fas fa-weight-hanging"></i></div>
+                <div class="input-content">
+                  <label>Capacité (kg)</label>
+                  <input type="number" [(ngModel)]="user.capaciteCharge" name="capacite">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="d-flex justify-content-end gap-3 mb-5">
+          <button type="button" class="btn-cancel px-4" routerLink="/">Annuler</button>
+          <button type="submit" class="btn-save px-4" [disabled]="loading">
+            <span *ngIf="!loading"><i class="fas fa-save me-2"></i>Mettre à jour</span>
+            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

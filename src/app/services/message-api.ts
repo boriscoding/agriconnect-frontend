@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 export interface Message {
   id?: number;
@@ -23,13 +24,35 @@ export interface Contact {
   online?: boolean;
 }
 
+/** Un partage de discussion actif : A (initiateur) donne accès à B (bénéficiaire)
+ *  à sa discussion avec C (tiers), à partir d'une date donnée. */
+export interface Partage {
+  id?: number;
+  initiateurId: number;
+  beneficiaireId: number;
+  tiersId: number;
+  dateDebutAcces: string; // format LocalDateTime ISO, ex: "2026-09-01T10:30:00"
+}
+
+/** Charge utile embarquée dans le message d'invitation (mediaType = PARTAGE_INVITE)
+ *  envoyé au bénéficiaire pour qu'il découvre le partage. Ne contient JAMAIS
+ *  l'identité du tiers : c'est justement ce qui doit rester caché. */
+export interface PartageInvitePayload {
+  partageId?: number;
+  initiateurId: number;
+  initiateurNom: string;
+  beneficiaireId: number;
+  tiersId: number;
+  dateDebutAcces: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class MessageApi {
-  // ✅ Configuration de l'adresse du serveur
-  private readonly serverIp = 'localhost';
-  private readonly API_URL = `http://${this.serverIp}:8080/api/messages`;
+  
+  // 👈 URL dynamique basée sur environment.apiUrl (Local vs Render)
+  private readonly API_URL = `${environment.apiUrl}/messages`;
 
   constructor(private http: HttpClient) { }
 
@@ -88,12 +111,44 @@ export class MessageApi {
   supprimerMessage(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
-  // Dans ton fichier message-api.ts
-getContactByEmail(email: string): Observable<Contact> {
-  // On change l'URL pour pointer vers le UtilisateurController (/api/utilisateurs/search)
-  const searchUrl = `http://${this.serverIp}:8080/api/utilisateurs/search`;
-  const params = new HttpParams().set('email', email);
-  
-  return this.http.get<Contact>(searchUrl, { params });
-}
+
+  getContactByEmail(email: string): Observable<Contact> {
+    // 👈 URL dynamique pointant vers le UtilisateurController (/api/utilisateurs/search)
+    const searchUrl = `${environment.apiUrl}/utilisateurs/search`;
+    const params = new HttpParams().set('email', email);
+    
+    return this.http.get<Contact>(searchUrl, { params });
+  }
+
+  // 🤝 1. Créer un partage de discussion
+  creerPartage(initiateurId: number, beneficiaireId: number, tiersId: number, dateDebut: string): Observable<Partage> {
+    const params = new HttpParams()
+      .set('initiateurId', initiateurId)
+      .set('beneficiaireId', beneficiaireId)
+      .set('tiersId', tiersId)
+      .set('dateDebut', dateDebut);
+
+    return this.http.post<Partage>(`${this.API_URL}/partage/creer`, null, { params, withCredentials: true });
+  }
+
+  // 🕵️‍♂️ 2. Récupérer la conversation partagée et anonymisée
+  getConversationPartagee(beneficiaireId: number, initiateurId: number, tiersId: number): Observable<any[]> {
+    const params = new HttpParams()
+      .set('beneficiaireId', beneficiaireId)
+      .set('initiateurId', initiateurId)
+      .set('tiersId', tiersId);
+
+    return this.http.get<any[]>(`${this.API_URL}/partage/conversation`, { params, withCredentials: true });
+  }
+
+  // ✍️ 3. Envoyer un message en tant que délégué (au nom de l'initiateur, vers le tiers)
+  envoyerMessageDelegue(beneficiaireId: number, initiateurId: number, destinataireId: number, contenu: string): Observable<Message> {
+    const params = new HttpParams()
+      .set('beneficiaireId', beneficiaireId)
+      .set('initiateurId', initiateurId)
+      .set('destinataireId', destinataireId)
+      .set('contenu', contenu);
+
+    return this.http.post<Message>(`${this.API_URL}/partage/envoyer`, null, { params, withCredentials: true });
+  }
 }

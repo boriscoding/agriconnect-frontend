@@ -3,7 +3,13 @@
     <div class="container-fluid align-items-center">
       <div class="d-flex align-items-center" style="margin-left:2%;">
         <span id="images"></span>
-        <input class="form-control search-input d-none d-md-block" placeholder="Rechercher un transporteur..." style="margin-left:10%;" />
+        <div class="header-search-wrapper d-none d-md-block" style="margin-left:10%;">
+          <input class="form-control search-input" placeholder="Rechercher un véhicule, un produit..."
+                 [(ngModel)]="searchTerm" name="headerSearch" />
+          <button *ngIf="searchTerm" type="button" class="search-clear-btn" (click)="clearSearch()" title="Effacer">
+            <i class="fas fa-times-circle"></i>
+          </button>
+        </div>
       </div>
 
       <ul class="navbar-nav mx-auto d-none d-lg-flex">
@@ -18,11 +24,11 @@
         </button>
         <div class="d-flex align-items-center gap-3">
          <img *ngIf="imagePreview || (user && user.photosuser)" 
-       [src]="imagePreview || ('http://' + serverI + ':8080' + user.photosuser)" 
-       class="rounded-circle border" 
-       style="width: 35px; height: 35px; cursor: pointer; object-fit: cover;" 
-       (click)="openEditModal()"
-       (error)="handleImageError($event)">
+     [src]="imagePreview || getUserPhotoUrl(user.photosuser)" 
+     class="rounded-circle border" 
+     style="width: 35px; height: 35px; cursor: pointer; object-fit: cover;" 
+     (click)="openEditModal()"
+     (error)="handleImageError($event)">
           <i *ngIf="!user?.photosuser && !imagePreview" class="fas fa-user-circle fs-4 nav-right-icon" (click)="openEditModal()"></i>
         </div>
       </div>
@@ -41,12 +47,11 @@
 
 <div class="profile-header text-center mb-4">
   <div class="photo-upload-container">
-    <img [src]="imagePreview || (user.photosuser ? 'http://' + serverI + ':8080' + user.photosuser : 'assets/default-avatar.png')" 
-         (click)="photoInput.click()" 
-         class="rounded-circle profile-preview-img"
-         alt="Photo de profil"
-         
-         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #00a884;">
+  <img [src]="imagePreview || getUserPhotoUrl(user.photosuser)" 
+     (click)="photoInput.click()" 
+     class="rounded-circle profile-preview-img"
+     alt="Photo de profil"
+     style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #00a884;">
     
     <div class="camera-icon-overlay" (click)="photoInput.click()">
       <i class="fas fa-camera"></i>
@@ -174,6 +179,14 @@
       <aside class="inner-sidebar shadow-sm">
         <div class="sidebar-top">
           <h4 class="producer-title">Transporteur {{user?.nom}}</h4>
+          <div class="search-box-wrapper sidebar-search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control-custom" placeholder="Rechercher..."
+                   [(ngModel)]="searchTerm" name="sidebarSearch">
+            <button *ngIf="searchTerm" type="button" class="search-clear-btn" (click)="clearSearch()" title="Effacer">
+              <i class="fas fa-times-circle"></i>
+            </button>
+          </div>
         </div>
         <ul class="nav-links">
           <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
@@ -204,7 +217,16 @@
     </div>
   </div>
 
-  <div class="marketplace-grid" *ngIf="getFiltreLength() > 0">
+  <!-- Squelette de chargement -->
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let s of [1,2,3,4,5,6,7,8]">
+      <div class="skeleton-media"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  </div>
+
+  <div class="marketplace-grid" *ngIf="!loading && getFiltreLength() > 0">
     
     <ng-container *ngIf="viewType === 'VEHICULES'">
       <article class="fb-card" *ngFor="let v of vehiculesFiltres">
@@ -266,7 +288,7 @@
     </ng-container>
 
     <ng-container *ngIf="viewType === 'DEMANDES'">
-      <article class="fb-card" *ngFor="let d of demandesAcheteurs">
+      <article class="fb-card" *ngFor="let d of demandesFiltrees">
         <div class="fb-card-content" style="padding-top: 20px;">
           <div class="status-badge" style="position: static; margin-bottom: 10px;">
             <span class="dot pulse-orange"></span> Recherche urgente
@@ -286,7 +308,7 @@
     </ng-container>
   </div>
 
-  <div *ngIf="getFiltreLength() === 0" 
+  <div *ngIf="!loading && getFiltreLength() === 0" 
        class="empty-state-container d-flex justify-content-center align-items-center w-100" 
        style="min-height: 400px;">
     
@@ -422,6 +444,110 @@
         <button class="btn-modify" (click)="ouvrirModifier()"><i class="fas fa-edit"></i> Modifier</button>
         <button class="btn-delete" (click)="confirmerSuppression()"><i class="fas fa-trash"></i> Supprimer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ════ MODALE "MODIFIER LE VÉHICULE" (manquait — le bouton Modifier ne faisait rien) ════ -->
+  <div class="modal-overlay f-modal-v2" *ngIf="showModifierModal" (click)="showModifierModal = false">
+    <div class="modal-content wide animate-in" (click)="$event.stopPropagation()">
+
+      <div class="modal-header-v2">
+        <div class="header-text">
+          <h3>Modifier le véhicule</h3>
+          <p>Mettez à jour les informations de votre véhicule.</p>
+        </div>
+        <button class="close-icon-btn" (click)="showModifierModal = false">&times;</button>
+      </div>
+
+      <form (ngSubmit)="validerModification()" #editVehiculeForm="ngForm" *ngIf="vehiculeSelectionne">
+
+        <div class="modal-body-v2">
+
+          <div class="form-section image-upload-section">
+            <label class="section-title">Photo du véhicule</label>
+            <div class="image-preview-wrapper" (click)="vFileInput.click()">
+              <img [src]="imagePreview || getDisplayPhoto(vehiculeSelectionne.photo, 'VEHICULE')" alt="Aperçu">
+              <div class="upload-overlay">
+                <i class="fas fa-camera"></i>
+                <span>Changer la photo</span>
+              </div>
+            </div>
+            <input type="file" #vFileInput (change)="onFileSelected($event)" accept="image/*" style="display: none">
+            <p class="help-text">Cliquez sur l'image pour la modifier (Max 2Mo, JPG/PNG).</p>
+          </div>
+
+          <div class="form-section general-info-section">
+            <label class="section-title">Informations Générales</label>
+
+            <div class="form-row split-2">
+              <div class="form-group">
+                <label>Marque</label>
+                <input type="text" [(ngModel)]="vehiculeSelectionne.marque" name="marque" required placeholder="Ex: Mercedes">
+              </div>
+              <div class="form-group">
+                <label>Modèle</label>
+                <input type="text" [(ngModel)]="vehiculeSelectionne.model" name="model" placeholder="Ex: Actros">
+              </div>
+            </div>
+
+            <div class="form-row split-2">
+              <div class="form-group">
+                <label>Immatriculation</label>
+                <input type="text" [(ngModel)]="vehiculeSelectionne.immatriculation" name="immat" placeholder="Ex: LT-123-AA">
+              </div>
+              <div class="form-group">
+                <label>Type de véhicule</label>
+                <select [(ngModel)]="vehiculeSelectionne.voitureType" name="voitureType">
+                  <option value="CAMION">Camion</option>
+                  <option value="FOURGONNETTE">Fourgonnette</option>
+                  <option value="MOTO">Moto (Triporteur)</option>
+                  <option value="PICKUP">Pick-up</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section pricing-section">
+            <label class="section-title">Capacité & disponibilité</label>
+            <div class="form-row split-2">
+              <div class="form-group">
+                <label>Charge Max (Kg)</label>
+                <input type="number" [(ngModel)]="vehiculeSelectionne.chargeMax" name="charge" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label>Statut</label>
+                <select [(ngModel)]="vehiculeSelectionne.statut" name="statut">
+                  <option value="DISPONIBLE">Disponible</option>
+                  <option value="EN_COURSE">En course</option>
+                  <option value="INDISPONIBLE">Indisponible</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section location-section">
+            <label class="section-title">Détails supplémentaires</label>
+            <div class="form-group full-width">
+              <label>Localisation actuelle</label>
+              <input type="text" [(ngModel)]="vehiculeSelectionne.localisation" name="localisation" placeholder="Ex: Douala, Akwa">
+            </div>
+            <div class="form-group full-width">
+              <label>Description / état</label>
+              <textarea [(ngModel)]="vehiculeSelectionne.description" name="description" rows="3" placeholder="Ex: Camion frigo, disponible immédiatement..."></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-v2">
+          <button type="button" class="btn-secondary-v2" (click)="showModifierModal = false">Annuler</button>
+          <button type="submit" class="btn-primary-v2" [disabled]="isSubmitting || !editVehiculeForm.valid">
+            <span *ngIf="!isSubmitting">Mettre à jour le véhicule</span>
+            <span *ngIf="isSubmitting"><i class="fas fa-spinner fa-spin"></i> Traitement...</span>
+          </button>
+        </div>
+
+      </form>
     </div>
   </div>
 

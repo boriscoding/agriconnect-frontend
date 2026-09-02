@@ -1,0 +1,172 @@
+.profile-page-container {
+  min-height: calc(100vh - 60px);
+  padding-top: 80px;
+  background-color: #f8f9fa;
+}
+
+.icon-nav-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+/* Photo de profil et conteneur */
+.profile-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.photo-circle-large {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid #e8f5e9;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.profile-container:hover .photo-circle-large {
+  border-color: #28a745;
+}
+
+.img-circle-full {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-user-icon {
+  font-size: 50px;
+  color: #adb5bd;
+}
+
+.camera-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background-color: #28a745;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  font-size: 14px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.profile-container:hover .camera-badge {
+  transform: scale(1.1);
+}
+
+/* Champs de saisie */
+.input-group-modern {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 1.5px solid #eef1f5;
+  border-radius: 12px;
+  padding: 8px 15px;
+  transition: all 0.25s ease;
+}
+
+.input-group-modern:focus-within {
+  border-color: #28a745;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.12);
+}
+
+.input-icon {
+  color: #a0aec0;
+  font-size: 1.1rem;
+  margin-right: 14px;
+  transition: color 0.25s;
+}
+
+.input-group-modern:focus-within .input-icon {
+  color: #28a745;
+}
+
+.input-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-content label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #a0aec0;
+  margin-bottom: 2px;
+}
+
+.input-content input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  outline: none;
+}
+
+/* Sélecteur de Sexe */
+.gender-selector {
+  background: #f8f9fa;
+  border: 1.5px solid #eef1f5;
+  border-radius: 12px;
+  padding: 6px 12px;
+}
+
+.small-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #a0aec0;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* Boutons */
+.btn-cancel, .btn-save {
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: #eef1f5;
+  color: #495057;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+.btn-save {
+  background: #28a745;
+  color: white;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.25);
+}
+
+.btn-save:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(40, 167, 69, 0.35);
+}

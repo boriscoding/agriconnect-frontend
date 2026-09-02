@@ -6,28 +6,43 @@ import { ToastrService } from 'ngx-toastr';
 import { OffreService, OffreData } from '../services/offre';
 import { Auth } from '../services/auth';
 import { Demande } from '../services/demande';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AppCommande } from '../app-commande/app-commande';
+import { Sidebar } from '../core/sidebar/sidebar/sidebar';
+import { BottomNav } from '../bottom-nav/bottom-nav';
 
 @Component({
   selector: 'app-openachecteur',
-  standalone: false,
+  standalone: true,
+  imports: [
+      CommonModule,
+      FormsModule,
+      AppCommande,
+      Sidebar,
+      BottomNav
+    ],
   templateUrl: './openachecteur.html',
   styleUrls: ['./openachecteur.css']
 })
 export class Openachecteur implements OnInit {
 
-  // ✅ CONFIGURATION SERVEUR
-  private serverIp = 'localhost';
-  serverI: string = 'localhost';
+  // ✅ CONFIGURATION SERVEUR DYNAMIQUE
+  serverIp: string = 'localhost';
 
   // ✅ ÉTATS UI
   sidebarOpen = false;
-  isModalOpen = false;       // Modale Profil
+  isModalOpen = false;        // Modale Profil
   isSubmitting = false;
   loading = false;
   pub = true;
 
-  viewType: 'OFFRES' | 'MES_DEMANDES' = 'OFFRES';
+  // Gestion des 3 vues de l'interface (Producteur, Transporteur, Acheteur)
+  viewType: 'OFFRES' | 'VEHICULES' | 'DEMANDES' = 'OFFRES';
   filterType: 'TOUS' | 'MES_OFFRES' = 'TOUS';
+
+  // ✅ Recherche (barre du header + sidebar)
+  searchTerm: string = '';
 
   // ✅ DONNÉES
   user: any = {};
@@ -35,6 +50,7 @@ export class Openachecteur implements OnInit {
   offres: OffreData[] = [];
   offresProducteurs: any[] = [];
   demandesAcheteur: any[] = [];
+  vehicules: any[] = []; // Données pour les transporteurs
 
   // ✅ SÉLECTION ET IMAGES
   selectedFile: File | null = null;
@@ -55,12 +71,15 @@ export class Openachecteur implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-const storedId = localStorage.getItem('userId') 
-              || sessionStorage.getItem('userId');    
-                if (storedId) {
+      // Détection automatique de l'hôte (localhost ou IP réseau local ex: 192.168.x.x)
+      this.serverIp = window.location.hostname;
+
+      const storedId = localStorage.getItem('userId') || sessionStorage.getItem('userId');    
+      if (storedId) {
         this.userIdConnecte = +storedId.replace(/\D/g, '');
         this.loadUserProfile();
         this.chargerToutesLesOffres();
+        this.chargerVehicules();
       } else {
         this.router.navigate(['/login']);
       }
@@ -78,61 +97,42 @@ const storedId = localStorage.getItem('userId')
       });
   }
 
-  onPhotoSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      const reader = new FileReader();
-      reader.onload = () => this.imagePreview = reader.result as string;
-      reader.readAsDataURL(file);
+  saveUser(): void {
+    if (!this.userIdConnecte) {
+      this.toastr.error('Session expirée, veuillez vous reconnecter');
+      return;
     }
+
+    this.loading = true;
+    const formData = new FormData();
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile);
+    }
+
+    formData.append('nom', this.user.nom || '');
+    formData.append('email', this.user.email || '');
+    formData.append('localisation', this.user.localisation || '');
+    formData.append('sexe', this.user.sexe || '');
+    formData.append('number', (this.user.number || '').toString());
+
+    this.http.put(`http://${this.serverIp}:8080/acheteurs/modifier/${this.userIdConnecte}`, formData)
+      .subscribe({
+        next: (res: any) => {
+          this.user = res;
+          this.loading = false;
+          this.toastr.success('Profil mis à jour avec succès !');
+          this.closeModal();
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error("Erreur update profil:", err);
+          this.toastr.error('Erreur lors de la modification');
+        }
+      });
   }
 
- saveUser(): void {
-  if (!this.userIdConnecte) {
-    this.toastr.error('Session expirée, veuillez vous reconnecter');
-    return;
-  }
-
-  this.loading = true;
-  const formData = new FormData();
-
-  // On ajoute le fichier seulement s'il a été modifié
-  if (this.selectedFile) {
-    formData.append('file', this.selectedFile);
-  }
-
-  // On remplit le FormData
-  formData.append('nom', this.user.nom || '');
-  formData.append('email', this.user.email || '');
-  formData.append('localisation', this.user.localisation || '');
-  formData.append('sexe', this.user.sexe || '');
-  
-  // Correction ici : number peut être une chaîne, on s'assure qu'il n'est pas vide
-  formData.append('number', (this.user.number || '').toString());
-
-  // Appel API
-  this.http.put(`http://${this.serverIp}:8080/acheteurs/modifier/${this.userIdConnecte}`, formData)
-    .subscribe({
-      next: (res: any) => {
-        this.user = res; // Mise à jour de l'objet local avec les nouvelles données
-        
-        // Optionnel : Mettre à jour les infos dans le localStorage si tu y stockes le nom/photo
-        // localStorage.setItem('userData', JSON.stringify(res));
-
-        this.loading = false;
-        this.toastr.success('Profil mis à jour avec succès !');
-        this.closeModal(); // Ferme la modale
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error("Erreur update profil:", err);
-        this.toastr.error('Erreur lors de la modification');
-      }
-    });
-}
-
-  // ─── SECTION 2 : OFFRES ────────────────────────────────────────────────────
+  // ─── SECTION 2 : CHARGEMENT DES DONNÉES ────────────────────────────────────
 
   chargerToutesLesOffres(): void {
     this.loading = true;
@@ -153,7 +153,16 @@ const storedId = localStorage.getItem('userId')
     this.chargerToutesLesOffres();
   }
 
-  // ─── SECTION 3 : MES DEMANDES ─────────────────────────────────────────────
+  chargerVehicules(): void {
+    this.http.get<any[]>(`http://${this.serverIp}:8080/api/vehicules`).subscribe({
+      next: (data) => {
+        this.vehicules = data;
+      },
+      error: () => {
+        console.warn('Impossible de charger la flotte de véhicules pour le moment.');
+      }
+    });
+  }
 
   chargerMesDemandes(): void {
     if (!this.userIdConnecte) return;
@@ -170,33 +179,67 @@ const storedId = localStorage.getItem('userId')
     });
   }
 
-  // ─── SECTION 4 : NAVIGATION ET FILTRES ────────────────────────────────────
+  // ─── SECTION 3 : NAVIGATION ET FILTRES ────────────────────────────────────
 
-  switchView(type: 'OFFRES' | 'MES_DEMANDES'): void {
+  switchView(type: 'OFFRES' | 'VEHICULES' | 'DEMANDES'): void {
     this.viewType = type;
     this.pub = (type === 'OFFRES');
-    if (type === 'MES_DEMANDES' && this.demandesAcheteur.length === 0) {
+    if (type === 'DEMANDES' && this.demandesAcheteur.length === 0) {
       this.chargerMesDemandes();
+    }
+    if (type === 'VEHICULES' && this.vehicules.length === 0) {
+      this.chargerVehicules();
     }
   }
 
   get offresFiltrees(): OffreData[] {
-    if (this.filterType === 'MES_OFFRES') {
-      // Un acheteur peut vouloir filtrer les offres par producteur favori — ici on renvoie tout
-      return this.offres;
+    let liste = this.offres;
+    const q = this.searchTerm.trim().toLowerCase();
+    if (q) {
+      liste = liste.filter((o: any) =>
+        (o.nproduit || o.nomProduit || '').toLowerCase().includes(q) ||
+        (o.description || '').toLowerCase().includes(q) ||
+        (o.lieuProduction || '').toLowerCase().includes(q)
+      );
     }
-    return this.offres;
+    return liste;
+  }
+
+  get vehiculesFiltres(): any[] {
+    let liste = this.vehicules;
+    const q = this.searchTerm.trim().toLowerCase();
+    if (q) {
+      liste = liste.filter((v: any) =>
+        (v.marque || '').toLowerCase().includes(q) ||
+        (v.model || '').toLowerCase().includes(q) ||
+        (v.immatriculation || '').toLowerCase().includes(q) ||
+        (v.voitureType || v.typeVehicule || '').toLowerCase().includes(q)
+      );
+    }
+    return liste;
+  }
+
+  get demandesFiltrees(): any[] {
+    const q = this.searchTerm.trim().toLowerCase();
+    if (!q) return this.demandesAcheteur;
+    return this.demandesAcheteur.filter((d: any) =>
+      (d.nomProduit || '').toLowerCase().includes(q)
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   getFiltreLength(): number {
     if (this.viewType === 'OFFRES') return this.offresFiltrees.length;
-    if (this.viewType === 'MES_DEMANDES') return this.demandesAcheteur.length;
+    if (this.viewType === 'VEHICULES') return this.vehiculesFiltres.length;
+    if (this.viewType === 'DEMANDES') return this.demandesFiltrees.length;
     return 0;
   }
 
-  // ─── SECTION 5 : COMMANDE ─────────────────────────────────────────────────
+  // ─── SECTION 4 : COMMANDE & INTERACTIONS ──────────────────────────────────
 
-  // Ouvre la modale app-commande pour l'offre choisie
   ouvrirCommande(offre: any): void {
     if (!this.userIdConnecte) {
       this.toastr.warning('Veuillez vous connecter pour passer commande');
@@ -206,35 +249,16 @@ const storedId = localStorage.getItem('userId')
     this.offreSelectionnee = offre;
   }
 
-  // Ferme la modale app-commande
   fermerCommande(): void {
     this.offreSelectionnee = null;
-    // Rafraîchit les demandes si la vue est active
-    if (this.viewType === 'MES_DEMANDES') this.chargerMesDemandes();
+    if (this.viewType === 'DEMANDES') this.chargerMesDemandes();
   }
 
-  // Ouvre le chat pour discuter avec le producteur
-  initierDiscussion(destinataireId: number | undefined, titreProduit: string): void {
-    if (!this.userIdConnecte) {
-      this.toastr.warning('Veuillez vous connecter');
-      this.router.navigate(['/login']);
-      return;
-    }
-    if (destinataireId === this.userIdConnecte) {
-      this.toastr.info("C'est votre propre publication !");
-      return;
-    }
-    const message = `Bonjour, je suis intéressé par votre offre : "${titreProduit}". Est-elle toujours disponible ?`;
-    this.router.navigate(['/chat'], { queryParams: { contactId: destinataireId, message } });
+  ouvrirGerer(item: any): void {
+    console.log('Gérer l’élément', item);
   }
 
-  // Gestion d'une demande existante (annuler, voir détail…)
-  ouvrirGerer(demande: any): void {
-    console.log('Gérer la demande', demande);
-    // TODO : ouvrir une modale de détail de la demande
-  }
-
-  // ─── SECTION 6 : UTILITAIRES ──────────────────────────────────────────────
+  // ─── SECTION 5 : UTILITAIRES IMAGES ────────────────────────────────────────
 
   getDisplayPhoto(photoName: string | undefined, type: 'PRODUIT' | 'USER' = 'PRODUIT'): string {
     if (!photoName || photoName === 'null') {
@@ -251,8 +275,22 @@ const storedId = localStorage.getItem('userId')
     return this.getDisplayPhoto(photo, 'PRODUIT');
   }
 
+  getVehiculePhoto(photo: string | undefined): string {
+    return this.getDisplayPhoto(photo, 'PRODUIT');
+  }
+
   handleImageError(event: any): void {
     event.target.src = 'assets/images/lop.png';
+  }
+
+  onPhotoSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result as string;
+      reader.readAsDataURL(file);
+    }
   }
 
   onFileSelected(event: any): void {
@@ -261,17 +299,13 @@ const storedId = localStorage.getItem('userId')
       this.selectedFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        if (this.isModalOpen) {
-          this.user.photosuser = e.target.result;
-        } else {
-          this.imagePreview = e.target.result;
-        }
+        this.imagePreview = e.target.result;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  // ─── SECTION 7 : UI HELPERS ───────────────────────────────────────────────
+  // ─── SECTION 6 : UI HELPERS ───────────────────────────────────────────────
 
   toussoffres(): void { this.pub = true; this.filterType = 'TOUS'; }
   mesoffres(): void   { this.pub = false; this.filterType = 'MES_OFFRES'; }
@@ -280,8 +314,14 @@ const storedId = localStorage.getItem('userId')
   closeModal(): void     { this.isModalOpen = false; }
   toggleSidebar(): void  { this.sidebarOpen = !this.sidebarOpen; }
   navigateTo(path: string): void { this.router.navigate([path]); }
+  
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+  initierDiscussion(producteurId: any, email?: string): void {
+    this.router.navigate(['/chat'], { 
+      queryParams: { id: producteurId, email: email } 
+    });
   }
 }

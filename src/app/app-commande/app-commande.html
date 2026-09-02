@@ -1,6 +1,7 @@
 <div class="modal-overlay" (click)="fermer()">
   <div class="modal-content" (click)="$event.stopPropagation()">
 
+    <!-- ── En-tête ─────────────────────────────────────────── -->
     <div class="modal-header">
       <div class="header-title">
         <div class="icon-circle"><i class="fas fa-shopping-cart"></i></div>
@@ -12,226 +13,388 @@
       <button class="btn-close" (click)="fermer()"><i class="fas fa-times"></i></button>
     </div>
 
-    <!-- Barre 4 étapes -->
+    <!-- ── Barre d'étapes ───────────────────────────────────── -->
     <div class="steps-bar">
-      <div class="step-item" [class.active]="step===1" [class.done]="step>1">
-        <div class="step-dot"><i class="fas fa-check" *ngIf="step>1"></i><span *ngIf="step<=1">1</span></div>
+      <div class="step-item" [class.active]="step === 1" [class.done]="step > 1">
+        <div class="step-dot">
+          <i class="fas fa-check" *ngIf="step > 1"></i>
+          <span *ngIf="step <= 1">1</span>
+        </div>
         <span class="step-label">Détails</span>
       </div>
-      <div class="step-connector" [class.filled]="step>1"></div>
-      <div class="step-item" [class.active]="step===2" [class.done]="step>2">
-        <div class="step-dot"><i class="fas fa-check" *ngIf="step>2"></i><span *ngIf="step<=2">2</span></div>
+      <div class="step-connector" [class.filled]="step > 1"></div>
+      <div class="step-item" [class.active]="step === 2" [class.done]="step > 2">
+        <div class="step-dot">
+          <i class="fas fa-check" *ngIf="step > 2"></i>
+          <span *ngIf="step <= 2">2</span>
+        </div>
         <span class="step-label">Transport</span>
       </div>
-      <div class="step-connector" [class.filled]="step>2"></div>
-      <div class="step-item" [class.active]="step===3" [class.done]="step>3">
-        <div class="step-dot"><i class="fas fa-check" *ngIf="step>3"></i><span *ngIf="step<=3">3</span></div>
-        <span class="step-label">Départ</span>
-      </div>
-      <div class="step-connector" [class.filled]="step>3"></div>
-      <div class="step-item" [class.active]="step===4">
-        <div class="step-dot">4</div>
+      <div class="step-connector" [class.filled]="step > 2"></div>
+      <div class="step-item" [class.active]="step === 3">
+        <div class="step-dot">3</div>
         <span class="step-label">Paiement</span>
       </div>
     </div>
 
-    <!-- ÉTAPE 1 -->
-    <div class="modal-body step-container anim-fade" *ngIf="step===1">
+    <!-- ══════════════════════════════════════════════════════
+         ÉTAPE 1 — Détails
+         ══════════════════════════════════════════════════════ -->
+    <div class="modal-body step-container anim-fade" *ngIf="step === 1">
+
       <p class="section-title"><i class="fas fa-box-open"></i> Détails de la commande</p>
+
       <div class="form-group">
-        <label>Quantité (kg) <span class="label-hint">Dispo : <strong>{{ offre?.quantiteProduit }} kg · {{ offre?.prixUnitaire | number:'1.0-0' }} FCFA/kg</strong></span></label>
+        <label>
+          Quantité (kg)
+          <span class="label-hint">
+            Disponible : <strong>{{ offre?.quantiteProduit }} kg</strong>
+            &nbsp;·&nbsp; <strong>{{ offre?.prixUnitaire | number:'1.0-0' }} FCFA/kg</strong>
+          </span>
+        </label>
         <div class="input-with-icon">
           <i class="fas fa-weight-hanging"></i>
-          <input type="number" [(ngModel)]="quantiteSaisie" min="1" [max]="offre?.quantiteProduit">
+          <input type="number" [(ngModel)]="quantiteSaisie" min="1"
+                 [max]="offre?.quantiteProduit" placeholder="Ex: 50">
+        </div>
+        <div class="field-error" *ngIf="quantiteSaisie > offre?.quantiteProduit">
+          <i class="fas fa-exclamation-circle"></i> Quantité supérieure au stock disponible
         </div>
       </div>
-      <div class="total-preview" *ngIf="quantiteSaisie>0">
-        <span>Total estimé</span><strong>{{ totalCalcule | number:'1.0-0' }} FCFA</strong>
+
+      <div class="total-preview" *ngIf="quantiteSaisie > 0">
+        <span>Total estimé</span>
+        <strong>{{ totalCalcule | number:'1.0-0' }} FCFA</strong>
       </div>
+
       <div class="section-divider">Destinataire</div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Nom complet</label>
-          <div class="input-with-icon"><i class="fas fa-user"></i><input type="text" [(ngModel)]="nomDestinataire" placeholder="Nom"></div>
+          <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input type="text" [(ngModel)]="nomDestinataire" placeholder="Nom du destinataire">
+          </div>
         </div>
         <div class="form-group">
           <label>Téléphone</label>
-          <div class="input-with-icon"><i class="fas fa-phone"></i><input type="tel" [(ngModel)]="telephoneDestinataire" placeholder="6XXXXXXXX"></div>
+          <div class="input-with-icon">
+            <i class="fas fa-phone"></i>
+            <input type="tel" [(ngModel)]="telephoneDestinataire" placeholder="6XXXXXXXX">
+          </div>
         </div>
       </div>
+
       <div class="form-group">
         <label>Ville de livraison</label>
-        <div class="input-with-icon"><i class="fas fa-map-marker-alt"></i><input type="text" [(ngModel)]="villeDestination" placeholder="Ex: Douala, Yaoundé..."></div>
+        <div class="input-with-icon">
+          <i class="fas fa-map-marker-alt"></i>
+          <input type="text" [(ngModel)]="villeDestination"
+                 placeholder="Ex: Douala, Yaoundé, Bafoussam...">
+        </div>
       </div>
+
       <div class="form-group">
-        <label>Colis</label>
+        <label>Regroupement colis</label>
         <div class="input-with-icon select-wrap">
           <i class="fas fa-boxes"></i>
           <select [(ngModel)]="choixColis" (change)="onChoixChange()">
             <option value="nouveau">🆕 Créer un nouveau colis</option>
-            <option value="existant" [disabled]="mesColisDisponibles.length===0">📦 Colis existant {{ mesColisDisponibles.length===0 ? '(aucun)' : '' }}</option>
+            <option value="existant" [disabled]="mesColisDisponibles.length === 0">
+              📦 Ajouter à un colis existant
+              {{ mesColisDisponibles.length === 0 ? '(aucun disponible)' : '' }}
+            </option>
           </select>
         </div>
       </div>
-      <div class="form-group" *ngIf="choixColis==='nouveau'">
-        <div class="input-with-icon"><i class="fas fa-tag"></i><input type="text" [(ngModel)]="nomNouveauColis" placeholder="Nom du colis"></div>
+
+      <div class="form-group" *ngIf="choixColis === 'nouveau'">
+        <label>Nom du colis</label>
+        <div class="input-with-icon">
+          <i class="fas fa-tag"></i>
+          <input type="text" [(ngModel)]="nomNouveauColis" placeholder="Ex: Commande Farine Mars 2025">
+        </div>
       </div>
-      <div class="form-group" *ngIf="choixColis==='existant' && mesColisDisponibles.length>0">
+
+      <div class="form-group" *ngIf="choixColis === 'existant' && mesColisDisponibles.length > 0">
+        <label>Choisir un colis existant</label>
         <div class="input-with-icon select-wrap">
           <i class="fas fa-box"></i>
           <select [(ngModel)]="selectedColisId">
-            <option [ngValue]="null">-- Sélectionner --</option>
-            <option *ngFor="let c of mesColisDisponibles" [ngValue]="c.id">{{ c.nom }} ({{ c.statut }})</option>
+            <option [ngValue]="null">-- Sélectionner un colis --</option>
+            <option *ngFor="let c of mesColisDisponibles" [ngValue]="c.id">
+              {{ c.nom }} ({{ c.statut }})
+            </option>
           </select>
         </div>
       </div>
-      <button class="btn-primary" (click)="validerEtape1()" [disabled]="quantiteSaisie<=0||!villeDestination.trim()">
-        Choisir un transporteur <i class="fas fa-arrow-right"></i>
+
+      <button class="btn-primary" (click)="validerEtape1()"
+              [disabled]="quantiteSaisie <= 0 || !villeDestination.trim()">
+        Rechercher un transporteur <i class="fas fa-arrow-right"></i>
       </button>
     </div>
 
-    <!-- ÉTAPE 2 -->
-    <div class="modal-body step-container anim-slide-in" *ngIf="step===2">
-      <div class="route-banner">
-        <div class="city-pill origin"><i class="fas fa-map-pin"></i><span>{{ offre?.lieuProduction||'Origine' }}</span></div>
-        <div class="route-arrow"><div class="route-line"></div><i class="fas fa-long-arrow-alt-right"></i><div class="route-line"></div></div>
-        <div class="city-pill destination"><i class="fas fa-flag-checkered"></i><span>{{ villeDestination }}</span></div>
-      </div>
-      <div class="loader-block" *ngIf="loading"><div class="spinner"></div><span>Recherche...</span></div>
+    <!-- ══════════════════════════════════════════════════════
+         ÉTAPE 2 — Transport
+         ══════════════════════════════════════════════════════ -->
+    <div class="modal-body step-container anim-slide-in" *ngIf="step === 2">
 
-      <!-- Mode A : trajets -->
+      <!-- Bannière route -->
+      <div class="route-banner">
+        <div class="city-pill origin">
+          <i class="fas fa-map-pin"></i>
+          <span>{{ offre?.lieuProduction || 'Origine' }}</span>
+        </div>
+        <div class="route-arrow">
+          <div class="route-line"></div>
+          <i class="fas fa-long-arrow-alt-right"></i>
+          <div class="route-line"></div>
+        </div>
+        <div class="city-pill destination">
+          <i class="fas fa-flag-checkered"></i>
+          <span>{{ villeDestination }}</span>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div class="loader-block" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Recherche en cours...</span>
+      </div>
+
+      <!-- ══ MODE A : Trajets existants ══════════════════════ -->
       <ng-container *ngIf="!loading && !modeCreationTransaction">
+
         <p class="section-title"><i class="fas fa-truck"></i> Trajets disponibles</p>
-        <div class="transport-list">
-          <div class="transport-card" *ngFor="let t of transactionsTrouvees" (click)="choisirCetteTransaction(t)"
+
+        <div class="transport-list" *ngIf="transactionsTrouvees.length > 0">
+          <div class="transport-card"
+               *ngFor="let t of transactionsTrouvees"
+               (click)="choisirCetteTransaction(t)"
                [class.capacity-warn]="quantiteSaisie > getCapaciteDisponible(t)">
+
             <div style="flex:1;">
-              <p class="carrier-name"><i class="fas fa-user-tie" style="color:#3B6D11;"></i> {{ t.transporteur?.nom||'Transporteur' }}</p>
+              <p class="carrier-name">
+                <i class="fas fa-user-tie" style="color:#3B6D11;"></i>
+                {{ t.transporteur?.nom || 'Transporteur' }}
+                <span *ngIf="t.transporteur?.number"
+                      style="font-weight:400; color:#5a5a52; font-size:0.85rem;">
+                  &nbsp;· 📞 {{ t.transporteur.number }}
+                </span>
+              </p>
               <div class="tc-tags">
-                <span class="tag" *ngIf="t.vehicule"><i class="fas fa-truck"></i> {{ t.vehicule?.marque }} {{ t.vehicule?.model }}</span>
-                <span class="tag capacity" [class.danger]="quantiteSaisie > getCapaciteDisponible(t)">
-                  <i class="fas fa-weight-hanging"></i> {{ getCapaciteDisponible(t)|number:'1.0-0' }} kg dispo
+                <span class="tag" *ngIf="t.vehicule">
+                  <i class="fas fa-truck"></i>
+                  {{ t.vehicule?.marque }} {{ t.vehicule?.model }}
+                </span>
+                <span class="tag capacity"
+                      [class.danger]="quantiteSaisie > getCapaciteDisponible(t)">
+                  <i class="fas fa-weight-hanging"></i>
+                  {{ getCapaciteDisponible(t) | number:'1.0-0' }} kg disponibles
+                </span>
+                <span class="tag" *ngIf="t.villeDepart">
+                  <i class="fas fa-route"></i>
+                  {{ t.villeDepart }} → {{ t.villeArrivee }}
                 </span>
               </div>
             </div>
-            <button class="btn-pay-action" [disabled]="quantiteSaisie > getCapaciteDisponible(t)">
-              {{ quantiteSaisie > getCapaciteDisponible(t) ? 'Complet' : 'Choisir' }}
+
+            <div class="tc-right">
+              <button class="btn-pay-action"
+                      [disabled]="quantiteSaisie > getCapaciteDisponible(t)">
+                <i class="fas fa-check"></i>
+                {{ quantiteSaisie > getCapaciteDisponible(t) ? 'Complet' : 'Choisir' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ══ MODE B : Aucun trajet → Tous les véhicules ═════ -->
+      <ng-container *ngIf="!loading && modeCreationTransaction">
+
+        <!-- Info banner -->
+        <div class="info-banner">
+          <i class="fas fa-info-circle"></i>
+          <div>
+            <strong>Aucun trajet existant vers {{ villeDestination }}</strong>
+            <p>Choisissez un transporteur disponible. Un trajet sera créé automatiquement.</p>
+          </div>
+        </div>
+
+        <p class="section-title">
+          <i class="fas fa-truck-moving"></i>
+          Transporteurs & Véhicules disponibles
+          <span style="font-size:0.75rem; font-weight:400; margin-left:8px; color:#9a9a90;">
+            (capacité ≥ {{ quantiteSaisie }} kg)
+          </span>
+        </p>
+
+        <!-- Liste des véhicules filtrés -->
+        <div class="transport-list" *ngIf="tousLesVehicules.length > 0">
+          <div class="transport-card"
+               *ngFor="let v of tousLesVehicules"
+               (click)="selectionnerVehicule(v)"
+               [class.selected-card]="vehiculeSelectionne?.id === v.id">
+
+            <div style="flex:1; display:flex; gap:12px; align-items:center;">
+
+              <!-- Photo véhicule -->
+              <img [src]="getPhotoVehicule(v)"
+                   style="width:52px; height:52px; border-radius:8px; object-fit:cover; flex-shrink:0;"
+                   (error)="$any($event.target).src='assets/images/default-truck.png'">
+
+              <div>
+                <p class="carrier-name">
+                  <i class="fas fa-truck" style="color:#3B6D11;"></i>
+                  {{ v.marque }} {{ v.model }}
+                  <span class="tc-tags" style="margin-left:6px;">
+                    <span class="tag" style="font-size:0.7rem;">{{ v.voitureType }}</span>
+                  </span>
+                </p>
+                <p style="font-size:0.8rem; color:#5a5a52; margin:2px 0;">
+                  🔑 {{ v.immatriculation }}
+                </p>
+
+                <!-- Transporteur propriétaire -->
+                <p *ngIf="v.proprietaire" style="font-size:0.8rem; color:#3B6D11; margin:2px 0;">
+                  <i class="fas fa-user-tie"></i>
+                  {{ v.proprietaire?.nom || 'Transporteur' }}
+                  <span *ngIf="v.proprietaire?.number"> · 📞 {{ v.proprietaire.number }}</span>
+                </p>
+
+                <div class="tc-tags" style="margin-top:4px;">
+                  <span class="tag capacity">
+                    <i class="fas fa-weight-hanging"></i>
+                    Capacité : <strong>{{ getCapaciteVehicule(v) | number:'1.0-0' }} kg</strong>
+                  </span>
+                  <span class="tag" *ngIf="v.description" style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    {{ v.description }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="tc-right">
+              <button class="btn-pay-action">
+                <i class="fas fa-check"></i> Choisir
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aucun véhicule disponible -->
+        <div class="empty-state" *ngIf="tousLesVehicules.length === 0 && !loading">
+          <i class="fas fa-truck-moving"></i>
+          <p>
+            Aucun véhicule disponible pour <strong>{{ quantiteSaisie }} kg</strong>.<br>
+            Tous les véhicules enregistrés ont une capacité insuffisante.
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+            <button class="btn-outline" (click)="chargerTousLesVehicules()">
+              <i class="fas fa-sync-alt"></i> Actualiser
+            </button>
+            <button class="btn-outline" (click)="contacterAssistance()"
+                    style="border-color:#e67e22; color:#e67e22;">
+              <i class="fas fa-headset"></i> Contacter l'assistance
             </button>
           </div>
         </div>
+
       </ng-container>
 
-      <!-- Mode B : véhicules -->
-      <ng-container *ngIf="!loading && modeCreationTransaction">
-        <div class="info-banner">
-          <i class="fas fa-info-circle"></i>
-          <div><strong>Aucun trajet existant vers {{ villeDestination }}</strong><p>Choisissez un véhicule disponible.</p></div>
-        </div>
-        <p class="section-title"><i class="fas fa-truck-moving"></i> Véhicules disponibles (≥ {{ quantiteSaisie }} kg)</p>
-        <div class="transport-list">
-          <div class="transport-card" *ngFor="let v of tousLesVehicules" (click)="selectionnerVehicule(v)" [class.selected-card]="vehiculeSelectionne?.id===v.id">
-            <div style="flex:1;display:flex;gap:12px;align-items:center;">
-              <img [src]="getPhotoVehicule(v)" style="width:52px;height:52px;border-radius:8px;object-fit:cover;" (error)="$any($event.target).src='assets/images/default-truck.png'">
-              <div>
-                <p class="carrier-name"><i class="fas fa-truck" style="color:#3B6D11;"></i> {{ v.marque }} {{ v.model }}</p>
-                <p style="font-size:0.8rem;color:#5a5a52;">🔑 {{ v.immatriculation }}</p>
-                <p *ngIf="v.proprietaire" style="font-size:0.8rem;color:#3B6D11;">
-                  <i class="fas fa-user-tie"></i> {{ v.proprietaire?.nom }}
-                  <span *ngIf="v.proprietaire?.number"> · 📞 {{ v.proprietaire.number }}</span>
-                </p>
-                <span class="tag capacity" style="margin-top:4px;display:inline-flex;">
-                  <i class="fas fa-weight-hanging"></i> <strong>{{ getCapaciteVehicule(v)|number:'1.0-0' }} kg</strong>
-                </span>
-              </div>
-            </div>
-            <button class="btn-pay-action"><i class="fas fa-check"></i> Choisir</button>
-          </div>
-        </div>
-        <div class="empty-state" *ngIf="tousLesVehicules.length===0 && !loading">
-          <i class="fas fa-truck-moving"></i>
-          <p>Aucun véhicule disponible pour <strong>{{ quantiteSaisie }} kg</strong>.</p>
-        </div>
-      </ng-container>
-      <button class="btn-back" (click)="step=1"><i class="fas fa-arrow-left"></i> Retour</button>
-    </div>
-
-    <!-- ÉTAPE 3 : DATE DE DÉPART -->
-    <div class="modal-body step-container anim-fade" *ngIf="step===3">
-      <p class="section-title"><i class="fas fa-calendar-alt"></i> Date de départ prévue</p>
-
-      <div class="recap-card" style="margin-bottom:16px;">
-        <div class="recap-row">
-          <span><i class="fas fa-truck"></i> Véhicule</span>
-          <strong>{{ transactionSelectionnee?.vehicule?.marque||vehiculeSelectionne?.marque||'—' }} {{ transactionSelectionnee?.vehicule?.model||vehiculeSelectionne?.model||'' }}</strong>
-        </div>
-        <div class="recap-row"><span><i class="fas fa-user-tie"></i> Transporteur</span><strong>{{ transporteurChoisi?.nom||'—' }}</strong></div>
-        <div class="recap-row"><span><i class="fas fa-phone"></i> Contact</span><strong>{{ transporteurChoisi?.number||'—' }}</strong></div>
-      </div>
-
-      <div class="form-group">
-        <label>Quand souhaitez-vous que le transporteur parte ?</label>
-        <div class="input-with-icon">
-          <i class="fas fa-clock"></i>
-          <input type="datetime-local" [(ngModel)]="dateDepartChoisie" style="padding-left:36px;">
-        </div>
-        <p style="font-size:11px;color:#9a9a90;margin-top:5px;">
-          ⚠️ Le bouton "Démarrer" s'active côté transporteur uniquement à cette date/heure.
-        </p>
-      </div>
-
-      <div class="info-banner" style="background:#e8f5e9;border-color:#a5d6a7;">
-        <i class="fas fa-shield-alt" style="color:#2e7d32;"></i>
-        <div>
-          <strong style="color:#1b5e20;">Suivi GPS en temps réel</strong>
-          <p style="color:#2e7d32;">Dès le démarrage, la position du transporteur s'affiche sur la carte (Dijkstra).</p>
-        </div>
-      </div>
-
-      <button class="btn-primary" (click)="validerEtape3()">
-        Procéder au paiement <i class="fas fa-arrow-right"></i>
+      <button class="btn-back" (click)="step = 1" [disabled]="loading">
+        <i class="fas fa-arrow-left"></i> Retour
       </button>
-      <button class="btn-back" (click)="step=2"><i class="fas fa-arrow-left"></i> Retour</button>
     </div>
 
-    <!-- ÉTAPE 4 : PAIEMENT -->
-    <div class="modal-body step-container anim-fade" *ngIf="step===4">
-      <p class="section-title"><i class="fas fa-receipt"></i> Récapitulatif & Paiement</p>
+    <!-- ══════════════════════════════════════════════════════
+         ÉTAPE 3 — Paiement
+         ══════════════════════════════════════════════════════ -->
+    <div class="modal-body step-container anim-fade" *ngIf="step === 3">
+
+      <p class="section-title"><i class="fas fa-receipt"></i> Récapitulatif</p>
 
       <div class="recap-card">
-        <div class="recap-row"><span><i class="fas fa-box"></i> Produit</span><strong>{{ offre?.nproduit }}</strong></div>
-        <div class="recap-row"><span><i class="fas fa-weight"></i> Quantité</span><strong>{{ quantiteSaisie }} kg</strong></div>
-        <div class="recap-row"><span><i class="fas fa-flag-checkered"></i> Livraison</span><strong>{{ villeDestination }}</strong></div>
-        <div class="recap-row"><span><i class="fas fa-calendar"></i> Départ</span><strong>{{ dateDepartChoisie | date:'dd/MM/yyyy à HH:mm' }}</strong></div>
-        <div class="recap-row"><span><i class="fas fa-truck"></i> Transporteur</span><strong>{{ transporteurChoisi?.nom||'Nouveau trajet' }}</strong></div>
-        <div class="recap-row recap-total"><span>TOTAL</span><strong class="total-amount">{{ totalCalcule | number:'1.0-0' }} FCFA</strong></div>
-      </div>
+        <div class="recap-row">
+          <span><i class="fas fa-box"></i> Produit</span>
+          <strong>{{ offre?.nproduit }}</strong>
+        </div>
+        <div class="recap-row">
+          <span><i class="fas fa-weight"></i> Quantité</span>
+          <strong>{{ quantiteSaisie }} kg</strong>
+        </div>
+        <div class="recap-row">
+          <span><i class="fas fa-tag"></i> Prix/kg</span>
+          <strong>{{ offre?.prixUnitaire | number:'1.0-0' }} FCFA</strong>
+        </div>
+        <div class="recap-row">
+          <span><i class="fas fa-flag-checkered"></i> Livraison</span>
+          <strong>{{ villeDestination }}</strong>
+        </div>
 
-      <div class="section-divider">Mobile Money</div>
-      <div class="payment-methods">
-        <div class="pay-option" [class.selected]="modePaiement==='ORANGE'" (click)="modePaiement='ORANGE'">🟠 Orange Money</div>
-        <div class="pay-option" [class.selected]="modePaiement==='MTN'" (click)="modePaiement='MTN'">🟡 MTN MoMo</div>
-      </div>
-      <div class="form-group" style="margin-top:14px;">
-        <label>Numéro Mobile Money (payeur)</label>
-        <div class="input-with-icon">
-          <i class="fas fa-phone-alt"></i>
-          <input type="tel" [(ngModel)]="numeroPaiement" placeholder="Ex: 655 123 456" maxlength="9">
+        <!-- Mode A : transporteur de la transaction existante -->
+        <div class="recap-row" *ngIf="transactionSelectionnee">
+          <span><i class="fas fa-truck"></i> Transporteur</span>
+          <strong>{{ transactionSelectionnee?.transporteur?.nom || 'Trajet existant' }}</strong>
+        </div>
+
+        <!-- Mode B : véhicule sélectionné -->
+        <div class="recap-row" *ngIf="vehiculeSelectionne">
+          <span><i class="fas fa-truck"></i> Véhicule</span>
+          <strong>{{ vehiculeSelectionne?.marque }} {{ vehiculeSelectionne?.model }}</strong>
+        </div>
+        <div class="recap-row" *ngIf="vehiculeSelectionne?.proprietaire">
+          <span><i class="fas fa-user-tie"></i> Transporteur</span>
+          <strong>{{ vehiculeSelectionne?.proprietaire?.nom }}</strong>
+        </div>
+
+        <div class="recap-row recap-total">
+          <span>TOTAL À PAYER</span>
+          <strong class="total-amount">{{ totalCalcule | number:'1.0-0' }} FCFA</strong>
         </div>
       </div>
 
-      <div style="background:#f0f4ff;border:1px solid #c5d3f0;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12px;color:#5a5a52;">
-        <i class="fas fa-lock" style="color:#3B6D11;font-size:16px;"></i>
-        Paiement sécurisé via <strong style="margin-left:4px;">Monetbil</strong>. Vous serez redirigé vers la confirmation.
+      <div class="section-divider">Mode de paiement</div>
+
+      <div class="payment-methods">
+        <div class="pay-option" [class.selected]="modePaiement === 'ORANGE'"
+             (click)="modePaiement = 'ORANGE'">
+          <span>🟠 Orange Money</span>
+        </div>
+        <div class="pay-option" [class.selected]="modePaiement === 'MTN'"
+             (click)="modePaiement = 'MTN'">
+          <span>🟡 MTN MoMo</span>
+        </div>
       </div>
 
-      <button class="btn-primary" (click)="procederAuPaiement()"
-              [disabled]="paiementEnCours || !numeroPaiement || numeroPaiement.length<9">
-        <span *ngIf="!paiementEnCours"><i class="fas fa-lock"></i> Payer {{ totalCalcule | number:'1.0-0' }} FCFA</span>
-        <span *ngIf="paiementEnCours" style="display:flex;align-items:center;gap:10px;justify-content:center;">
-          <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> Redirection...
+      <div class="form-group" style="margin-top: 14px;">
+        <label>Numéro Mobile Money</label>
+        <div class="input-with-icon">
+          <i class="fas fa-phone-alt"></i>
+          <input type="tel" [(ngModel)]="numeroPaiement"
+                 placeholder="Ex: 655 123 456" maxlength="9">
+        </div>
+      </div>
+
+      <button class="btn-primary"
+              (click)="procederAuPaiement()"
+              [disabled]="loading || !numeroPaiement || numeroPaiement.length < 9">
+        <span *ngIf="!loading">
+          <i class="fas fa-lock"></i>
+          Confirmer et payer {{ totalCalcule | number:'1.0-0' }} FCFA
+        </span>
+        <span *ngIf="loading" style="display:flex; align-items:center; gap:10px; justify-content:center;">
+          <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div>
+          Traitement en cours...
         </span>
       </button>
-      <button class="btn-back" (click)="step=3" [disabled]="paiementEnCours"><i class="fas fa-arrow-left"></i> Retour</button>
+
+      <button class="btn-back" (click)="step = 2" [disabled]="loading">
+        <i class="fas fa-arrow-left"></i> Retour
+      </button>
     </div>
 
   </div>

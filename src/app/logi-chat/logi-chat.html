@@ -17,7 +17,10 @@
       </div>
       <div class="nav-bottom">
         <div class="nav-icon" title="Paramètres"><i class="fas fa-cog"></i></div>
-        <div class="nav-icon profile-icon" title="Profil"><i class="fas fa-user-circle"></i></div>
+        <div class="nav-icon profile-icon" title="Mon profil" (click)="openMyProfile()">
+          <img *ngIf="profileUser?.photosuser" [src]="getProfilePhotoUrl()" class="side-avatar" alt="Profil">
+          <i *ngIf="!profileUser?.photosuser" class="fas fa-user-circle"></i>
+        </div>
       </div>
     </nav>
 
@@ -52,10 +55,10 @@
                [class.active]="selectedContactId === contact.id"
                (click)="selectContact(contact)">
             <div class="avatar-container">
-              <img *ngIf="contact.photosuser; else fallbackAvatar"
-                   [src]="'http://' + serverI + ':8080' + contact.photosuser"
-                   [alt]="contact.prenom" class="contact-img"
-                   (error)="$any($event.target).src = 'https://ui-avatars.com/api/?name=' + contact.prenom + '+' + contact.nom + '&background=random&color=fff'">
+            <img *ngIf="contact.photosuser; else fallbackAvatar"
+     [src]="serverUrl + contact.photosuser"
+     [alt]="contact.prenom" class="contact-img"
+     (error)="$any($event.target).src = 'https://ui-avatars.com/api/?name=' + contact.prenom + '+' + contact.nom + '&background=random&color=fff'">
               <ng-template #fallbackAvatar>
                 <img [src]="'https://ui-avatars.com/api/?name=' + (contact.prenom || '') + '+' + (contact.nom || '') + '&background=random&color=fff'" [alt]="contact.nom">
               </ng-template>
@@ -72,6 +75,7 @@
                     <div class="preview-row" *ngSwitchCase="'IMAGE'"><i class="fas fa-image" style="color:#3498db;font-size:.8rem;"></i><span class="preview-text">Photo</span></div>
                     <div class="preview-row" *ngSwitchCase="'AUDIO'"><i class="fas fa-microphone" style="color:#27ae60;font-size:.8rem;"></i><span class="preview-text">Message vocal</span></div>
                     <div class="preview-row" *ngSwitchCase="'VIDEO'"><i class="fas fa-video" style="color:#e74c3c;font-size:.8rem;"></i><span class="preview-text">Vidéo</span></div>
+                    <div class="preview-row" *ngSwitchCase="'PARTAGE_INVITE'"><i class="fas fa-user-shield" style="color:#9b59b6;font-size:.8rem;"></i><span class="preview-text">Invitation de partage</span></div>
                     <p class="preview-text text-only" *ngSwitchDefault>{{ contact.dernierMessage.contenu | slice:0:35 }}{{ contact.dernierMessage.contenu?.length > 35 ? '...' : '' }}</p>
                   </div>
                 </div>
@@ -83,21 +87,39 @@
       </div>
     </aside>
 
-    <!-- ════ CONVERSATION WINDOW (wrapper manquant, cause du bug) ════ -->
+    <!-- ════ CONVERSATION WINDOW ════ -->
     <main class="conversation-window">
 
       <!-- Header -->
-      <header class="chat-top-bar" style="background-color:white;;">
+      <header class="chat-top-bar">
         <button class="back-to-contacts" (click)="closeChat()"><i class="fas fa-arrow-left"></i></button>
-        <img [src]="getActiveContact()?.photosuser
-                    ? 'http://' + serverI + ':8080' + getActiveContact()?.photosuser
-                    : 'https://ui-avatars.com/api/?name=' + (getActiveContact()?.prenom || 'U') + '+' + (getActiveContact()?.nom || '') + '&background=25a244&color=fff'"
-             class="header-avatar" [alt]="getActiveContact()?.prenom">
-        <div class="header-contact-info">
-          <span class="contact-name">{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</span>
-          <span class="contact-status">{{ getActiveContact()?.online ? '● en ligne' : 'hors ligne' }}</span>
+        <div class="chat-top-identity" (click)="openContactPanel()">
+         <img [src]="getActiveContact()?.photosuser
+            ? serverUrl + getActiveContact()?.photosuser
+            : 'https://ui-avatars.com/api/?name=' + (getActiveContact()?.prenom || 'U') + '+' + (getActiveContact()?.nom || '') + '&background=25a244&color=fff'"
+     class="header-avatar" [alt]="getActiveContact()?.prenom">
+          <div class="header-contact-info">
+            <span class="contact-name">{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</span>
+            <span class="contact-status">{{ getActiveContact()?.online ? '● en ligne' : 'hors ligne' }}</span>
+          </div>
+        </div>
+        <div class="chat-top-actions">
+          <!-- Bouton de partage : masqué quand on consulte déjà une discussion déléguée -->
+          <button *ngIf="!isDelegatedView()" class="call-trigger-btn" (click)="ouvrirModalePartage()" title="Déléguer cette discussion">
+            <i class="fas fa-user-shield"></i>
+          </button>
+          <button class="call-trigger-btn" (click)="startAudioCall()" [disabled]="callState !== 'idle' || isDelegatedView()" title="Appel audio">
+            <i class="fas fa-phone-alt"></i>
+          </button>
         </div>
       </header>
+
+      <!-- Bannière : consultation d'une discussion partagée -->
+      <div class="delegated-banner" *ngIf="isDelegatedView()">
+        <i class="fas fa-user-shield"></i>
+        <span>Discussion déléguée — les informations personnelles de votre interlocuteur sont masquées.</span>
+        <button (click)="quitterPartage()"><i class="fas fa-times"></i> Quitter</button>
+      </div>
 
       <!-- Corps messages -->
       <div class="chat-body" #scrollMe>
@@ -144,8 +166,20 @@
               </div>
             </div>
 
-            <!-- ✅ <p> et non .bubble-text pour correspondre au CSS .bubble p -->
-            <p *ngIf="msg?.text">{{ msg?.text }}</p>
+            <!-- Carte d'invitation à une discussion partagée -->
+            <div class="partage-invite-card" *ngIf="msg?.type === 'PARTAGE_INVITE'">
+              <i class="fas fa-user-shield"></i>
+              <div class="partage-invite-text">
+                <strong *ngIf="!msg.isMe">Accès à une discussion vous a été délégué</strong>
+                <strong *ngIf="msg.isMe">Invitation de partage envoyée</strong>
+                <span>Les informations personnelles de l'interlocuteur resteront masquées.</span>
+              </div>
+              <button *ngIf="!msg.isMe" class="btn-confirm" (click)="accepterPartage(msg)">
+                <i class="fas fa-arrow-right"></i> Ouvrir
+              </button>
+            </div>
+
+            <p *ngIf="msg?.text && msg?.type !== 'PARTAGE_INVITE'">{{ msg?.text }}</p>
 
             <span class="msg-time">
               {{ msg.time }}
@@ -176,16 +210,16 @@
 
       <!-- Footer saisie -->
       <footer class="chat-footer">
-        <button class="action-btn" (click)="triggerImageUpload()" title="Joindre">
+        <button class="action-btn" *ngIf="!isDelegatedView()" (click)="triggerImageUpload()" title="Joindre">
           <i class="fas fa-paperclip"></i>
           <input type="file" #fileInput style="display:none" (change)="onFileSelected($event)" accept="image/*,video/*">
         </button>
         <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" (input)="onMessageInput()"
-               [placeholder]="mediaPreviewUrl ? 'Ajouter une légende...' : 'Taper un message...'">
+               [placeholder]="isDelegatedView() ? 'Écrire en tant que délégué...' : (mediaPreviewUrl ? 'Ajouter une légende...' : 'Taper un message...')">
         <button *ngIf="newMessage.trim().length > 0 || mediaPreviewUrl" (click)="sendMessage()" class="send-btn">
           <i class="fas fa-paper-plane"></i>
         </button>
-        <button *ngIf="newMessage.trim().length === 0 && !mediaPreviewUrl"
+        <button *ngIf="!isDelegatedView() && newMessage.trim().length === 0 && !mediaPreviewUrl"
                 (click)="startVoiceRecord()" class="voice-btn" [class.recording]="isRecording">
           <i class="fas" [ngClass]="isRecording ? 'fa-stop-circle' : 'fa-microphone'"></i>
         </button>
@@ -193,7 +227,30 @@
 
     </main><!-- ═══ fin .conversation-window ═══ -->
 
-    <!-- Modales (en dehors de main, dans logri-chat-app) -->
+    <!-- ════ PANNEAU "INFOS DU CONTACT" ════ -->
+    <aside class="contact-info-panel" *ngIf="showContactPanel" [@drawerSlide]>
+      <div class="panel-header">
+        <button class="panel-close" (click)="closeContactPanel()"><i class="fas fa-times"></i></button>
+        <span>Infos du contact</span>
+      </div>
+      <div class="panel-body">
+        <img [src]="getContactPhotoUrl(getActiveContact())" class="panel-avatar" alt="">
+        <h3>{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</h3>
+        <p class="panel-status" [class.online]="getActiveContact()?.online">
+          <span class="status-dot"></span>
+          {{ getActiveContact()?.online ? 'En ligne' : 'Hors ligne' }}
+        </p>
+        <div class="panel-info-row" *ngIf="getActiveContact()?.email">
+          <i class="fas fa-envelope"></i>
+          <span>{{ getActiveContact()?.email }}</span>
+        </div>
+        <button class="panel-call-btn" (click)="startAudioCall(); closeContactPanel()" [disabled]="callState !== 'idle'">
+          <i class="fas fa-phone-alt"></i> Appeler
+        </button>
+      </div>
+    </aside>
+
+    <!-- ════ MODALES ════ -->
     <div class="media-focus-modal" *ngIf="selectedMedia" (click)="closeMediaModal()">
       <div class="modal-controls" (click)="$event.stopPropagation()">
         <div class="left-actions">
@@ -227,10 +284,10 @@
         <div class="transfer-search"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un contact..."></div>
         <div class="transfer-list">
           <div *ngFor="let contact of contacts" class="transfer-item" (click)="confirmTransfer(contact.id)">
-            <img [src]="contact.photosuser ? 'http://' + serverI + ':8080' + contact.photosuser : 'https://ui-avatars.com/api/?name=' + (contact.prenom || 'U')" class="mini-avatar">
-            <div class="contact-info"><span class="name">{{ contact.prenom }} {{ contact.nom }}</span></div>
-            <i class="fas fa-paper-plane send-icon"></i>
-          </div>
+  <img [src]="contact.photosuser ? serverUrl + contact.photosuser : 'https://ui-avatars.com/api/?name=' + (contact.prenom || 'U')" class="mini-avatar">
+  <div class="contact-info"><span class="name">{{ contact.prenom }} {{ contact.nom }}</span></div>
+  <i class="fas fa-paper-plane send-icon"></i>
+</div>
         </div>
       </div>
     </div>
@@ -253,6 +310,146 @@
         </div>
       </div>
     </div>
+
+    <!-- ════ MODALE "MON PROFIL" ════ -->
+    <div class="profile-overlay" *ngIf="showProfileDrawer" (click)="closeMyProfile()">
+      <div class="profile-card" (click)="$event.stopPropagation()">
+        <div class="profile-card-header">
+          <h3><i class="fas fa-user-circle"></i> Mon profil</h3>
+          <button class="close-btn" (click)="closeMyProfile()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="profile-card-body">
+          <div class="profile-photo-edit">
+            <img [src]="getProfilePhotoUrl()" alt="Photo de profil" (click)="triggerProfilePhotoUpload()">
+            <button class="camera-btn" (click)="triggerProfilePhotoUpload()"><i class="fas fa-camera"></i></button>
+            <input #profilePhotoInput type="file" accept="image/*" style="display:none" (change)="onProfilePhotoSelected($event)">
+          </div>
+
+          <div class="profile-field">
+            <label>Prénom</label>
+            <input type="text" [(ngModel)]="profileUser.prenom" placeholder="Prénom">
+          </div>
+          <div class="profile-field">
+            <label>Nom</label>
+            <input type="text" [(ngModel)]="profileUser.nom" placeholder="Nom">
+          </div>
+          <div class="profile-field">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="profileUser.email" placeholder="Adresse email">
+          </div>
+          <div class="profile-field">
+            <label>Localisation</label>
+            <input type="text" [(ngModel)]="profileUser.localisation" placeholder="Ville, région">
+          </div>
+          <div class="profile-field">
+            <label>Téléphone</label>
+            <input type="text" [(ngModel)]="profileUser.number" placeholder="Numéro de téléphone">
+          </div>
+        </div>
+
+        <div class="profile-card-footer">
+          <button class="btn-cancel" (click)="closeMyProfile()">Annuler</button>
+          <button class="btn-confirm" (click)="saveMyProfile()" [disabled]="profileSaving">
+            <i class="fas" [ngClass]="profileSaving ? 'fa-circle-notch fa-spin' : 'fa-check'"></i>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ APPEL AUDIO ════ -->
+    <audio #remoteAudio autoplay style="display:none"></audio>
+
+    <!-- Appel sortant / entrant (sonnerie) -->
+    <div class="call-overlay" *ngIf="callState === 'outgoing' || callState === 'incoming'">
+      <div class="call-card">
+        <div class="call-avatar-ring">
+          <img [src]="getContactPhotoUrl(callContact)" alt="">
+        </div>
+        <h2>{{ callContact?.prenom }} {{ callContact?.nom }}</h2>
+        <p class="call-status-label">
+          {{ callState === 'outgoing' ? 'Appel en cours...' : 'Appel entrant...' }}
+        </p>
+
+        <div class="call-actions">
+          <button *ngIf="callState === 'incoming'" class="call-btn accept" (click)="acceptCall()">
+            <i class="fas fa-phone-alt"></i>
+          </button>
+          <button class="call-btn decline" (click)="callState === 'incoming' ? declineCall() : endCall()">
+            <i class="fas fa-phone-slash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appel actif -->
+    <div class="call-overlay active-call" *ngIf="callState === 'active'">
+      <div class="call-card">
+        <div class="call-avatar-ring connected">
+          <img [src]="getContactPhotoUrl(callContact)" alt="">
+        </div>
+        <h2>{{ callContact?.prenom }} {{ callContact?.nom }}</h2>
+        <p class="call-status-label mono">{{ callDurationLabel }}</p>
+
+        <div class="call-actions in-call">
+          <button class="call-btn toggle" [class.on]="isMuted" (click)="toggleMute()" title="Muet">
+            <i class="fas" [ngClass]="isMuted ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+          </button>
+          <button class="call-btn decline" (click)="endCall()" title="Raccrocher">
+            <i class="fas fa-phone-slash"></i>
+          </button>
+          <button class="call-btn toggle" [class.on]="isSpeakerOn" (click)="toggleSpeaker()" title="Haut-parleur">
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
-</div> 
- <app-bottom-nav ></app-bottom-nav>
+</div>
+<!-- ════ MODALE "PARTAGER LA DISCUSSION" ════ -->
+<div class="modal-new-chat-overlay" *ngIf="showShareModal" (click)="showShareModal = false">
+  <div class="modal-new-chat-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <i class="fas fa-share-alt"></i>
+      <h3>Partager cet accès</h3>
+    </div>
+    
+    <div class="modal-body">
+      <p>Sélectionnez un de vos contacts pour lui déléguer votre discussion avec
+        <strong>{{ getActiveContact()?.prenom }} {{ getActiveContact()?.nom }}</strong> :</p>
+      
+      <!-- Sélection du bénéficiaire -->
+      <div class="input-group" style="margin-bottom: 15px;">
+        <i class="fas fa-user"></i>
+        <select [(ngModel)]="beneficiaireSelectionne" style="width: 100%; border: none; outline: none; background: transparent;">
+          <option value="" disabled selected>Choisir un collègue...</option>
+          <option *ngFor="let contact of mesContacts" [value]="contact.id">
+            {{ contact.prenom }} {{ contact.nom }}
+          </option>
+        </select>
+      </div>
+
+      <p>Accès aux messages à partir du :</p>
+      
+      <!-- Sélection de la date -->
+      <div class="input-group">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="datetime-local" [(ngModel)]="dateDebutPartage">
+      </div>
+      
+      <p style="font-size: 0.8rem; color: #e74c3c; margin-top: 10px;">
+        <i class="fas fa-info-circle"></i> Les infos personnelles de votre interlocuteur actuel seront masquées pour ce collègue.
+      </p>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancel" [disabled]="partageEnCours" (click)="showShareModal = false">Annuler</button>
+      <button class="btn-confirm" (click)="validerPartage()" [disabled]="!beneficiaireSelectionne || !dateDebutPartage || partageEnCours">
+        <i class="fas" [ngClass]="partageEnCours ? 'fa-spinner fa-spin' : 'fa-check'"></i> Autoriser
+      </button>
+    </div>
+  </div>
+</div>
+<app-bottom-nav [class.hide-on-mobile-chat]="isChatActive"></app-bottom-nav>

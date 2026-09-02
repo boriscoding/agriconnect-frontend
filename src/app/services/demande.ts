@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 // Interface alignée sur ton entité Java 'DemandesAcheteur'
 export interface DemandeData {
@@ -15,9 +16,10 @@ export interface DemandeData {
 @Injectable({
   providedIn: 'root'
 })
-export class Demande{ // ✅ RENOMMÉ de 'Demande' à 'DemandeService'
+export class Demande{ // ✅ Nom de classe mis à jour proprement
 
-  private apiUrl = 'http://localhost:8080/api/demandes'; 
+  // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
+  private apiUrl = `${environment.apiUrl}/demandes`; 
 
   constructor(private http: HttpClient) { }
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
 
 // --- INTERFACE OFFREDATA ---
 export interface OffreData {
@@ -24,19 +25,18 @@ export interface OffreData {
 
 @Injectable({ providedIn: 'root' })
 export class OffreService {
-  // ✅ REMPLACEMENT PAR L'IP RÉSEAU
- private readonly serverIp = 'localhost'; // À changer par ton IP si tu testes sur mobile
-  private apiUrl = `http://${this.serverIp}:8080/api/offres`;
-  private colisUrl = `http://${this.serverIp}:8080/api/colis`; // Ajout de l'URL pour les colis
+  
+  // 👈 URLs dynamiques : s'ajustent automatiquement selon l'environnement (Local vs Render)
+  private apiUrl = `${environment.apiUrl}/offres`;
+  private colisUrl = `${environment.apiUrl}/colis`;
 
   constructor(private http: HttpClient) {}
-
-  // ... (autres méthodes)
 
   // Utilise cette méthode centralisée pour tes appels
   finaliserCommande(donnees: any): Observable<any> {
     return this.http.post<any>(`${this.colisUrl}/commander`, donnees);
   }
+
   creerOffre(formData: FormData): Observable<OffreData> {
     return this.http.post<OffreData>(`${this.apiUrl}/publier`, formData);
   }
@@ -58,7 +58,6 @@ export class OffreService {
   supprimerOffre(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/supprimer/${id}`);
   }
-  
 
   // ✅ Alias conservé pour compatibilité avec app-commande.ts ancien
   enregistrerTransactionFinale(commandeComplete: any): Observable<any> {

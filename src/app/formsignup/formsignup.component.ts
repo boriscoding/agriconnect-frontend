@@ -5,6 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { Auth } from '../services/auth';
 import { User } from '../services/user';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 @Component({
   selector: 'app-formsignup',
@@ -30,7 +31,7 @@ export class FormsignupComponent {
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye';
 
-  private apiUrl = 'http://localhost:8080';
+  private apiUrl = environment.apiUrl; // 👈 Utilisation de l'URL centralisée
 
   constructor(
     private router:      Router,
@@ -108,12 +109,12 @@ export class FormsignupComponent {
     // ✅ CORRECTION : on envoie avec FormData pour tous les types
     // car Spring attend multipart/form-data (consumes = {"multipart/form-data"})
     const formData = new FormData();
-    formData.append('nom',           this.nom + ' ' + this.prenom);
-    formData.append('email',         this.email);
-    formData.append('password',      this.password);
-    formData.append('localisation',  'Cameroun');
-    formData.append('sexe',          'M');
-    formData.append('number',        '0');
+    formData.append('nom',          this.nom + ' ' + this.prenom);
+    formData.append('email',        this.email);
+    formData.append('password',     this.password);
+    formData.append('localisation', 'Cameroun');
+    formData.append('sexe',         'M');
+    formData.append('number',       '0');
 
     // Champ spécifique à l'Acheteur
     if (this.selectedCategorie === 'Acheteur') {

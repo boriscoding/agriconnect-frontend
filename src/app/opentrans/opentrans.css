@@ -1527,3 +1527,232 @@ body::-webkit-scrollbar {
 
 
 
+
+/* ═══════════════════════════════════════════════════════════
+   AMÉLIORATIONS — Design, interactions, animations
+   (Classes utilisées dans le HTML mais absentes du CSS d'origine,
+   + polish visuel : hover, focus, chargement, palette transporteur)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Variantes de couleur du point de statut (pulse) ─────────── */
+/* .pulse-green existe déjà plus haut (garde le vert "disponible") */
+
+@keyframes pulse-red-anim {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(220, 53, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+.pulse-red {
+  background-color: #dc3545 !important;
+  animation: pulse-red-anim 2s infinite;
+}
+
+@keyframes pulse-blue-anim {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.7); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(41, 128, 185, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(41, 128, 185, 0); }
+}
+.pulse-blue {
+  background-color: #2980b9 !important;
+  animation: pulse-blue-anim 2s infinite;
+}
+
+@keyframes pulse-orange-anim {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(230, 126, 34, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); }
+}
+.pulse-orange {
+  background-color: #e67e22 !important;
+  animation: pulse-orange-anim 2s infinite;
+}
+
+/* ── Entrée en fondu générique (référencée par les blocs conditionnels) ── */
+.anim-fade-in {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+/* ── Palette "transporteur" (bleu), miroir de .green-gradient / .btn-green-action ── */
+.blue-gradient {
+  background: linear-gradient(135deg, #2980b9 0%, #1c5a80 100%) !important;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 0 0 0 10px;
+  font-size: 0.85rem;
+}
+
+.btn-blue-action {
+  background-color: #2980b9;
+  color: white;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.btn-blue-action:hover {
+  background-color: #1c5a80;
+  transform: scale(1.02);
+}
+
+/* ── Cartes : polish supplémentaire (hover plus vivant, cohérent avec .fb-card) ── */
+.fb-card {
+  will-change: transform;
+}
+
+.fb-card-footer .btn-fb {
+  transform: translateY(0);
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fb-card-footer .btn-fb:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.fb-card-footer .btn-fb:active {
+  transform: translateY(0);
+}
+
+/* ── Barre de recherche : anneau de focus cohérent avec le reste de l'app ── */
+.search-input:focus,
+.form-control-custom:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15) !important;
+  background: white !important;
+}
+
+.form-control-custom {
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+/* ── État de chargement : squelette animé pour la grille marketplace ── */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.skeleton-media {
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(100deg, #eceef1 30%, #f6f7f9 50%, #eceef1 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  margin: 12px;
+  border-radius: 6px;
+  background: linear-gradient(100deg, #eceef1 30%, #f6f7f9 50%, #eceef1 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-line.short { width: 40%; }
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Bouton "effacer la recherche" ─────────────────────────── */
+.search-clear-btn {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 0 6px;
+  transition: color 0.15s ease;
+}
+.search-clear-btn:hover { color: #dc3545; }
+
+/* ── Champ de recherche du header (positionnement de l'icône clear) ── */
+.header-search-wrapper { position: relative; display: inline-flex; align-items: center; }
+.sidebar-search-wrapper { position: relative; }
+.sidebar-search-wrapper .search-clear-btn,
+.header-search-wrapper .search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Modale "Modifier véhicule" (Opentrans) : reprend .f-modal-v2 déjà stylé ── */
+.image-preview-wrapper {
+  cursor: pointer;
+}
+
+/* ── Interactions générales plus vivantes ─────────────────── */
+.tab { user-select: none; }
+
+.btn-publish:active { transform: scale(0.98); }
+
+.contact-tile, .transfer-item, .nav-item {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 992px) {
+  .skeleton-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+/* --- AMÉLIORATION DU HEADER (Glassmorphism) --- */
+.header, .sticky-sub-header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+/* --- ONGLET DÉCONNEXION --- */
+.tab-logout {
+  color: #dc3545 !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.tab-logout::after {
+  background: #dc3545 !important;
+}
+.tab-logout:hover {
+  background-color: #fff5f5;
+  color: #c82333 !important;
+  transform: translateY(-2px);
+}
+
+/* --- BADGE DE NOTIFICATION ANIMÉ --- */
+.tabs-container {
+  display: flex;
+  overflow-x: auto; /* Permet le scroll horizontal sur mobile */
+}
+
+.tab {
+  position: relative; /* Indispensable pour positionner le badge */
+}
+
+.badge-notification {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+/* --- ANIMATION DES CARTES (Feedback utilisateur) --- */
+.fb-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.fb-card:active {
+  transform: scale(0.98) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+}

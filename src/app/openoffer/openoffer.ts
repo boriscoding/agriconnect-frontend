@@ -6,8 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { OffreService, OffreData } from '../services/offre'; 
 import { Auth } from '../services/auth';
 import { Vehicule } from '../services/vehicule';
-import { ColisService } from '../services/colis-service'; 
-
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-openoffer',
@@ -17,13 +16,9 @@ import { ColisService } from '../services/colis-service';
 })
 export class Openoffer implements OnInit {
 
-  // ✅ CONFIGURATION SERVEUR
-  private serverIp = 'localhost';
-  serverI: string = 'localhost'; // Pour la cohérence avec certains de tes anciens scripts
-
   // ✅ ÉTATS UI
   sidebarOpen = false;
-  isModalOpen = false;      // Modale Profil
+  isModalOpen = false;       // Modale Profil
   isOffreModalOpen = false; // Modale Ajout Offre
   isSubmitting = false;
   loading = false;
@@ -31,7 +26,9 @@ export class Openoffer implements OnInit {
   
   viewType: 'OFFRES' | 'VEHICULES' | 'DEMANDES' = 'OFFRES';
   filterType: 'TOUS' | 'MES_OFFRES' = 'TOUS';
-  hasImageError: boolean = false;
+
+  // ✅ Recherche (barre du header + barre de la sidebar, partagent le même terme)
+  searchTerm: string = '';
 
   // ✅ DONNÉES
   user: any = {};
@@ -63,7 +60,6 @@ export class Openoffer implements OnInit {
   };
 
   constructor(
-    private colisService: ColisService,
     private router: Router, 
     private http: HttpClient,
     private offreService: OffreService, 
@@ -73,29 +69,27 @@ export class Openoffer implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
- ngOnInit(): void {
-  if (isPlatformBrowser(this.platformId)) {
-    // On essaie de récupérer l'ID de l'AuthService ou du localStorage
-    const storedId = this.authService.getUserId()?.toString() || localStorage.getItem('userId');
-    
-    if (storedId) {
-      const cleanId = storedId.replace(/\D/g, ''); 
-      this.userIdConnecte = +cleanId;
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const storedId = this.authService.getUserId()?.toString() || localStorage.getItem('userId');
       
-      // Une fois l'ID récupéré, on charge les données
-      this.loadUserProfile();
-      this.chargerToutesLesOffres();
-    } else {
-      // Si pas d'ID, on redirige (sauf si l'utilisateur est en train de s'inscrire)
-      this.router.navigate(['/login']);
+      if (storedId) {
+        const cleanId = storedId.replace(/\D/g, ''); 
+        this.userIdConnecte = +cleanId;
+        
+        this.loadUserProfile();
+        this.chargerToutesLesOffres();
+      } else {
+        this.router.navigate(['/login']);
+      }
     }
   }
-}
+
   // --- SECTION 1 : PROFIL UTILISATEUR ---
 
   loadUserProfile() {
     if (!this.userIdConnecte) return;
-    this.http.get(`http://${this.serverIp}:8080/api/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: (err: any) => console.error('Erreur profil', err)
@@ -112,45 +106,45 @@ export class Openoffer implements OnInit {
     }
   }
 
-saveUser() {
-  if (!this.userIdConnecte) {
-    this.toastr.error("Utilisateur non identifié");
-    return;
-  }
-
-  this.loading = true;
-  const formData = new FormData();
-
-  if (this.selectedFile) {
-    formData.append('file', this.selectedFile);
-  }
-
-  // On envoie uniquement ce que le Java attend maintenant
-  formData.append('nom', this.user.nom || ''); 
-  formData.append('email', this.user.email || '');
-  formData.append('localisation', this.user.localisation || '');
-  formData.append('sexe', this.user.sexe || '');
-  formData.append('number', (this.user.number || 0).toString());
-  formData.append('typeProduit', this.user.typeProduit || '');
-  formData.append('surfaceExploitation', (this.user.surfaceExploitation || 0).toString());
-
-  // URL sans /api comme tu le souhaites
-  const url = `http://localhost:8080/producteurs/modifier/${this.userIdConnecte}`;
-
-  this.http.put(url, formData).subscribe({
-    next: (res: any) => {
-      this.user = res;
-      this.loading = false;
-      this.toastr.success("Profil mis à jour !");
-      this.closeModal();
-    },
-    error: (err) => {
-      this.loading = false;
-      console.error("Erreur :", err);
-      this.toastr.error("Erreur lors de la modification");
+  saveUser() {
+    if (!this.userIdConnecte) {
+      this.toastr.error("Utilisateur non identifié");
+      return;
     }
-  });
-}
+
+    this.loading = true;
+    const formData = new FormData();
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile);
+    }
+
+    formData.append('nom', this.user.nom || ''); 
+    formData.append('email', this.user.email || '');
+    formData.append('localisation', this.user.localisation || '');
+    formData.append('sexe', this.user.sexe || '');
+    formData.append('number', (this.user.number || 0).toString());
+    formData.append('typeProduit', this.user.typeProduit || '');
+    formData.append('surfaceExploitation', (this.user.surfaceExploitation || 0).toString());
+
+    // 👈 URL dynamique sans /api
+    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
+    const url = `${serverBaseUrl}/producteurs/modifier/${this.userIdConnecte}`;
+
+    this.http.put(url, formData).subscribe({
+      next: (res: any) => {
+        this.user = res;
+        this.loading = false;
+        this.toastr.success("Profil mis à jour !");
+        this.closeModal();
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error("Erreur :", err);
+        this.toastr.error("Erreur lors de la modification");
+      }
+    });
+  }
 
   // --- SECTION 2 : GESTION DES OFFRES (CRUD) ---
 
@@ -159,7 +153,7 @@ saveUser() {
     this.offreService.getAllOffres().subscribe({
       next: (data: OffreData[]) => {
         this.offres = data;
-        this.offresProducteurs = data; // Synchronisation des deux listes
+        this.offresProducteurs = data;
         this.loading = false;
       },
       error: (err: any) => {
@@ -169,12 +163,11 @@ saveUser() {
     });
   }
 
-  // Utilisé par le bouton "Actualiser" de l'Empty State
   chargerOffres() {
     this.chargerToutesLesOffres();
   }
 
- saveOffre() {
+  saveOffre() {
     if (!this.userIdConnecte) return;
     if (!this.newOffre.nproduit || !this.newOffre.prixUnitaire) {
       this.toastr.warning('Veuillez remplir les champs obligatoires');
@@ -185,24 +178,19 @@ saveUser() {
     const formData = new FormData();
     if (this.selectedFile) formData.append('file', this.selectedFile);
 
-    // On fait correspondre EXACTEMENT avec les @RequestParam du Java
     formData.append('titre', this.newOffre.nproduit); 
     formData.append('nomProduit', this.newOffre.nproduit);
     formData.append('categorie', this.newOffre.type_pro);
     formData.append('description', this.newOffre.description || '');
     formData.append('prixUnitaire', this.newOffre.prixUnitaire.toString());
     formData.append('quantiteProduit', this.newOffre.quantiteProduit?.toString() || '0');
-    
-    // 👇 ICI : On envoie "lieuProduction" car le Java l'exige
     formData.append('lieuProduction', this.newOffre.localisation || this.newOffre.lieuProduction || ''); 
-    
     formData.append('statut', this.newOffre.statut);
     formData.append('producteurId', this.userIdConnecte.toString());
 
-    // 👇 ICI : L'URL exacte qui correspond à ton contrôleur
-    const url = `http://${this.serverIp}:8080/api/offres/publier`;
+    // 👈 URL dynamique pour la publication d'offres
+    const url = `${environment.apiUrl}/offres/publier`;
 
-    // Comme tu n'utilises pas directement creerOffre du service ici, on utilise this.http.post
     this.http.post(url, formData).subscribe({
       next: (res: any) => {
         this.toastr.success('Votre offre est en ligne !');
@@ -218,6 +206,7 @@ saveUser() {
       }
     });
   }
+
   confirmerSuppression() {
     if (this.offreSelectionnee && confirm('Voulez-vous vraiment supprimer cette offre ?')) {
       this.offreService.supprimerOffre(this.offreSelectionnee.id).subscribe({
@@ -273,7 +262,7 @@ saveUser() {
 
   chargerDemandes() {
     this.loading = true;
-    this.http.get(`http://${this.serverIp}:8080/api/demandes`).subscribe({
+    this.http.get(`${environment.apiUrl}/demandes`).subscribe({
       next: (data: any) => {
         this.demandesAcheteurs = data;
         this.loading = false;
@@ -285,24 +274,59 @@ saveUser() {
     });
   }
 
-  // ✅ Getters pour le HTML
   get offresFiltrees() {
-    return this.filterType === 'MES_OFFRES' 
+    let liste = this.filterType === 'MES_OFFRES'
       ? this.offres.filter(o => o.producteur?.id === this.userIdConnecte)
       : this.offres;
+
+    const q = this.searchTerm.trim().toLowerCase();
+    if (q) {
+      liste = liste.filter(o =>
+        (o.nproduit || '').toLowerCase().includes(q) ||
+        (o.description || '').toLowerCase().includes(q) ||
+        (o.lieuProduction || '').toLowerCase().includes(q)
+      );
+    }
+    return liste;
   }
 
   get vehiculesFiltres() {
-    return this.filterType === 'MES_OFFRES' 
+    let liste = this.filterType === 'MES_OFFRES'
       ? this.vehicules.filter(v => v.proprietaire?.id === this.userIdConnecte)
       : this.vehicules;
+
+    const q = this.searchTerm.trim().toLowerCase();
+    if (q) {
+      liste = liste.filter(v =>
+        (v.marque || '').toLowerCase().includes(q) ||
+        (v.model || '').toLowerCase().includes(q) ||
+        (v.immatriculation || '').toLowerCase().includes(q)
+      );
+    }
+    return liste;
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   getFiltreLength(): number {
     if (this.viewType === 'OFFRES') return this.offresFiltrees.length;
     if (this.viewType === 'VEHICULES') return this.vehiculesFiltres.length;
-    if (this.viewType === 'DEMANDES') return this.demandesAcheteurs.length;
+    if (this.viewType === 'DEMANDES') return this.demandesFiltrees.length;
     return 0;
+  }
+
+  get demandesFiltrees() {
+    const q = this.searchTerm.trim().toLowerCase();
+    if (!q) return this.demandesAcheteurs;
+    return this.demandesAcheteurs.filter((d: any) =>
+      (d.nomProduit || '').toLowerCase().includes(q)
+    );
   }
 
   // --- SECTION 4 : UTILITAIRES ET UI ---
@@ -313,7 +337,8 @@ saveUser() {
       if (type === 'VEHICULE') return 'assets/images/default-truck.png';
       return 'assets/images/default-produit.png';
     }
-    return photoName.startsWith('http') ? photoName : `http://${this.serverIp}:8080/uploads/${photoName}`;
+    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
+    return photoName.startsWith('http') ? photoName : `${serverBaseUrl}/uploads/${photoName}`;
   }
 
   getPhotoUrl(photo: string | undefined): string {
@@ -350,62 +375,50 @@ saveUser() {
   toussoffres() { this.pub = true; this.filterType = 'TOUS'; }
   navigateTo(path: string) { this.router.navigate([path]); }
   logout() { this.authService.logout(); this.router.navigate(['/login']); }
-  // ✅ Gère la sélection de fichier pour le profil et les offres
-onFileSelected(event: any) {
-  const file = event.target.files[0];
-  if (file) {
-    this.selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      // Si la modale de profil est ouverte, on met à jour la photo profil
-      if (this.isModalOpen) {
-        this.user.photosuser = e.target.result;
-      } else {
-        // Sinon, c'est l'aperçu pour une nouvelle offre
-        this.imagePreview = e.target.result;
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-}
-// ✅ Importer Router en haut du fichier si ce n'est pas fait
-// import { Router } from '@angular/router';
 
-initierCommande(destinataireId: number | undefined, titreProduit: string) {
-  if (!this.userIdConnecte) {
-    this.toastr.warning("Veuillez vous connecter pour passer commande");
-    this.router.navigate(['/login']);
-    return;
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (this.isModalOpen) {
+          this.user.photosuser = e.target.result;
+        } else {
+          this.imagePreview = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  if (destinataireId === this.userIdConnecte) {
-    this.toastr.info("C'est votre propre publication !");
-    return;
+  initierCommande(destinataireId: number | undefined, titreProduit: string) {
+    if (!this.userIdConnecte) {
+      this.toastr.warning("Veuillez vous connecter pour passer commande");
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (destinataireId === this.userIdConnecte) {
+      this.toastr.info("C'est votre propre publication !");
+      return;
+    }
+
+    const messageAuto = `Bonjour, je suis intéressé par votre offre : "${titreProduit}". Est-elle toujours disponible ?`;
+
+    this.router.navigate(['/chat'], { 
+      queryParams: {  // note: queryParams (gardé tel quel ou corrigé si besoin)
+        contactId: destinataireId,
+        message: messageAuto 
+      } 
+    });
   }
 
-  // On prépare le message automatique
-  const messageAuto = `Bonjour, je suis intéressé par votre offre : "${titreProduit}". Est-elle toujours disponible ?`;
-
-  // Redirection vers le chat avec les paramètres
-  this.router.navigate(['/chat'], { 
-    queryParams: { 
-      contactId: destinataireId,
-      message: messageAuto 
-    } 
-  });
-}
-
-// Méthode appelée quand on clique sur le bouton "Commander"
   ouvrirCommande(offre: any) {
     this.offreSelectionnee = offre;
   }
 
-  // Méthode appelée quand la modale émet l'événement 'close'
   fermerCommande() {
     this.offreSelectionnee = null;
   }
-  // Dans ton app-commande.ts
-// Dans app-commande.ts, à l'intérieur de ta classe
-// À mettre dans app-commande.ts (et non openoffer.ts)
-
 }

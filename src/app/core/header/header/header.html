@@ -1,149 +1,26 @@
-<body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm header">
-    <div class="container-fluid align-items-center">
-      <div class="d-flex align-items-center" style="margin-left:2%;">
-        <span id="images"></span>
-        <input class="form-control search-input d-none d-md-block" placeholder="Rechercher sur Agriconnect" style="margin-left:10%;" />
-      </div>
-
-      <ul class="navbar-nav mx-auto d-none d-lg-flex" routerLink="/" routerLinkActive="active">
-        <li class="nav-item"><i class="fas fa-home nav-icon active"></i></li>
-        <li class="nav-item"><i class="fas fa-users nav-icon"></i></li>
-        <li class="nav-item"><i class="fas fa-tv nav-icon"></i></li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-light icon-btn" (click)="toggleSidebar()">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="d-flex align-items-center gap-3">
-          <img *ngIf="user && user.photosuser" [src]="user.photosuser" class="rounded-circle" style="width: 35px; height: 35px; cursor: pointer; object-fit: cover;" (click)="openEditModal()">
-          <i *ngIf="!user || !user.photosuser" class="fas fa-user-circle fs-4 nav-right-icon" style="cursor: pointer;" (click)="openEditModal()"></i>
-        </div>
-      </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm header">
+  <div class="container-fluid align-items-center">
+    <div class="d-flex align-items-center" style="margin-left:2%;">
+      <span id="images"></span>
+      <input class="form-control search-input d-none d-md-block" placeholder="Rechercher sur Agriconnect" style="margin-left:10%;" />
     </div>
-  </nav>
 
-  <div class="modal fade" [ngClass]="{'show d-block': isModalOpen}" tabindex="-1" *ngIf="isModalOpen">
-    <div class="modal-dialog modal-sm-custom">
-      <div class="modal-content custom-modal-rect">
-        <div class="modal-body p-4 pt-0">
-          
-          <h5 class="text-center fw-bold mb-4" style="margin-top: 1em;">MODIFIER LE PROFIL</h5>
+    <ul class="navbar-nav mx-auto d-none d-lg-flex">
+      <li class="nav-item"><i class="fas fa-home nav-icon active" routerLink="/"></i></li>
+      <li class="nav-item"><i class="fas fa-users nav-icon"></i></li>
+      <li class="nav-item"><i class="fas fa-tv nav-icon"></i></li>
+    </ul>
 
-          <div class="text-center mb-4">
-            <div class="profile-container" (click)="fileInput.click()">
-              <div class="photo-circle-large">
-                <img [src]="user.photosuser" *ngIf="user.photosuser" class="img-circle-full">
-                <div *ngIf="!user.photosuser" class="default-user-icon">
-                  <i class="fas fa-user"></i>
-                </div>
-              </div>
-              <div class="camera-badge"><i class="fas fa-camera"></i></div>
-              <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
-            </div>
-          </div>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-light icon-btn" (click)="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
 
-          <form (ngSubmit)="saveUser()" #userForm="ngForm" class="modern-form">
-            <div class="profile-header text-center mb-4">
-              <h4 class="fw-bold text-success" *ngIf="user.surfaceExploitation !== undefined">Compte Producteur</h4>
-              <h4 class="fw-bold text-primary" *ngIf="user.typeVehicule !== undefined">Compte Transporteur</h4>
-              <h4 class="fw-bold text-secondary" *ngIf="user.surfaceExploitation === undefined && user.typeVehicule === undefined">Compte Acheteur</h4>
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-7">
-                <div class="input-group-modern">
-                  <div class="input-icon"><i class="fas fa-user"></i></div>
-                  <div class="input-content">
-                    <label>Nom complet</label>
-                    <input type="text" [(ngModel)]="user.nom" name="nom" required>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-5">
-                <div class="gender-selector">
-                  <label class="small-label">Sexe</label>
-                  <div class="d-flex gap-2">
-                    <input type="radio" class="btn-check" name="sexe" id="masculin" value="M" [(ngModel)]="user.sexe">
-                    <label class="btn btn-outline-success btn-sm w-100" for="masculin">M</label>
-                    <input type="radio" class="btn-check" name="sexe" id="feminin" value="F" [(ngModel)]="user.sexe">
-                    <label class="btn btn-outline-success btn-sm w-100" for="feminin">F</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row g-3 mb-3" *ngIf="user.surfaceExploitation !== undefined">
-              <div class="col-md-6">
-                <div class="input-group-modern">
-                  <div class="input-icon"><i class="fas fa-leaf"></i></div>
-                  <div class="input-content">
-                    <label>Type de produit</label>
-                    <input type="text" [(ngModel)]="user.typeProduit" name="typeP">
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="input-group-modern">
-                  <div class="input-icon"><i class="fas fa-ruler-combined"></i></div>
-                  <div class="input-content">
-                    <label>Surface (m²)</label>
-                    <input type="number" [(ngModel)]="user.surfaceExploitation" name="surface">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row g-3 mb-3" *ngIf="user.typeVehicule !== undefined">
-              <div class="col-md-6">
-                <div class="input-group-modern">
-                  <div class="input-icon"><i class="fas fa-truck"></i></div>
-                  <div class="input-content">
-                    <label>Véhicule</label>
-                    <input type="text" [(ngModel)]="user.typeVehicule" name="vehicule">
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="input-group-modern">
-                  <div class="input-icon"><i class="fas fa-weight-hanging"></i></div>
-                  <div class="input-content">
-                    <label>Capacité (kg)</label>
-                    <input type="number" [(ngModel)]="user.capaciteCharge" name="capacite">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="input-group-modern mb-3">
-              <div class="input-icon"><i class="fas fa-map-marker-alt"></i></div>
-              <div class="input-content">
-                <label>Localisation</label>
-                <input type="text" [(ngModel)]="user.localisation" name="loc">
-              </div>
-            </div>
-
-            <div class="input-group-modern mb-4">
-              <div class="input-icon"><i class="fas fa-phone"></i></div>
-              <div class="input-content">
-                <label>Téléphone</label>
-                <input type="text" [(ngModel)]="user.number" name="num">
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="loading">Annuler</button>
-              <button type="submit" class="btn-save" [disabled]="loading" (click)="closeModal()" >
-                <span *ngIf="!loading">Mettre à jour</span>
-                <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
-              </button>
-            </div>
-          </form>
-        </div>
+      <!-- Redirection au clic sur l'icône / image du profil -->
+      <div class="d-flex align-items-center gap-3" routerLink="/profil" style="cursor: pointer;" title="Voir mon profil">
+        <img *ngIf="user && user.photosuser" [src]="user.photosuser" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
+        <i *ngIf="!user || !user.photosuser" class="fas fa-user-circle fs-4 nav-right-icon"></i>
       </div>
     </div>
   </div>
-
-  <div class="modal-backdrop fade show" *ngIf="isModalOpen" (click)="closeModal()"></div>
-</body>
+</nav>
