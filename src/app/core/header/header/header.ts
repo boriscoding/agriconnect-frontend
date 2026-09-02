@@ -1,6 +1,7 @@
 import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common'; // Important pour le SSR
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 @Component({
   selector: 'app-header',
@@ -39,21 +40,22 @@ export class Header implements OnInit {
     }
   }
 
-loadUserProfile() {
-  if (!this.userId) return;
+  loadUserProfile() {
+    if (!this.userId) return;
 
-  // Maintenant, cette URL retournera bien les données du Producteur
-  this.http.get(`http://localhost:8080/api/utilisateurs/${this.userId}`)
-    .subscribe({
-      next: (data) => {
-        this.user = data; // 'user' contient maintenant 'surfaceExploitation', etc.
-        console.log('Profil récupéré avec succès !');
-      },
-      error: (err) => {
-        console.error('Le backend ne trouve toujours pas l\'ID', err);
-      }
-    });
-}
+    // ✅ CORRIGÉ : Utilisation de environment.apiUrl
+    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userId}`)
+      .subscribe({
+        next: (data) => {
+          this.user = data; // 'user' contient maintenant 'surfaceExploitation', etc.
+          console.log('Profil récupéré avec succès !');
+        },
+        error: (err) => {
+          console.error('Le backend ne trouve toujours pas l\'ID', err);
+        }
+      });
+  }
+
   saveUser() {
     if (!this.userId) {
       alert("Erreur : ID utilisateur introuvable.");
@@ -62,7 +64,8 @@ loadUserProfile() {
     
     this.loading = true;
 
-    this.http.put(`http://localhost:8080/api/utilisateurs/modifier/${this.userId}`, this.user)
+    // ✅ CORRIGÉ : Utilisation de environment.apiUrl
+    this.http.put(`${environment.apiUrl}/utilisateurs/modifier/${this.userId}`, this.user)
       .subscribe({
         next: (res) => {
           console.log('Mise à jour réussie sur le serveur', res);
@@ -84,8 +87,13 @@ loadUserProfile() {
     this.sidebarToggle.emit(this.isSidebarOpen);
   }
 
-  openEditModal() { this.isModalOpen = true; }
-  closeModal() { this.isModalOpen = false; }
+  openEditModal() { 
+    this.isModalOpen = true; 
+  }
+  
+  closeModal() { 
+    this.isModalOpen = false; 
+  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];

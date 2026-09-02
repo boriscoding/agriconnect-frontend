@@ -19,17 +19,17 @@
         <i class="fas fa-bars"></i>
       </button>
       <div class="d-flex align-items-center gap-3">
-        <!-- ⚠️ Correction : utilisation de serverIp au lieu de serverI -->
+        <!-- ✅ Utilisation de getDisplayPhoto pour s'affranchir de localhost/serverIp -->
         <img *ngIf="imagePreview || (user && user.photosuser)"
-             [src]="imagePreview || ('http://' + serverIp + ':8080' + user.photosuser)"
+             [src]="imagePreview || getDisplayPhoto(user?.photosuser, 'USER')"
              class="rounded-circle border"
              style="width:35px;height:35px;cursor:pointer;object-fit:cover;"
              (click)="openEditModal()"
              (error)="handleImageError($event)">
         <i *ngIf="!imagePreview && (!user || !user.photosuser)"
-           class="fas fa-user-circle fs-4 nav-right-icon"
-           style="cursor:pointer;color:#555;"
-           (click)="openEditModal()"></i>
+            class="fas fa-user-circle fs-4 nav-right-icon"
+            style="cursor:pointer;color:#555;"
+            (click)="openEditModal()"></i>
       </div>
     </div>
   </div>
@@ -50,10 +50,8 @@
 
           <div class="profile-header text-center mb-4">
             <div class="photo-upload-container">
-              <!-- ⚠️ Correction : utilisation de serverIp au lieu de serverI -->
-              <img [src]="imagePreview || (user.photosuser 
-                    ? 'http://' + serverIp + ':8080' + user.photosuser 
-                    : 'assets/default-avatar.png')"
+              <!-- ✅ Utilisation de getDisplayPhoto uniformisée -->
+              <img [src]="imagePreview || getDisplayPhoto(user?.photosuser, 'USER')"
                    (click)="photoInput.click()"
                    class="rounded-circle profile-preview-img"
                    style="width:120px;height:120px;object-fit:cover;border:3px solid #00a884; cursor:pointer;">
@@ -149,7 +147,6 @@
       <div class="tab" [class.active]="viewType === 'OFFRES'" (click)="switchView('OFFRES')">
         <i class="fas fa-store"></i> Marché
       </div>
-      <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
       <div class="tab" [class.active]="viewType === 'DEMANDES'" (click)="switchView('DEMANDES')">
         <i class="fas fa-clipboard-list"></i> Mes commandes
       </div>
@@ -174,7 +171,6 @@
         <li class="nav-item" [class.active]="filterType === 'TOUS'" (click)="toussoffres()">
           <i class="fas fa-th-large"></i> <span>Toutes les offres</span>
         </li>
-        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
         <li class="nav-item" [class.active]="viewType === 'DEMANDES'"
             (click)="switchView('DEMANDES'); sidebarOpen = false">
           <i class="fas fa-shopping-bag"></i> <span>Mes commandes</span>
@@ -204,7 +200,6 @@
           <h2 class="main-title">Marché des producteurs</h2>
           <p class="sub-text">Découvrez les offres fraîches du marché agricole</p>
         </div>
-        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
         <div *ngIf="viewType === 'DEMANDES'">
           <h2 class="main-title">Mes commandes en cours</h2>
           <p class="sub-text">Suivez l'état de vos demandes d'achat</p>
@@ -260,7 +255,6 @@
         </ng-container>
 
         <!-- MES DEMANDES (DEMANDES) -->
-        <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
         <ng-container *ngIf="viewType === 'DEMANDES'">
           <article class="fb-card" *ngFor="let d of demandesFiltrees">
             <div class="fb-card-content" style="padding-top:20px;">
@@ -313,7 +307,6 @@
             </button>
           </ng-container>
 
-          <!-- ⚠️ Correction : 'MES_DEMANDES' remplacé par 'DEMANDES' -->
           <ng-container *ngIf="viewType === 'DEMANDES'">
             <div class="empty-icon-wrapper mb-4">
               <i class="fas fa-shopping-bag fa-5x text-warning floating-animation"></i>

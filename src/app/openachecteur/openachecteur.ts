@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { AppCommande } from '../app-commande/app-commande';
 import { Sidebar } from '../core/sidebar/sidebar/sidebar';
 import { BottomNav } from '../bottom-nav/bottom-nav';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 @Component({
   selector: 'app-openachecteur',
@@ -27,7 +28,7 @@ import { BottomNav } from '../bottom-nav/bottom-nav';
 })
 export class Openachecteur implements OnInit {
 
-  // ✅ CONFIGURATION SERVEUR DYNAMIQUE
+  // ✅ CONFIGURATION SERVEUR (conservé pour compatibilité)
   serverIp: string = 'localhost';
 
   // ✅ ÉTATS UI
@@ -71,7 +72,6 @@ export class Openachecteur implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // Détection automatique de l'hôte (localhost ou IP réseau local ex: 192.168.x.x)
       this.serverIp = window.location.hostname;
 
       const storedId = localStorage.getItem('userId') || sessionStorage.getItem('userId');    
@@ -90,7 +90,7 @@ export class Openachecteur implements OnInit {
 
   loadUserProfile(): void {
     if (!this.userIdConnecte) return;
-    this.http.get(`http://${this.serverIp}:8080/api/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: (err: any) => console.error('Erreur profil', err)
@@ -116,7 +116,8 @@ export class Openachecteur implements OnInit {
     formData.append('sexe', this.user.sexe || '');
     formData.append('number', (this.user.number || '').toString());
 
-    this.http.put(`http://${this.serverIp}:8080/acheteurs/modifier/${this.userIdConnecte}`, formData)
+    // ✅ Corrigé avec environment.apiUrl
+    this.http.put(`${environment.apiUrl}/acheteurs/modifier/${this.userIdConnecte}`, formData)
       .subscribe({
         next: (res: any) => {
           this.user = res;
@@ -154,7 +155,7 @@ export class Openachecteur implements OnInit {
   }
 
   chargerVehicules(): void {
-    this.http.get<any[]>(`http://${this.serverIp}:8080/api/vehicules`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/vehicules`).subscribe({
       next: (data) => {
         this.vehicules = data;
       },
@@ -266,9 +267,10 @@ export class Openachecteur implements OnInit {
         ? 'assets/images/default-user.png'
         : 'assets/images/default-produit.png';
     }
+    const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
     return photoName.startsWith('http')
       ? photoName
-      : `http://${this.serverIp}:8080/uploads/${photoName}`;
+      : `${baseUrl}/uploads/${photoName}`;
   }
 
   getPhotoUrl(photo: string | undefined): string {

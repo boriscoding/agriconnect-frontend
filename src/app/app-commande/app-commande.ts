@@ -10,6 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; // Import indispensable pour le pipe 'number'
 import { FormsModule } from '@angular/forms';   // Import indispensable pour [(ngModel)]
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 @Component({
   selector: 'app-commande',
@@ -35,7 +36,7 @@ export class AppCommande implements OnInit, OnDestroy {
   // ─── Étape 1 ─────────────────────────────────────────────────
   quantiteSaisie: number = 1;
   villeDestination: string = '';
-  nomDestinataire: string = '';        // prérempli avec nom acheteur
+  nomDestinataire: string = '';       // prérempli avec nom acheteur
   telephoneDestinataire: string = '';  // prérempli avec tel acheteur
 
   // ─── Colis ───────────────────────────────────────────────────
@@ -115,7 +116,7 @@ export class AppCommande implements OnInit, OnDestroy {
 
   // Charge le profil acheteur depuis l'API si pas en storage
   private chargerProfilAcheteur(): void {
-    this.http.get(`http://localhost:8080/acheteurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/acheteurs/${this.userIdConnecte}`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profil: any) => {
@@ -125,7 +126,7 @@ export class AppCommande implements OnInit, OnDestroy {
           }
           if (!this.telephoneDestinataire) {
             this.telephoneDestinataire = profil?.number?.toString()
-                                       || profil?.telephone?.toString() || '';
+                                     || profil?.telephone?.toString() || '';
           }
         },
         error: () => console.warn('Profil acheteur non chargé depuis API')
@@ -300,7 +301,7 @@ export class AppCommande implements OnInit, OnDestroy {
     }
 
     const transactionPayload = {
-      vehiculeId:     this.vehiculeSelectionne.id,
+      vehiculeId:    this.vehiculeSelectionne.id,
       transporteurId: transporteurId,
       villeDepart:    this.offre?.lieuProduction || '',
       villeArrivee:   this.villeDestination,
@@ -338,7 +339,7 @@ export class AppCommande implements OnInit, OnDestroy {
       statutPaiement:         'PAYE'
     };
 
-    this.http.post('http://localhost:8080/api/colis/commander', payload)
+    this.http.post(`${environment.apiUrl}/colis/commander`, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

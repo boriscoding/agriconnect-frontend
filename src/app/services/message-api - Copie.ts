@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
 
 export interface Message {
   id?: number;
@@ -27,9 +28,8 @@ export interface Contact {
   providedIn: 'root'
 })
 export class MessageApi {
-  // ✅ Configuration de l'adresse du serveur
-  private readonly serverIp = 'localhost';
-  private readonly API_URL = `http://${this.serverIp}:8080/api/messages`;
+  // ✅ Utilisation de environment.apiUrl pour s'affranchir de localhost en production/mobile
+  private readonly API_URL = `${environment.apiUrl}/messages`;
 
   constructor(private http: HttpClient) { }
 
@@ -88,12 +88,13 @@ export class MessageApi {
   supprimerMessage(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
-  // Dans ton fichier message-api.ts
-getContactByEmail(email: string): Observable<Contact> {
-  // On change l'URL pour pointer vers le UtilisateurController (/api/utilisateurs/search)
-  const searchUrl = `http://${this.serverIp}:8080/api/utilisateurs/search`;
-  const params = new HttpParams().set('email', email);
-  
-  return this.http.get<Contact>(searchUrl, { params });
-}
+
+  // Recherche d'un contact par e-mail
+  getContactByEmail(email: string): Observable<Contact> {
+    // ✅ URL mise à jour avec environment.apiUrl
+    const searchUrl = `${environment.apiUrl}/utilisateurs/search`;
+    const params = new HttpParams().set('email', email);
+    
+    return this.http.get<Contact>(searchUrl, { params });
+  }
 }
