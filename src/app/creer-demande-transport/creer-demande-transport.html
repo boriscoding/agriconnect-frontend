@@ -1,12 +1,32 @@
 <div class="container">
   <h2>Publier une demande de transport</h2>
-  <form>
+  <form (ngSubmit)="onSubmit()" #demandeForm="ngForm">
     <div class="form-group">
-      <label>Produit : Farine de blé</label>
+      <label for="produit">Produit</label>
+      <input type="text" id="produit" name="produit"
+             [(ngModel)]="demande.produit" placeholder="Ex : Farine de blé" required>
     </div>
+
     <div class="form-group">
-      <label>Destination : Douala</label>
+      <label for="quantite">Quantité (kg)</label>
+      <input type="number" id="quantite" name="quantite"
+             [(ngModel)]="demande.quantite" placeholder="Ex : 50">
     </div>
-    <button type="submit" class="btn btn-success">Confirmer la publication</button>
+
+    <div class="form-group">
+      <label for="villeDepart">Ville de départ</label>
+      <input type="text" id="villeDepart" name="villeDepart"
+             [(ngModel)]="demande.villeDepart" placeholder="Ex : Yaoundé">
+    </div>
+
+    <div class="form-group">
+      <label for="villeArrivee">Destination</label>
+      <input type="text" id="villeArrivee" name="villeArrivee"
+             [(ngModel)]="demande.villeArrivee" placeholder="Ex : Douala" required>
+    </div>
+
+    <button type="submit" class="btn btn-success" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Publication en cours...' : 'Confirmer la publication' }}
+    </button>
   </form>
 </div>

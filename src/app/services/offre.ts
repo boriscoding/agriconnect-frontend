@@ -27,8 +27,9 @@ export interface OffreData {
 export class OffreService {
   
   // 👈 URLs dynamiques : s'ajustent automatiquement selon l'environnement (Local vs Render)
-  private apiUrl = `${environment.apiUrl}/offres`;
-  private colisUrl = `${environment.apiUrl}/colis`;
+  private apiUrl = `${environment.apiUrl}/api/offres`;
+  private colisUrl = `${environment.apiUrl}/api/colis`;
+  private paiementUrl = `${environment.apiUrl}/api/paiement`;
 
   constructor(private http: HttpClient) {}
 
@@ -65,6 +66,8 @@ export class OffreService {
   }
 
   initierPaiement(infosPaiement: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/paiement/init`, infosPaiement);
+    // ⚠️ Cette méthode fait doublon avec Transaction.initierPaiement() qui construit
+    // déjà un body complet aligné sur PaiementController. Préférez celle-ci si possible.
+    return this.http.post(`${this.paiementUrl}/initier`, infosPaiement);
   }
 }

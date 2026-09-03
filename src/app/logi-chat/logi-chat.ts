@@ -635,14 +635,14 @@ ngOnDestroy(): void {
     const formData = new FormData();
     if (this.profilePhotoFile) formData.append('file', this.profilePhotoFile);
     formData.append('nom',   this.profileUser.nom   || '');
-    formData.append('prenom', this.profileUser.prenom || '');
-    formData.append('email', this.profileUser.email || '');
     formData.append('localisation', this.profileUser.localisation || '');
-    formData.append('number', (this.profileUser.number || '').toString());
+    formData.append('sexe', this.profileUser.sexe || 'M'); // requis par UtilisateurController, jamais omis
+    formData.append('number', (this.profileUser.number || 0).toString()); // jamais '', sinon 400 côté Spring
+    // ⚠️ 'prenom' et 'email' ne sont PAS acceptés par UtilisateurController.modifierProfil()
+    // (seuls nom, localisation, sexe, number, file sont lus côté serveur) : les envoyer ici
+    // ne fait rien et n'est pas une erreur, mais ne les modifie pas non plus.
 
-    // ⚠️ Adaptez cette route à l'endpoint de mise à jour réel de votre backend
-    // (par ex. /producteurs/modifier/{id} ou /transporteurs/modifier/{id}
-    //  selon le rôle du compte connecté).
+    // UtilisateurController est mappé sur /api/utilisateurs
     const url = `${this.apiUrl}/api/utilisateurs/modifier/${this.currentUserId}`;
 
     this.http.put(url, formData).subscribe({

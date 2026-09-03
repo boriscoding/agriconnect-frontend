@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment'; // 👈 Import de 
 export class Vehicule {
   
   // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
-  private apiUrl = `${environment.apiUrl}/vehicules`;
+  private apiUrl = `${environment.apiUrl}/api/vehicules`;
 
   constructor(private http: HttpClient) {}
 
@@ -41,7 +41,7 @@ export class Vehicule {
 
   // --- 6. TROUVER PAR ID ---
   getById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/trouver/${id}`);
   }
 
   // --- 7. URL DE LA PHOTO DU VÉHICULE ---
@@ -53,8 +53,6 @@ export class Vehicule {
       return photoName;
     }
     
-    // Extrait l'URL de base du serveur en supprimant '/api' à la fin de environment.apiUrl
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    return `${serverBaseUrl}/uploads/${photoName}`;
+    return `${environment.apiUrl}/uploads/${photoName}`;
   }
 }

@@ -19,7 +19,7 @@ export interface DemandeData {
 export class Demande{ // ✅ Nom de classe mis à jour proprement
 
   // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
-  private apiUrl = `${environment.apiUrl}/demandes`; 
+  private apiUrl = `${environment.apiUrl}/api/demandes`; 
 
   constructor(private http: HttpClient) { }
 
@@ -50,20 +50,20 @@ export class Demande{ // ✅ Nom de classe mis à jour proprement
    * Récupérer toutes les demandes (pour le marché global)
    */
   getToutes(): Observable<DemandeData[]> {
-    return this.http.get<DemandeData[]>(this.apiUrl);
+    return this.http.get<DemandeData[]>(`${this.apiUrl}/toutes`);
   }
 
   /**
    * Modifier une demande existante
    */
   modifier(id: number, data: DemandeData): Observable<DemandeData> {
-    return this.http.put<DemandeData>(`${this.apiUrl}/modifier/${id}`, data);
+    return this.http.put<DemandeData>(`${this.apiUrl}/${id}`, data);
   }
 
   /**
    * Supprimer une demande
    */
   supprimer(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/supprimer/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

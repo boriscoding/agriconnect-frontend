@@ -18,8 +18,8 @@
 
       <!-- Redirection au clic sur l'icône / image du profil -->
       <div class="d-flex align-items-center gap-3" routerLink="/profil" style="cursor: pointer;" title="Voir mon profil">
-        <img *ngIf="user && user.photosuser" [src]="user.photosuser" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
-        <i *ngIf="!user || !user.photosuser" class="fas fa-user-circle fs-4 nav-right-icon"></i>
+        <img *ngIf="getUserPhotoUrl()" [src]="getUserPhotoUrl()" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
+        <i *ngIf="!getUserPhotoUrl()" class="fas fa-user-circle fs-4 nav-right-icon"></i>
       </div>
     </div>
   </div>

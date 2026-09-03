@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common'; // Important pour le SSR
-import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
+import { environment } from '../../../../environments/environment'; // 👈 chemin corrigé : core/header/header/ = 3 niveaux sous src/app
 
 @Component({
   selector: 'app-header',
@@ -17,6 +17,8 @@ export class Header implements OnInit {
   user: any = {};
   userId: number | null = null;
   loading = false;
+  selectedFile: File | null = null;
+  photoPreview: string | ArrayBuffer | null = null;
 
   constructor(
     private http: HttpClient,
@@ -43,8 +45,7 @@ export class Header implements OnInit {
   loadUserProfile() {
     if (!this.userId) return;
 
-    // ✅ CORRIGÉ : Utilisation de environment.apiUrl
-    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userId}`)
+    this.http.get(`${environment.apiUrl}/api/utilisateurs/${this.userId}`)
       .subscribe({
         next: (data) => {
           this.user = data; // 'user' contient maintenant 'surfaceExploitation', etc.
@@ -64,8 +65,17 @@ export class Header implements OnInit {
     
     this.loading = true;
 
-    // ✅ CORRIGÉ : Utilisation de environment.apiUrl
-    this.http.put(`${environment.apiUrl}/utilisateurs/modifier/${this.userId}`, this.user)
+    // UtilisateurController.modifierProfil() attend du multipart/form-data
+    // avec des @RequestParam individuels (nom, localisation, sexe, number tous requis),
+    // pas un body JSON.
+    const formData = new FormData();
+    if (this.selectedFile) formData.append('file', this.selectedFile);
+    formData.append('nom', this.user.nom || '');
+    formData.append('localisation', this.user.localisation || '');
+    formData.append('sexe', this.user.sexe || 'M'); // requis, jamais vide
+    formData.append('number', (this.user.number || 0).toString()); // jamais '', sinon 400 côté Spring
+
+    this.http.put(`${environment.apiUrl}/api/utilisateurs/modifier/${this.userId}`, formData)
       .subscribe({
         next: (res) => {
           console.log('Mise à jour réussie sur le serveur', res);
@@ -98,9 +108,19 @@ export class Header implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.selectedFile = file;
       const reader = new FileReader();
-      reader.onload = (e: any) => this.user.photosuser = e.target.result;
+      reader.onload = (e: any) => this.photoPreview = e.target.result;
       reader.readAsDataURL(file);
     }
+  }
+
+  // Construit l'URL affichable de la photo, qu'il s'agisse d'un aperçu local
+  // ou d'un fichier déjà stocké côté serveur (nom de fichier / chemin relatif).
+  getUserPhotoUrl(): string | null {
+    if (this.photoPreview) return this.photoPreview as string;
+    if (!this.user?.photosuser) return null;
+    if (this.user.photosuser.startsWith('http')) return this.user.photosuser;
+    return `${environment.apiUrl}${this.user.photosuser}`;
   }
 }

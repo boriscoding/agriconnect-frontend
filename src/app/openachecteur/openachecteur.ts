@@ -90,7 +90,7 @@ export class Openachecteur implements OnInit {
 
   loadUserProfile(): void {
     if (!this.userIdConnecte) return;
-    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/api/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: (err: any) => console.error('Erreur profil', err)
@@ -114,9 +114,9 @@ export class Openachecteur implements OnInit {
     formData.append('email', this.user.email || '');
     formData.append('localisation', this.user.localisation || '');
     formData.append('sexe', this.user.sexe || '');
-    formData.append('number', (this.user.number || '').toString());
+    formData.append('number', (this.user.number || 0).toString()); // jamais '', sinon 400 côté Spring (Integer non nullable)
 
-    // ✅ Corrigé avec environment.apiUrl
+    // AcheteurController est mappé sur "/acheteurs" (pas de /api) : environment.apiUrl est déjà la racine
     this.http.put(`${environment.apiUrl}/acheteurs/modifier/${this.userIdConnecte}`, formData)
       .subscribe({
         next: (res: any) => {
@@ -155,7 +155,7 @@ export class Openachecteur implements OnInit {
   }
 
   chargerVehicules(): void {
-    this.http.get<any[]>(`${environment.apiUrl}/vehicules`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/api/vehicules`).subscribe({
       next: (data) => {
         this.vehicules = data;
       },
@@ -267,10 +267,9 @@ export class Openachecteur implements OnInit {
         ? 'assets/images/default-user.png'
         : 'assets/images/default-produit.png';
     }
-    const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
     return photoName.startsWith('http')
       ? photoName
-      : `${baseUrl}/uploads/${photoName}`;
+      : `${environment.apiUrl}/uploads/${photoName}`;
   }
 
   getPhotoUrl(photo: string | undefined): string {

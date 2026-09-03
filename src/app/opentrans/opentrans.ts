@@ -82,7 +82,7 @@ export class Opentrans implements OnInit {
   loadUserProfile() {
     if (!this.userIdConnecte) return;
     // 👈 URL dynamique basée sur l'environnement
-    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/api/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: () => this.toastr.error("Erreur de chargement du profil")
@@ -110,9 +110,8 @@ export class Opentrans implements OnInit {
     formData.append('typeVehicule', this.user.typeVehicule || '');
     formData.append('capaciteMax', (this.user.capaciteMax || 0).toString());
 
-    // 👈 Extraction de l'URL racine du serveur pour joindre le contrôleur transporteurs
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    const url = `${serverBaseUrl}/transporteurs/modifier/${this.userIdConnecte}`;
+    // TransporteurController est mappé sans /api : environment.apiUrl est déjà la racine
+    const url = `${environment.apiUrl}/transporteurs/modifier/${this.userIdConnecte}`;
 
     this.http.put(url, formData).subscribe({
       next: (res: any) => {
@@ -288,8 +287,8 @@ export class Opentrans implements OnInit {
   }
 
   chargerDemandes() {
-    // 👈 URL dynamique pour les demandes
-    this.http.get(`${environment.apiUrl}/demandes`).subscribe({
+    // 👈 DemandesAcheteurController est mappé sur /api/demandes
+    this.http.get(`${environment.apiUrl}/api/demandes/toutes`).subscribe({
       next: (data: any) => this.demandesAcheteurs = data,
       error: () => this.toastr.error("Erreur chargement des demandes")
     });
@@ -338,9 +337,8 @@ export class Opentrans implements OnInit {
     
     if (photo.startsWith('http')) return photo;
 
-    // 👈 Construction dynamique de l'URL des uploads basée sur environment.apiUrl
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    return `${serverBaseUrl}/uploads/${photo}`;
+    // 👈 Construction dynamique de l'URL des uploads (pas de /api pour les fichiers statiques)
+    return `${environment.apiUrl}/uploads/${photo}`;
   }
 
   resetForm() {
@@ -402,7 +400,6 @@ export class Opentrans implements OnInit {
       return 'assets/default-avatar.png';
     }
     if (photo.startsWith('http')) return photo;
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    return `${serverBaseUrl}${photo}`;
+    return `${environment.apiUrl}${photo}`;
   }
 }

@@ -34,7 +34,7 @@ export interface CommandeOffreDTO {
 export class ColisService {
   
   // 👈 URL dynamique : s'ajuste automatiquement selon l'environnement (Local vs Render)
-  private apiUrl = `${environment.apiUrl}/colis`; 
+  private apiUrl = `${environment.apiUrl}/api/colis`; 
 
   constructor(private http: HttpClient) { }
 

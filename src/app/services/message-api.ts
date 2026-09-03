@@ -50,9 +50,12 @@ export interface PartageInvitePayload {
   providedIn: 'root'
 })
 export class MessageApi {
-  
-  // 👈 URL dynamique basée sur environment.apiUrl (Local vs Render)
-  private readonly API_URL = `${environment.apiUrl}/messages`;
+
+  // 👈 URL dynamique basée sur environment.apiUrl (Local vs Render).
+  // environment.apiUrl est l'ORIGINE NUE (sans /api) : on l'ajoute ici,
+  // exactement comme le fait offre.ts / demande.ts / vehicule.ts, pour que
+  // le préfixe reste cohérent quel que soit l'environnement chargé.
+  private readonly API_URL = `${environment.apiUrl}/api/messages`;
 
   constructor(private http: HttpClient) { }
 
@@ -113,8 +116,9 @@ export class MessageApi {
   }
 
   getContactByEmail(email: string): Observable<Contact> {
-    // 👈 URL dynamique pointant vers le UtilisateurController (/api/utilisateurs/search)
-    const searchUrl = `${environment.apiUrl}/utilisateurs/search`;
+    // 👈 Corrigé : manquait le préfixe /api (le contrôleur est bien
+    // mappé sur /api/utilisateurs côté Spring).
+    const searchUrl = `${environment.apiUrl}/api/utilisateurs/search`;
     const params = new HttpParams().set('email', email);
     
     return this.http.get<Contact>(searchUrl, { params });

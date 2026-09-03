@@ -89,7 +89,7 @@ export class Openoffer implements OnInit {
 
   loadUserProfile() {
     if (!this.userIdConnecte) return;
-    this.http.get(`${environment.apiUrl}/utilisateurs/${this.userIdConnecte}`)
+    this.http.get(`${environment.apiUrl}/api/utilisateurs/${this.userIdConnecte}`)
       .subscribe({
         next: (data: any) => this.user = data,
         error: (err: any) => console.error('Erreur profil', err)
@@ -127,9 +127,8 @@ export class Openoffer implements OnInit {
     formData.append('typeProduit', this.user.typeProduit || '');
     formData.append('surfaceExploitation', (this.user.surfaceExploitation || 0).toString());
 
-    // 👈 URL dynamique sans /api
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    const url = `${serverBaseUrl}/producteurs/modifier/${this.userIdConnecte}`;
+    // ProducteurController est mappé sans /api : environment.apiUrl est déjà la racine
+    const url = `${environment.apiUrl}/producteurs/modifier/${this.userIdConnecte}`;
 
     this.http.put(url, formData).subscribe({
       next: (res: any) => {
@@ -188,8 +187,8 @@ export class Openoffer implements OnInit {
     formData.append('statut', this.newOffre.statut);
     formData.append('producteurId', this.userIdConnecte.toString());
 
-    // 👈 URL dynamique pour la publication d'offres
-    const url = `${environment.apiUrl}/offres/publier`;
+    // 👈 OffreController est mappé sur /api/offres
+    const url = `${environment.apiUrl}/api/offres/publier`;
 
     this.http.post(url, formData).subscribe({
       next: (res: any) => {
@@ -262,7 +261,7 @@ export class Openoffer implements OnInit {
 
   chargerDemandes() {
     this.loading = true;
-    this.http.get(`${environment.apiUrl}/demandes`).subscribe({
+    this.http.get(`${environment.apiUrl}/api/demandes/toutes`).subscribe({
       next: (data: any) => {
         this.demandesAcheteurs = data;
         this.loading = false;
@@ -337,8 +336,7 @@ export class Openoffer implements OnInit {
       if (type === 'VEHICULE') return 'assets/images/default-truck.png';
       return 'assets/images/default-produit.png';
     }
-    const serverBaseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-    return photoName.startsWith('http') ? photoName : `${serverBaseUrl}/uploads/${photoName}`;
+    return photoName.startsWith('http') ? photoName : `${environment.apiUrl}/uploads/${photoName}`;
   }
 
   getPhotoUrl(photo: string | undefined): string {

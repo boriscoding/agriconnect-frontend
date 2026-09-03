@@ -8,8 +8,8 @@ import { environment } from '../../environments/environment'; // 👈 Import de 
 export class Transaction {
 
   // 👈 URLs dynamiques : s'ajustent automatiquement selon l'environnement (Local vs Render)
-  private apiUrl   = `${environment.apiUrl}/transactions`;
-  private paiemUrl = `${environment.apiUrl}/paiement`;
+  private apiUrl   = `${environment.apiUrl}/api/transactions`;
+  private paiemUrl = `${environment.apiUrl}/api/paiement`;
 
   readonly NUMERO_MARCHAND = '672017303';
 
