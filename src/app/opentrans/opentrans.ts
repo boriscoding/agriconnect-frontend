@@ -66,7 +66,7 @@ export class Opentrans implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      const storedId = this.authService.getUserId()?.toString() || localStorage.getItem('userId');
+      const storedId = this.authService.getUserId()?.toString() || sessionStorage.getItem('userId');
       if (storedId) {
         this.userIdConnecte = +storedId.replace(/\D/g, '');
         this.loadUserProfile();

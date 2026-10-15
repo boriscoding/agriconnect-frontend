@@ -39,7 +39,7 @@ export class CreerDemandeTransport {
 
     let expediteurId: number | null = null;
     if (isPlatformBrowser(this.platformId)) {
-      const storedId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+      const storedId = sessionStorage.getItem('userId');
       if (storedId) expediteurId = +storedId.replace(/\D/g, '');
     }
 

@@ -28,7 +28,7 @@ export class Header implements OnInit {
   ngOnInit() {
     // On vérifie si on est dans le navigateur avant d'utiliser localStorage
     if (isPlatformBrowser(this.platformId)) {
-      const storedId = localStorage.getItem('userId');
+      const storedId = sessionStorage.getItem('userId');
       
       if (storedId) {
         // Nettoyage de sécurité : transforme "8:1" en "8"

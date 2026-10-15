@@ -1,18 +1,22 @@
-import { Component, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, EventEmitter, Output, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { Auth } from '../services/auth';
 import { User } from '../services/user';
-import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
+import { environment } from '../../environments/environment';
+import { animate, stagger } from 'motion';
 
 @Component({
   selector: 'app-formsignup',
   templateUrl: './formsignup.component.html',
   styleUrls: ['./formsignup.component.css']
 })
-export class FormsignupComponent {
+export class FormsignupComponent implements AfterViewInit {
+
+  @ViewChild('card') cardRef!: ElementRef<HTMLElement>;
+  @ViewChild('fields') fieldsRef!: ElementRef<HTMLElement>;
 
   @Output() requestLogin = new EventEmitter<void>();
   @Output() backToHome   = new EventEmitter<void>();
@@ -31,7 +35,7 @@ export class FormsignupComponent {
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye';
 
-  private apiUrl = environment.apiUrl; // 👈 Utilisation de l'URL centralisée
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private router:      Router,
@@ -40,6 +44,24 @@ export class FormsignupComponent {
     private authService: Auth,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
+
+  // ── L'unique moment d'animation : l'apparition de la carte d'inscription ──
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    animate(
+      this.cardRef.nativeElement,
+      { opacity: [0, 1], transform: ['translateY(16px) scale(0.98)', 'translateY(0px) scale(1)'] },
+      { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    );
+
+    const fieldEls = this.fieldsRef.nativeElement.children;
+    animate(
+      Array.from(fieldEls) as HTMLElement[],
+      { opacity: [0, 1], transform: ['translateY(10px)', 'translateY(0px)'] },
+      { duration: 0.35, delay: stagger(0.06, { startDelay: 0.15 }) }
+    );
+  }
 
   viewpass(): void {
     if (this.passwordType === 'password') {
@@ -62,6 +84,15 @@ export class FormsignupComponent {
     this.triedToSubmit = true;
     if (form.invalid) {
       this.toastr.warning('Veuillez remplir correctement tous les champs.');
+
+      // Feedback visuel qui répond directement à l'action de l'utilisateur
+      if (isPlatformBrowser(this.platformId) && this.cardRef) {
+        animate(
+          this.cardRef.nativeElement,
+          { transform: ['translateX(0)', 'translateX(-8px)', 'translateX(8px)', 'translateX(-6px)', 'translateX(0)'] },
+          { duration: 0.35 }
+        );
+      }
       return;
     }
     this.loading = true;
@@ -77,7 +108,6 @@ export class FormsignupComponent {
         }
       },
       error: () => {
-        // ✅ Si l'endpoint check-email n'existe pas encore, on tente l'inscription directement
         this.executeRegistration();
       }
     });
@@ -97,7 +127,6 @@ export class FormsignupComponent {
         routeDestination = '/opentrans';
         break;
       case 'Acheteur':
-        // ✅ CORRECTION : l'endpoint Acheteur attend multipart/form-data
         endpoint         = `${this.apiUrl}/acheteurs/inscription`;
         routeDestination = '/openacheteur';
         break;
@@ -106,8 +135,6 @@ export class FormsignupComponent {
         routeDestination = '/open';
     }
 
-    // ✅ CORRECTION : on envoie avec FormData pour tous les types
-    // car Spring attend multipart/form-data (consumes = {"multipart/form-data"})
     const formData = new FormData();
     formData.append('nom',          this.nom + ' ' + this.prenom);
     formData.append('email',        this.email);
@@ -116,7 +143,6 @@ export class FormsignupComponent {
     formData.append('sexe',         'M');
     formData.append('number',       '0');
 
-    // Champ spécifique à l'Acheteur
     if (this.selectedCategorie === 'Acheteur') {
       formData.append('adresseLivraison', '');
     }
@@ -130,9 +156,6 @@ export class FormsignupComponent {
             email: response.email || this.email,
             type:  this.selectedCategorie
           };
-
-          // ✅ CORRECTION : on utilise le service Auth (écrit dans localStorage)
-          // au lieu de sessionStorage — openacheteur.ts lit dans localStorage
           this.authService.saveUser(userToSave);
         }
 

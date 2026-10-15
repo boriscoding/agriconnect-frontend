@@ -78,7 +78,7 @@ export class AppCommande implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // 1. Récupérer l'ID utilisateur
-    const storedId = localStorage.getItem('userId');
+    const storedId = sessionStorage.getItem('userId');
     if (storedId) {
       this.userIdConnecte = Number(storedId.replace(/\D/g, ''));
     }

@@ -12,6 +12,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { environment } from '../../environments/environment';
+import { ToastrService } from 'ngx-toastr';
+import { forkJoin, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import {
   trigger, transition, style, animate, query, stagger
 } from '@angular/animations';
@@ -108,6 +111,10 @@ serverUrl: string = environment.apiUrl;
   // ─── État UI ───────────────────────────────────────────────
   showNewChatModal: boolean = false;
   emailSearch: string       = '';
+  previewContact: Contact | null = null;
+  searchingPreview: boolean = false;
+  emailSearchAttempted: boolean = false;
+  private emailSearchDebounce: any;
   activeMenuIndex: number   = -1;
   showTransferModal         = false;
   messageToTransfer: any    = null;
@@ -163,6 +170,19 @@ serverUrl: string = environment.apiUrl;
   // ─── WebSocket ─────────────────────────────────────────────
   private stompClient: any;
 
+  // ─── Lecture des vocaux ────────────────────────────────────
+  playingMsgId: number | string | null = null;
+  private currentAudio: HTMLAudioElement | null = null;
+
+  // ─── Pièces jointes ────────────────────────────────────────
+  /** Doit rester <= à spring.servlet.multipart.max-file-size côté backend. */
+  private readonly MAX_UPLOAD_MB = 50;
+  private previewObjectUrl: string | null = null;
+
+  // ─── Clavier mobile (visualViewport) ───────────────────────
+  private viewportCleanup: (() => void) | null = null;
+  private lastViewportHeight = 0;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private sanitizer:    DomSanitizer,
@@ -171,11 +191,13 @@ serverUrl: string = environment.apiUrl;
     private zone:         NgZone,
     private route:        ActivatedRoute,
     private router:       Router,
-    private http:         HttpClient
+    private http:         HttpClient,
+    private toastr:       ToastrService
   ) {}
 
   // ─── Init ──────────────────────────────────────────────────
   ngOnInit(): void {
+    this.initViewportWatcher();
     const userId = this.authService.getUserId();
     if (userId && userId > 0) {
       this.currentUserId = Number(userId);
@@ -209,6 +231,9 @@ ngOnDestroy(): void {
       this.stompClient.deactivate();
     }
     this.teardownCall();
+    this.stopCurrentAudio();
+    this.viewportCleanup?.();
+    this.releasePreviewUrl();
   }
 
   
@@ -217,7 +242,12 @@ ngOnDestroy(): void {
     this.zone.runOutsideAngular(() => {
       // Configuration moderne du client STOMP avec SockJS
       this.stompClient = new Client({
-        webSocketFactory: () => new SockJS(`${environment.apiUrl}/ws-chat`),        debug: (str) => {
+        webSocketFactory: () => new SockJS(`${environment.apiUrl}/ws-chat`),
+        // Le userId est transmis à la connexion STOMP pour que le backend
+        // puisse l'associer à la session WebSocket (nécessaire pour la présence
+        // en ligne/hors ligne : voir PresenceWebSocketListener côté serveur).
+        connectHeaders: { userId: this.currentUserId.toString() },
+        debug: (str) => {
           // Décommentez la ligne suivante si vous souhaitez voir les logs en dev
           // console.log(str);
         },
@@ -233,11 +263,40 @@ ngOnDestroy(): void {
           this.stompClient.subscribe(`/topic/call.${this.currentUserId}`, (payload: any) => {
             this.zone.run(() => this.onCallSignal(JSON.parse(payload.body)));
           });
+
+          // Présence : le backend publie {userId, online} à chaque connexion/déconnexion.
+          this.stompClient.subscribe('/topic/presence', (payload: any) => {
+            this.zone.run(() => this.onPresenceUpdate(JSON.parse(payload.body)));
+          });
+
+          // Accusé de lecture : quand MON correspondant ouvre la conversation
+          // et lit mes messages, le backend publie ici pour que je bascule
+          // instantanément mes coches vertes/oranges en rouge.
+          this.stompClient.subscribe(`/topic/messages/lu/${this.currentUserId}`, (payload: any) => {
+            this.zone.run(() => this.onAccuseDeLecture(JSON.parse(payload.body)));
+          });
         },
       });
 
       this.stompClient.activate();
     });
+  }
+
+  /** Un contact vient de se connecter ou de se déconnecter. */
+  private onPresenceUpdate(evt: { userId: number; online: boolean }): void {
+    const maj = (c: Contact) => { if (c.id === evt.userId) c.online = evt.online; };
+    this.contacts.forEach(maj);
+    this.filteredContacts.forEach(maj);
+    if (this.selectedContact?.id === evt.userId) this.selectedContact.online = evt.online;
+  }
+
+  /** Mon correspondant vient de lire mes messages : je passe leurs coches en rouge. */
+  private onAccuseDeLecture(evt: { lecteurId: number }): void {
+    if (this.selectedContactId === evt.lecteurId) {
+      this.messages
+        .filter(m => m.isMe && m.statut !== 'LU')
+        .forEach(m => { m.statut = 'LU'; m.read = true; });
+    }
   }
 
   onMessageReceived(msg: any): void {
@@ -293,8 +352,12 @@ ngOnDestroy(): void {
       time:     this.formatDate(msg.timestamp),
       isMe,
       type:     msg.mediaType || 'TEXT',
-      mediaUrl: msg.mediaUrl,
-      read:     false
+      // ⚠️ Sans résolution, un média reçu EN DIRECT gardait un chemin relatif
+      // (/uploads/...) interprété par rapport à Netlify → 404, alors que le
+      // même message rechargé depuis l'historique fonctionnait.
+      mediaUrl: this.resolveMediaUrl(msg.mediaUrl),
+      read:     false,
+      statut:   msg.livre ? 'DELIVRE' : 'ENVOYE'
     };
     if (base.type === 'PARTAGE_INVITE') {
       base.sharePayload = this.parseSharePayload(msg.contenu);
@@ -317,17 +380,49 @@ ngOnDestroy(): void {
         this.contacts         = data;
         this.filteredContacts = [...this.contacts];
 
-        this.contacts.forEach(contact => {
-          this.messageApi.getDernierMessage(this.currentUserId, contact.id).subscribe({
-            next: (msg) => {
-              contact.dernierMessage = msg;
-              if (this.searchTerm) this.filterContacts();
-            }
-          });
+        // On attend que TOUS les derniers messages soient chargés avant de trier,
+        // pour éviter un tri partiel/instable pendant que les réponses arrivent
+        // dans le désordre.
+        const chargements = this.contacts.map(contact =>
+          this.messageApi.getDernierMessage(this.currentUserId, contact.id).pipe(
+            tap((msg) => { contact.dernierMessage = msg; }),
+            catchError(() => of(null))
+          )
+        );
+
+        if (chargements.length === 0) return;
+
+        forkJoin(chargements).subscribe(() => {
+          this.trierContactsParDateRecente();
+          if (this.searchTerm) this.filterContacts();
+        });
+
+        // État initial de présence : les mises à jour suivantes arrivent
+        // en temps réel via /topic/presence.
+        this.messageApi.getUtilisateursEnLigne().subscribe({
+          next: (idsEnLigne) => {
+            const idsSet = new Set(idsEnLigne);
+            this.contacts.forEach(c => c.online = idsSet.has(c.id));
+            this.filteredContacts.forEach(c => c.online = idsSet.has(c.id));
+            if (this.selectedContact) this.selectedContact.online = idsSet.has(this.selectedContact.id);
+          },
+          error: () => {} // Pas bloquant : la présence en temps réel prendra le relais
         });
       },
       error: (err) => console.error('Erreur chargement contacts', err)
     });
+  }
+
+  /** Trie contacts (et filteredContacts) par date du dernier message,
+   *  du plus récent au plus ancien. Les contacts sans aucun message
+   *  passent en fin de liste. */
+  private trierContactsParDateRecente(): void {
+    const timestamp = (c: Contact): number => {
+      const t = c.dernierMessage?.timestamp;
+      return t ? new Date(t).getTime() : 0;
+    };
+    this.contacts.sort((a, b) => timestamp(b) - timestamp(a));
+    this.filteredContacts.sort((a, b) => timestamp(b) - timestamp(a));
   }
 
   filterContacts(): void {
@@ -341,6 +436,7 @@ ngOnDestroy(): void {
   }
 
   selectContact(contact: Contact): void {
+    this.stopCurrentAudio();
     // On quitte toute vue déléguée : c'est une conversation normale, où l'utilisateur
     // courant est bien l'un des deux interlocuteurs.
     this.activePartage     = null;
@@ -356,6 +452,14 @@ ngOnDestroy(): void {
       next: (data) => {
         this.messages = (data || []).map(msg => this.mapSingleMessage(msg));
         this.autoScroll();
+
+        // On marque immédiatement comme lus tous les messages reçus de ce
+        // contact : le backend enregistre le statut et prévient l'expéditeur
+        // en temps réel (topic /topic/messages/lu/{expediteurId}) pour que
+        // ses coches passent au rouge instantanément.
+        this.messageApi.marquerConversationCommeLue(contact.id, this.currentUserId).subscribe({
+          error: (err) => console.warn('Impossible de marquer la conversation comme lue', err)
+        });
       }
     });
   }
@@ -371,9 +475,41 @@ ngOnDestroy(): void {
         this.selectContact(contact);
         this.showNewChatModal = false;
         this.emailSearch      = '';
+        this.previewContact   = null;
+        this.emailSearchAttempted = false;
       },
       error: () => alert('Aucun utilisateur trouvé avec cet email sur AgriConnect.')
     });
+  }
+
+  /** Déclenchée à chaque frappe : recherche automatique (debounce 400ms)
+   *  dès que le texte ressemble à un email complet. */
+  onEmailSearchInput(): void {
+    this.previewContact = null;
+    this.emailSearchAttempted = false;
+    clearTimeout(this.emailSearchDebounce);
+
+    const valeur = this.emailSearch.trim();
+    const ressembleAUnEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valeur);
+    if (!ressembleAUnEmail) return;
+
+    this.emailSearchDebounce = setTimeout(() => {
+      this.searchingPreview = true;
+      this.messageApi.getContactByEmail(valeur).subscribe({
+        next: (contact) => {
+          this.searchingPreview = false;
+          this.emailSearchAttempted = true;
+          // On ne propose pas de démarrer une discussion avec soi-même,
+          // ni de renvoyer vers un contact déjà présent sans le signaler.
+          this.previewContact = (contact.id === this.currentUserId) ? null : contact;
+        },
+        error: () => {
+          this.searchingPreview = false;
+          this.emailSearchAttempted = true;
+          this.previewContact = null;
+        }
+      });
+    }, 400);
   }
 
   // ─── Messages ──────────────────────────────────────────────
@@ -437,8 +573,20 @@ ngOnDestroy(): void {
         this.newMessage = '';
         this.cancelPreview();
       },
-      error: () => alert("Le message n'a pas pu être envoyé.")
+      error: (err) => this.onSendError(err)
     });
+  }
+
+  /** Message d'erreur précis quand un envoi échoue (surtout pour les pièces jointes). */
+  private onSendError(err: any): void {
+    console.error('[Envoi message] échec', err);
+    // Spring rejette un fichier trop gros AVANT d'atteindre le contrôleur, donc sans
+    // en-têtes CORS : le navigateur voit alors un statut 0 ("erreur CORS") au lieu de 413.
+    if (this.selectedFile && (err?.status === 0 || err?.status === 413)) {
+      this.toastr.error('Envoi impossible : le fichier dépasse sans doute la taille maximale acceptée par le serveur.');
+    } else {
+      this.toastr.error("Le message n'a pas pu être envoyé.");
+    }
   }
 
   modifierMessage(msg: any): void {
@@ -493,22 +641,40 @@ ngOnDestroy(): void {
   triggerImageUpload(): void { this.fileInput.nativeElement.click(); }
 
   onFileSelected(event: any): void {
-    const file = event.target.files[0];
+    const file: File | undefined = event.target.files?.[0];
     if (!file) return;
-    this.selectedFile  = file;
-    this.previewType   = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
-    const reader       = new FileReader();
-    reader.onload      = (e: any) => {
-      this.mediaPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(e.target.result);
-    };
-    reader.readAsDataURL(file);
+
+    if (file.size > this.MAX_UPLOAD_MB * 1024 * 1024) {
+      this.toastr.warning(`Fichier trop volumineux (maximum ${this.MAX_UPLOAD_MB} Mo).`);
+      event.target.value = '';
+      return;
+    }
+
+    this.releasePreviewUrl();
+    this.selectedFile = file;
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm|3gp|avi|mkv)$/i.test(file.name);
+    this.previewType = isVideo ? 'VIDEO' : 'IMAGE';
+
+    // URL "blob:" : instantanée et sans copie en mémoire. L'ancien readAsDataURL
+    // encodait TOUTE la vidéo en base64 (+33 %) dans une chaîne géante : sur
+    // téléphone la mémoire saturait et l'aperçu ne s'affichait jamais.
+    this.previewObjectUrl = URL.createObjectURL(file);
+    this.mediaPreviewUrl  = this.sanitizer.bypassSecurityTrustUrl(this.previewObjectUrl);
   }
 
   cancelPreview(): void {
     this.selectedFile    = null;
     this.mediaPreviewUrl = null;
     this.previewType     = null;
+    this.releasePreviewUrl();
     if (this.fileInput) this.fileInput.nativeElement.value = '';
+  }
+
+  private releasePreviewUrl(): void {
+    if (this.previewObjectUrl) {
+      URL.revokeObjectURL(this.previewObjectUrl);
+      this.previewObjectUrl = null;
+    }
   }
 
   async startVoiceRecord(): Promise<void> {
@@ -516,23 +682,62 @@ ngOnDestroy(): void {
     this.isRecording ? this.stopRecording() : await this.startRecording();
   }
 
+  /**
+   * Meilleur format d'enregistrement disponible sur CET appareil.
+   * audio/mp4 (AAC) en premier : c'est le seul format lisible partout, iPhone compris.
+   * Avant : seulement webm puis ogg, deux formats que Safari/iOS ne sait pas enregistrer,
+   * et le fichier s'appelait toujours "vocal.webm" quel que soit son vrai contenu.
+   */
+  private pickRecorderMime(): string {
+    if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
+    const candidates = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'];
+    return candidates.find(m => MediaRecorder.isTypeSupported(m)) ?? '';
+  }
+
   private async startRecording(): Promise<void> {
+    if (typeof MediaRecorder === 'undefined') {
+      this.toastr.error("L'enregistrement vocal n'est pas supporté par ce navigateur.");
+      return;
+    }
     try {
       this.recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType       = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
-      this.mediaRecorder   = new MediaRecorder(this.recordingStream, { mimeType });
-      this.audioChunks     = [];
-      this.mediaRecorder.ondataavailable = (e: any) => this.audioChunks.push(e.data);
+      const preferred    = this.pickRecorderMime();
+      this.mediaRecorder = preferred
+        ? new MediaRecorder(this.recordingStream, { mimeType: preferred })
+        : new MediaRecorder(this.recordingStream);          // le navigateur choisit lui-même
+      this.audioChunks   = [];
+
+      // Type RÉEL produit par le navigateur (peut différer de celui demandé)
+      const realMime = (this.mediaRecorder.mimeType || preferred || 'audio/webm').split(';')[0];
+      const ext = realMime.includes('mp4') ? 'mp4'
+                : realMime.includes('ogg') ? 'ogg'
+                : realMime.includes('wav') ? 'wav' : 'webm';
+
+      this.mediaRecorder.ondataavailable = (e: any) => { if (e.data?.size) this.audioChunks.push(e.data); };
       this.mediaRecorder.onstop = () => {
-        const blob         = new Blob(this.audioChunks, { type: mimeType });
-        this.selectedFile  = new File([blob], 'vocal.webm', { type: mimeType });
-        this.previewType   = 'AUDIO';
-        this.mediaPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(blob));
         this.recordingStream?.getTracks().forEach(t => t.stop());
+        const blob = new Blob(this.audioChunks, { type: realMime });
+        this.zone.run(() => {
+          if (blob.size < 800) {                              // enregistrement vide / trop court
+            this.toastr.warning('Vocal trop court : maintenez un peu plus longtemps.');
+            return;
+          }
+          this.releasePreviewUrl();
+          this.selectedFile     = new File([blob], `vocal-${Date.now()}.${ext}`, { type: realMime });
+          this.previewType      = 'AUDIO';
+          this.previewObjectUrl = URL.createObjectURL(blob);
+          this.mediaPreviewUrl  = this.sanitizer.bypassSecurityTrustUrl(this.previewObjectUrl);
+        });
       };
       this.mediaRecorder.start();
       this.isRecording = true;
-    } catch (e) { console.error('Erreur microphone', e); }
+    } catch (e: any) {
+      console.error('Erreur microphone', e);
+      this.isRecording = false;
+      this.toastr.error(e?.name === 'NotAllowedError'
+        ? 'Accès au micro refusé : autorisez-le dans les réglages du navigateur.'
+        : "Impossible de démarrer l'enregistrement vocal.");
+    }
   }
 
   private stopRecording(): void {
@@ -918,8 +1123,7 @@ ngOnDestroy(): void {
 
   private mapSingleMessage(msg: any) {
     const isMe = Number(msg.expediteurId || msg.expediteur) === this.currentUserId;
-    let url    = msg.mediaUrl;
-    if (url && !url.startsWith('http')) url = `${this.apiUrl}${url}`;
+    const url  = this.resolveMediaUrl(msg.mediaUrl);
     const mapped: any = {
       id:       msg.id,
       text:     msg.contenu,
@@ -927,7 +1131,10 @@ ngOnDestroy(): void {
       isMe,
       type:     msg.mediaType || 'TEXT',
       mediaUrl: url,
-      read:     msg.lu || false
+      read:     msg.lu || false,
+      // 3 états : ENVOYE (coche verte) -> DELIVRE (coche orange, destinataire
+      // en ligne mais n'a pas encore ouvert la conversation) -> LU (coche rouge).
+      statut:   msg.lu ? 'LU' : (msg.livre ? 'DELIVRE' : 'ENVOYE')
     };
     if (mapped.type === 'PARTAGE_INVITE') {
       mapped.sharePayload = this.parseSharePayload(msg.contenu);
@@ -939,8 +1146,7 @@ ngOnDestroy(): void {
   private mapPartageMessage(msg: any) {
     const expediteurId = Number(msg.expediteur?.id ?? msg.expediteur);
     const isMe = !!this.activePartage && expediteurId === this.activePartage.initiateurId;
-    let url = msg.mediaUrl;
-    if (url && !url.startsWith('http')) url = `${this.apiUrl}${url}`;
+    const url = this.resolveMediaUrl(msg.mediaUrl);
     return {
       id:       msg.id,
       text:     msg.contenu,
@@ -986,11 +1192,180 @@ ngOnDestroy(): void {
     }
   }
 
+  // ─── Lecture des vocaux ────────────────────────────────────
+
   playAudio(event: MouseEvent, msg: any): void {
-  event.stopPropagation();
-  const audio = new Audio(msg.mediaUrl);
-  audio.play().catch(e => console.error('Erreur lecture audio', e));
-}
+    event.stopPropagation();
+
+    // Re-clic sur le vocal déjà chargé : pause / reprise
+    if (this.playingMsgId === msg.id && this.currentAudio) {
+      if (this.currentAudio.paused) {
+        this.currentAudio.play().catch(() => {});
+      } else {
+        this.currentAudio.pause();
+      }
+      return;
+    }
+
+    this.stopCurrentAudio();                                  // un seul vocal à la fois
+
+    const url = this.resolveMediaUrl(msg.mediaUrl);
+    if (!url) {
+      this.toastr.error('Ce message vocal ne contient aucun fichier audio.');
+      return;
+    }
+
+    const audio = new Audio();
+    audio.preload = 'auto';
+
+    // Avant : `.catch(console.error)` → l'utilisateur n'entendait rien et ne voyait rien.
+    let failed = false;
+    const fail = (err?: any) => {
+      if (failed) return;
+      failed = true;
+      console.error('[Vocal] lecture impossible', { url, mediaErrorCode: audio.error?.code, err });
+      this.zone.run(() => {
+        if (this.currentAudio === audio) this.stopCurrentAudio();
+        this.toastr.error(err?.name === 'NotAllowedError'
+          ? 'Le navigateur a bloqué la lecture. Appuyez de nouveau sur lecture.'
+          : 'Impossible de lire ce vocal : fichier introuvable sur le serveur ou format non supporté par cet appareil.');
+      });
+    };
+
+    const majDuree = () => {
+      if (isFinite(audio.duration) && audio.duration > 0) {
+        msg.audioDurationLabel = this.formatAudioTime(audio.duration);
+      }
+    };
+
+    audio.onplay           = () => this.zone.run(() => { msg.isPlaying = true; });
+    audio.onpause          = () => this.zone.run(() => { msg.isPlaying = false; });
+    audio.onended          = () => this.zone.run(() => this.stopCurrentAudio());
+    audio.onerror          = () => fail();
+    audio.onloadedmetadata = () => this.zone.run(majDuree);
+    audio.ondurationchange = () => this.zone.run(majDuree);
+    audio.ontimeupdate     = () => this.zone.run(() => {
+      const total = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+      msg.audioProgress = total ? audio.currentTime / total : 0;
+      msg.audioLabel    = this.formatAudioTime(audio.currentTime);
+    });
+
+    this.currentAudio = audio;
+    this.playingMsgId = msg.id;
+    msg.audioProgress = 0;
+    audio.src = url;
+    audio.play().catch(err => fail(err));
+  }
+
+  private stopCurrentAudio(): void {
+    const audio = this.currentAudio;
+    if (audio) {
+      // On détache les écouteurs AVANT pause()/load() pour éviter des rappels tardifs
+      audio.onplay = audio.onpause = audio.onended = audio.onerror = null;
+      audio.onloadedmetadata = audio.ondurationchange = audio.ontimeupdate = null;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    }
+    const msg = this.messages.find(m => m.id === this.playingMsgId);
+    if (msg) {
+      msg.isPlaying     = false;
+      msg.audioProgress = 0;
+      msg.audioLabel    = msg.audioDurationLabel || '';
+    }
+    this.currentAudio = null;
+    this.playingMsgId = null;
+  }
+
+  private formatAudioTime(sec: number): string {
+    const s = Math.max(0, Math.floor(sec || 0));
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Transforme n'importe quel format d'URL de média renvoyé par le backend en URL
+   * absolue exploitable par <img>, <video> et <audio>. Gère :
+   *  - "https://…"                  → inchangée
+   *  - "http://localhost:8080/…"    → ré-aiguillée vers le backend courant (anciens messages créés en local)
+   *  - "http://…" sur page HTTPS    → passée en https (sinon le navigateur bloque : "mixed content")
+   *  - "/uploads/x.webm"            → préfixée par environment.apiUrl
+   *  - "uploads/x.webm" ou "x.webm" → idem, en ajoutant le "/" ou le dossier /uploads manquant
+   */
+  private resolveMediaUrl(raw?: string | null): string {
+    if (!raw || raw === 'null') return '';
+    const base = (this.apiUrl || '').replace(/\/+$/, '');
+
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const u = new URL(raw);
+        const urlLocale     = ['localhost', '127.0.0.1', '0.0.0.0'].includes(u.hostname);
+        const backendLocal  = /localhost|127\.0\.0\.1/.test(base);
+        if (urlLocale && !backendLocal) return `${base}${u.pathname}${u.search}`;
+        if (u.protocol === 'http:' && !urlLocale && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+          u.protocol = 'https:';
+          return u.toString();
+        }
+      } catch { /* URL invalide : renvoyée telle quelle */ }
+      return raw;
+    }
+
+    let path = raw.startsWith('/') ? raw : `/${raw}`;
+    if (!/^\/uploads\//i.test(path) && !path.includes('/', 1)) path = `/uploads${path}`;   // nom de fichier nu
+    return `${base}${path}`;
+  }
+
+  // ─── Clavier mobile ────────────────────────────────────────
+
+  /**
+   * Sur iOS comme sur Chrome Android récent, le clavier ne redimensionne PAS la page : il se pose
+   * par-dessus, et le champ de saisie (collé en bas) disparaît dessous. Ni 100vh ni 100dvh ne
+   * tiennent compte du clavier : seul visualViewport donne la zone réellement visible.
+   * On expose donc sa hauteur dans --app-vh, utilisée par le CSS du conteneur principal.
+   */
+  private initViewportWatcher(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const vv = window.visualViewport;
+    if (!vv) return;                                          // vieux navigateur : le CSS (dvh/vh) prend le relais
+
+    const root = document.documentElement;
+    this.lastViewportHeight = vv.height;
+    root.style.setProperty('--app-vh', `${Math.round(vv.height)}px`);
+
+    const update = () => {
+      if (vv.scale > 1.01) return;                            // pincer pour zoomer ≠ clavier : on ne touche à rien
+      const delta = this.lastViewportHeight - vv.height;      // > 0 : le clavier vient de s'ouvrir
+      this.lastViewportHeight = vv.height;
+      root.style.setProperty('--app-vh', `${Math.round(vv.height)}px`);
+
+      if (window.scrollY !== 0) window.scrollTo(0, 0);        // iOS décale parfois toute la page vers le haut
+
+      // Si on lisait le bas de la conversation, on y reste quand la zone rétrécit
+      const el = this.myScrollContainer?.nativeElement as HTMLElement | undefined;
+      if (el && delta > 0) {
+        const etaitEnBas = el.scrollHeight - el.scrollTop - el.clientHeight - delta < 160;
+        if (etaitEnBas) el.scrollTop = el.scrollHeight;
+      }
+    };
+
+    this.zone.runOutsideAngular(() => {
+      vv.addEventListener('resize', update);
+      vv.addEventListener('scroll', update);
+    });
+
+    this.viewportCleanup = () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+      root.style.removeProperty('--app-vh');
+    };
+  }
+
+  /** Focus sur le champ de message : on laisse le clavier s'ouvrir, puis on recale le tout. */
+  onInputFocus(event?: FocusEvent): void {
+    setTimeout(() => {
+      (event?.target as HTMLElement | undefined)?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+      this.autoScroll();
+    }, 350);
+  }
 
   private formatDate(dateStr: string): string {
     if (!dateStr) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

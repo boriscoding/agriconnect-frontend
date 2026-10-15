@@ -74,7 +74,7 @@ export class Openachecteur implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.serverIp = window.location.hostname;
 
-      const storedId = localStorage.getItem('userId') || sessionStorage.getItem('userId');    
+      const storedId = sessionStorage.getItem('userId');    
       if (storedId) {
         this.userIdConnecte = +storedId.replace(/\D/g, '');
         this.loadUserProfile();

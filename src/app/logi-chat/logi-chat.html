@@ -152,17 +152,22 @@
             </div>
 
             <div class="media-wrapper" *ngIf="msg?.type === 'VIDEO'" (click)="openMediaModal(msg)">
-              <video [src]="msg?.mediaUrl" class="chat-video-content" preload="metadata"></video>
+              <video [src]="msg?.mediaUrl ? (msg.mediaUrl + '#t=0.1') : ''" class="chat-video-content" preload="metadata" playsinline></video>
               <div class="media-overlay"><i class="fas fa-play-circle"></i></div>
             </div>
 
             <div class="audio-wrapper" *ngIf="msg?.type === 'AUDIO'">
               <div class="audio-bar">
-                <button class="play-audio-btn" (click)="playAudio($event, msg)"><i class="fas fa-play"></i></button>
+                <button class="play-audio-btn" [class.playing]="msg.isPlaying" (click)="playAudio($event, msg)"
+                        [attr.aria-label]="msg.isPlaying ? 'Mettre en pause' : 'Écouter le message vocal'">
+                  <i class="fas" [ngClass]="msg.isPlaying ? 'fa-pause' : 'fa-play'"></i>
+                </button>
                 <div class="audio-wave">
-                  <span *ngFor="let h of [8,14,10,20,6,16,12,18,8,14,10,20,16,8,12]" [style.height.px]="h"></span>
+                  <span *ngFor="let h of [8,14,10,20,6,16,12,18,8,14,10,20,16,8,12]; let i = index"
+                        [style.height.px]="h"
+                        [class.played]="(msg.audioProgress || 0) > i / 15"></span>
                 </div>
-                <span class="audio-dur">0:{{ msg.duration || '00' }}</span>
+                <span class="audio-dur">{{ msg.audioLabel || msg.audioDurationLabel || '0:00' }}</span>
               </div>
             </div>
 
@@ -183,7 +188,12 @@
 
             <span class="msg-time">
               {{ msg.time }}
-              <i class="fas fa-check-double" *ngIf="msg.isMe" [class.read]="msg.read"></i>
+              <i class="fas fa-check msg-statut msg-statut--envoye"
+                 *ngIf="msg.isMe && msg.statut === 'ENVOYE'" title="Envoyé"></i>
+              <i class="fas fa-check-double msg-statut msg-statut--delivre"
+                 *ngIf="msg.isMe && msg.statut === 'DELIVRE'" title="Délivré"></i>
+              <i class="fas fa-check-double msg-statut msg-statut--lu"
+                 *ngIf="msg.isMe && msg.statut === 'LU'" title="Lu"></i>
             </span>
 
           </div>
@@ -200,7 +210,7 @@
         <div class="preview-container">
           <button class="cancel-preview" (click)="cancelPreview()"><i class="fas fa-times"></i></button>
           <img *ngIf="previewType === 'IMAGE'" [src]="mediaPreviewUrl" class="preview-item">
-          <video *ngIf="previewType === 'VIDEO'" [src]="mediaPreviewUrl" class="preview-item" controls></video>
+          <video *ngIf="previewType === 'VIDEO'" [src]="mediaPreviewUrl" class="preview-item" controls playsinline></video>
           <div *ngIf="previewType === 'AUDIO'" class="preview-audio-item">
             <i class="fas fa-microphone"></i>
             <span>Message vocal prêt</span>
@@ -214,7 +224,7 @@
           <i class="fas fa-paperclip"></i>
           <input type="file" #fileInput style="display:none" (change)="onFileSelected($event)" accept="image/*,video/*">
         </button>
-        <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" (input)="onMessageInput()"
+        <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" (input)="onMessageInput()" (focus)="onInputFocus($event)" enterkeyhint="send" autocomplete="off"
                [placeholder]="isDelegatedView() ? 'Écrire en tant que délégué...' : (mediaPreviewUrl ? 'Ajouter une légende...' : 'Taper un message...')">
         <button *ngIf="newMessage.trim().length > 0 || mediaPreviewUrl" (click)="sendMessage()" class="send-btn">
           <i class="fas fa-paper-plane"></i>
@@ -265,7 +275,7 @@
       </div>
       <div class="focus-content" (click)="$event.stopPropagation()">
         <img *ngIf="selectedMedia.type === 'IMAGE'" [src]="selectedMedia.mediaUrl" [style.transform]="'scale(' + zoomLevel + ')'">
-        <video *ngIf="selectedMedia.type === 'VIDEO'" [src]="selectedMedia.mediaUrl" controls autoplay></video>
+        <video *ngIf="selectedMedia.type === 'VIDEO'" [src]="selectedMedia.mediaUrl" controls autoplay playsinline></video>
       </div>
       <div class="recent-media-tray" (click)="$event.stopPropagation()">
         <div *ngFor="let m of recentMedias" class="tray-item" [class.active]="m.id === selectedMedia.id" (click)="selectedMedia = m">
@@ -299,8 +309,26 @@
           <p>Entrez l'adresse email de l'utilisateur :</p>
           <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" [(ngModel)]="emailSearch" placeholder="exemple@agriconnect.cm" (keyup.enter)="creerNouvelleDiscussion()">
+            <input type="email" [(ngModel)]="emailSearch" (input)="onEmailSearchInput()"
+                   placeholder="exemple@agriconnect.cm" (keyup.enter)="creerNouvelleDiscussion()">
           </div>
+
+          <div class="email-preview" *ngIf="searchingPreview">
+            <i class="fas fa-spinner fa-spin"></i> Recherche...
+          </div>
+          <div class="email-preview email-preview--found" *ngIf="previewContact && !searchingPreview"
+               (click)="creerNouvelleDiscussion()">
+            <img [src]="getContactPhotoUrl(previewContact)" class="email-preview-avatar" alt="">
+            <div>
+              <strong>{{ previewContact.nom }} {{ previewContact.prenom }}</strong>
+              <span>{{ previewContact.email }}</span>
+            </div>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <p class="email-preview email-preview--empty"
+             *ngIf="emailSearchAttempted && !previewContact && !searchingPreview">
+            Aucun utilisateur trouvé avec cet email.
+          </p>
         </div>
         <div class="modal-footer">
           <button class="btn-cancel" (click)="showNewChatModal = false">Annuler</button>

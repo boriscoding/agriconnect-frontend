@@ -1,11 +1,12 @@
-import { Component, EventEmitter, Output, OnInit, NgZone, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, AfterViewInit, ViewChild, ElementRef, NgZone, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { Auth } from '../services/auth';
 import { User } from '../services/user';
-import { environment } from '../../environments/environment'; // 👈 Import de l'environnement
+import { environment } from '../../environments/environment';
+import { animate, stagger } from 'motion';
 
 declare var google: any;
 
@@ -14,7 +15,10 @@ declare var google: any;
   templateUrl: './formconnect.component.html',
   styleUrls: ['./formconnect.component.css']
 })
-export class FormconnectComponent implements OnInit {
+export class FormconnectComponent implements OnInit, AfterViewInit {
+
+  @ViewChild('card') cardRef!: ElementRef<HTMLElement>;
+  @ViewChild('fields') fieldsRef!: ElementRef<HTMLElement>;
 
   loading: boolean = false;
   email: string = '';
@@ -25,7 +29,7 @@ export class FormconnectComponent implements OnInit {
   passwordType: string = 'password';
   passwordIcon: string = 'fas fa-eye-slash';
 
-  private apiUrl = environment.apiUrl; // 👈 Utilisation de l'URL centralisée
+  private apiUrl = environment.apiUrl;
 
   @Output() backToHome = new EventEmitter<void>();
 
@@ -57,6 +61,24 @@ export class FormconnectComponent implements OnInit {
     }
   }
 
+  // ── L'unique moment d'animation : l'apparition de la carte de connexion ──
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    animate(
+      this.cardRef.nativeElement,
+      { opacity: [0, 1], transform: ['translateY(16px) scale(0.98)', 'translateY(0px) scale(1)'] },
+      { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+    );
+
+    const fieldEls = this.fieldsRef.nativeElement.children;
+    animate(
+      Array.from(fieldEls) as HTMLElement[],
+      { opacity: [0, 1], transform: ['translateY(10px)', 'translateY(0px)'] },
+      { duration: 0.35, delay: stagger(0.06, { startDelay: 0.15 }) }
+    );
+  }
+
   viewpass(): void {
     if (this.passwordType === 'password') {
       this.passwordType = 'text';
@@ -80,15 +102,15 @@ export class FormconnectComponent implements OnInit {
 
     switch (this.selectedCategorie) {
       case 'Producteur':
-        endpoint = `${this.apiUrl}/producteurs/login`; // 👈 Utilisation dynamique
+        endpoint = `${this.apiUrl}/producteurs/login`;
         routeDestination = '/open';
         break;
       case 'Transporteur':
-        endpoint = `${this.apiUrl}/transporteurs/login`; // 👈 Utilisation dynamique
+        endpoint = `${this.apiUrl}/transporteurs/login`;
         routeDestination = '/opentrans';
         break;
       case 'Acheteur':
-        endpoint = `${this.apiUrl}/acheteurs/login`; // 👈 Utilisation dynamique
+        endpoint = `${this.apiUrl}/acheteurs/login`;
         routeDestination = '/openacheteur';
         break;
     }
@@ -96,17 +118,14 @@ export class FormconnectComponent implements OnInit {
     this.http.post(endpoint, loginData).subscribe({
       next: (user: any) => {
         this.loading = false;
-        
-        // ✅ Sécurité : On vérifie que l'ID existe avant de continuer
+
         if (!user || (!user.id && !user.userId)) {
           this.toastr.error("Erreur : Données utilisateur incomplètes.");
           return;
         }
 
         const userId = user.id || user.userId;
-
-        // ✅ Stockage explicite de l'ID pour que Openachecteur puisse le lire au ngOnInit
-        localStorage.setItem('userId', userId.toString());
+        sessionStorage.setItem('userId', userId.toString());
 
         const userToSave: User = {
           id: userId,
@@ -119,13 +138,21 @@ export class FormconnectComponent implements OnInit {
         this.toastr.success(`Bienvenue, ${user.nom || 'Acheteur'}`);
 
         this.isClosing = true;
-        // On laisse un petit délai pour l'animation et le stockage LocalStorage
         setTimeout(() => this.router.navigate([routeDestination]), 500);
       },
       error: (err) => {
         this.loading = false;
         console.error('Erreur Login:', err);
         this.toastr.error('Email ou mot de passe incorrect.');
+
+        // Feedback visuel sur échec : léger "shake" de la carte
+        if (isPlatformBrowser(this.platformId) && this.cardRef) {
+          animate(
+            this.cardRef.nativeElement,
+            { transform: ['translateX(0)', 'translateX(-8px)', 'translateX(8px)', 'translateX(-6px)', 'translateX(0)'] },
+            { duration: 0.35 }
+          );
+        }
       }
     });
   }

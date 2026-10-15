@@ -23,8 +23,12 @@ export class Auth {
 
   getUserId(): number | null {
     if (isPlatformBrowser(this.platformId)) {
-      // ✅ On lit d'abord 'userId' depuis localStorage (survit à router.navigate)
-      const directId = localStorage.getItem('userId');
+      // ✅ sessionStorage : isolé par onglet (contrairement à localStorage,
+      // partagé entre tous les onglets, ce qui causait des "écrasements"
+      // de session quand plusieurs comptes étaient testés en parallèle).
+      // Survit très bien à router.navigate() (uniquement effacé à la fermeture
+      // de l'onglet), donc aucun compromis par rapport à l'ancien comportement.
+      const directId = sessionStorage.getItem('userId');
       if (directId) return parseInt(directId, 10);
 
       // Fallback : depuis le profil sessionStorage si disponible
@@ -40,16 +44,17 @@ export class Auth {
       // Profil complet → sessionStorage (isolé par onglet, préservé pour le chat)
       sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
 
-      // ✅ userId seul → localStorage (persiste après router.navigate)
-      // openacheteur.ts fait localStorage.getItem('userId') en fallback
-      localStorage.setItem('userId', user.id.toString());
+      // ✅ userId seul → sessionStorage également (isolé par onglet, persiste
+      // après router.navigate() puisque ce n'est qu'une navigation SPA, pas
+      // un rechargement de page).
+      sessionStorage.setItem('userId', user.id.toString());
     }
   }
 
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem(this.STORAGE_KEY);
-      localStorage.removeItem('userId');
+      sessionStorage.removeItem('userId');
     }
   }
   // ✅ Bonne pratique

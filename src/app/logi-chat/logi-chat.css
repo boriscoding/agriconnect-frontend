@@ -33,6 +33,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;                  /* barres du navigateur mobile */
+  height: var(--app-vh, 100dvh);   /* + clavier : valeur posée par initViewportWatcher() */
   width: 100vw;
   overflow: hidden;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -74,6 +76,8 @@
   display: flex;
   overflow: hidden;
   height: calc(100vh - 45px);
+  height: calc(100dvh - 45px);
+  height: calc(var(--app-vh, 100dvh) - 45px);
   position: relative;
 }
 
@@ -632,6 +636,7 @@
   transition: background 0.2s ease, transform 0.15s ease;
 }
 .play-audio-btn:hover { background: var(--green-dark); transform: scale(1.08); }
+.play-audio-btn.playing { background: var(--green-dark); box-shadow: 0 0 0 4px rgba(37,162,68,0.18); }
 
 .audio-wave {
   display: flex;
@@ -643,15 +648,18 @@
   width: 3px;
   border-radius: 2px;
   background: #25a244;
-  opacity: 0.7;
-  transition: height 0.1s ease;
+  opacity: 0.4;                                   /* pas encore lu */
+  transition: height 0.1s ease, opacity 0.15s ease;
 }
+.audio-wave span.played { opacity: 1; }           /* déjà lu (progression de la lecture) */
 
 .audio-dur {
   font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
+  min-width: 2.4em;                      /* évite que la largeur saute pendant la lecture */
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Menu contextuel message ─────────────────────────── */
@@ -1610,7 +1618,17 @@
   }
 
   .conversation-window { display: none !important; }
-  .contact-info-panel { display: none !important; }
+
+  /* Le panneau d'infos contact (drawer) est géré par *ngIf côté Angular :
+     il n'est présent dans le DOM QUE quand showContactPanel === true.
+     Le masquer inconditionnellement ici empêchait son animation @drawerSlide
+     de jamais s'afficher, quel que soit le clic de l'utilisateur. */
+  .contact-info-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    width: 100% !important;
+  }
 
   .chat-mobile-active .contacts-sidebar { display: none !important; }
 
@@ -1634,6 +1652,14 @@
   .call-avatar-ring { width: 120px; height: 120px; }
   .call-actions { gap: 18px; }
   .call-btn { width: 56px; height: 56px; }
+
+  /* iOS Safari zoome automatiquement la page quand le champ actif a une police < 16px :
+     ce zoom décale toute la mise en page et casse le placement du champ au-dessus du
+     clavier. 16px uniquement sur mobile : le design desktop ne change pas. */
+  .chat-footer input,
+  .search-input-wrapper input {
+    font-size: 16px;
+  }
 }
 /* ══════════════════════════════════════════════════════════
    PARTAGE DE DISCUSSION (délégation)
@@ -1713,3 +1739,42 @@
   font-size: 0.78rem;
   white-space: nowrap;
 }
+/* ══════════════════════════════════════════════════════════
+   STATUT DES MESSAGES : envoyé (vert) / délivré (orange) / lu (rouge)
+   ══════════════════════════════════════════════════════════ */
+.msg-statut {
+  font-size: 0.72rem;
+  margin-left: 4px;
+}
+.msg-statut--envoye { color: #4caf50; }   /* vert : parti du serveur */
+.msg-statut--delivre { color: #ff9800; } /* orange : reçu par un destinataire en ligne */
+.msg-statut--lu { color: #f44336; }      /* rouge : lu par le destinataire */
+
+/* ══════════════════════════════════════════════════════════
+   APERÇU DE RECHERCHE AUTOMATIQUE (nouvelle discussion par email)
+   ══════════════════════════════════════════════════════════ */
+.email-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #888;
+}
+.email-preview--found {
+  background: #f4f8f4;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.email-preview--found:hover { background: #e8f5e9; }
+.email-preview-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.email-preview--found div { display: flex; flex-direction: column; flex: 1; }
+.email-preview--found strong { color: #2d5a27; font-size: 0.92rem; }
+.email-preview--found span { font-size: 0.78rem; color: #888; }
+.email-preview--empty { color: #d32f2f; font-size: 0.85rem; }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment'; // 👈 Import de l'environnement dynamique
+import { environment } from '../../environments/environment';
 
 export interface Message {
   id?: number;
@@ -20,23 +20,18 @@ export interface Contact {
   prenom?: string;
   email?: string;
   photoUrl?: string;
-  photosuser?: string; // Ajouté pour correspondre à ton entité Java
+  photosuser?: string;
   online?: boolean;
 }
 
-/** Un partage de discussion actif : A (initiateur) donne accès à B (bénéficiaire)
- *  à sa discussion avec C (tiers), à partir d'une date donnée. */
 export interface Partage {
   id?: number;
   initiateurId: number;
   beneficiaireId: number;
   tiersId: number;
-  dateDebutAcces: string; // format LocalDateTime ISO, ex: "2026-09-01T10:30:00"
+  dateDebutAcces: string;
 }
 
-/** Charge utile embarquée dans le message d'invitation (mediaType = PARTAGE_INVITE)
- *  envoyé au bénéficiaire pour qu'il découvre le partage. Ne contient JAMAIS
- *  l'identité du tiers : c'est justement ce qui doit rester caché. */
 export interface PartageInvitePayload {
   partageId?: number;
   initiateurId: number;
@@ -51,63 +46,68 @@ export interface PartageInvitePayload {
 })
 export class MessageApi {
 
-  // 👈 URL dynamique basée sur environment.apiUrl (Local vs Render).
-  // environment.apiUrl est l'ORIGINE NUE (sans /api) : on l'ajoute ici,
-  // exactement comme le fait offre.ts / demande.ts / vehicule.ts, pour que
-  // le préfixe reste cohérent quel que soit l'environnement chargé.
   private readonly API_URL = `${environment.apiUrl}/api/messages`;
 
   constructor(private http: HttpClient) { }
 
-  /** * ENVOI DE MESSAGES 
-   */
+  /** ENVOI DE MESSAGES */
 
-  // Envoi via FormData pour gérer texte + fichiers (images, vidéos, audio)
   envoyer(formData: FormData): Observable<any> {
     return this.http.post(`${this.API_URL}/envoyer`, formData);
   }
 
-  // Transférer un message existant vers un nouveau destinataire
   transfererMessage(messageId: number, expediteurId: number, destinataireId: number): Observable<Message> {
     const params = new HttpParams()
       .set('messageId', messageId.toString())
       .set('expediteurId', expediteurId.toString())
       .set('destinataireId', destinataireId.toString());
-    
+
     return this.http.post<Message>(`${this.API_URL}/transferer`, null, { params });
   }
 
-  /** * RÉCUPÉRATION DES MESSAGES 
-   */
+  /** RÉCUPÉRATION DES MESSAGES */
 
-  // Récupérer l'historique complet entre deux utilisateurs (u1 et u2)
   getMessagesEntre(u1: number, u2: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/conversation?u1=${u1}&u2=${u2}`);
   }
 
-  // Récupérer le tout dernier message échangé entre deux personnes (pour la liste des contacts)
   getDernierMessage(u1: number, u2: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/dernier-echange?u1=${u1}&u2=${u2}`);
   }
 
-  // Récupérer les messages reçus par un utilisateur spécifique
   getMessagesRecus(destinataireId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/recus/${destinataireId}`);
   }
 
-  /** * GESTION DES CONTACTS 
-   */
+  /** ACCUSÉS DE LECTURE */
 
-  // Récupérer la liste des contacts avec qui l'utilisateur a déjà discuté
+  /** Marque comme lus tous les messages envoyés par `expediteurId` vers
+   *  `lecteurId` (l'utilisateur qui vient d'ouvrir la conversation).
+   *  Le backend notifie l'expéditeur en temps réel via WebSocket. */
+  marquerConversationCommeLue(expediteurId: number, lecteurId: number): Observable<void> {
+    const params = new HttpParams()
+      .set('expediteurId', expediteurId.toString())
+      .set('lecteurId', lecteurId.toString());
+    return this.http.put<void>(`${this.API_URL}/conversation/lu`, null, { params });
+  }
+
+  /** PRÉSENCE EN LIGNE */
+
+  /** Liste des IDs actuellement connectés, à charger une fois à l'ouverture
+   *  du chat (les mises à jour suivantes arrivent via /topic/presence). */
+  getUtilisateursEnLigne(): Observable<number[]> {
+    return this.http.get<number[]>(`${environment.apiUrl}/api/presence/en-ligne`);
+  }
+
+  /** GESTION DES CONTACTS */
+
   getContactsActifs(userId: number): Observable<Contact[]> {
     return this.http.get<Contact[]>(`${this.API_URL}/contacts/${userId}`);
   }
 
-  /** * MODIFICATION ET SUPPRESSION 
-   */
+  /** MODIFICATION ET SUPPRESSION */
 
   modifierMessage(id: number, contenu: string): Observable<Message> {
-    // On envoie le contenu directement si ton backend l'attend en tant que String simple
     return this.http.put<Message>(`${this.API_URL}/modifier/${id}`, contenu);
   }
 
@@ -116,11 +116,8 @@ export class MessageApi {
   }
 
   getContactByEmail(email: string): Observable<Contact> {
-    // 👈 Corrigé : manquait le préfixe /api (le contrôleur est bien
-    // mappé sur /api/utilisateurs côté Spring).
     const searchUrl = `${environment.apiUrl}/api/utilisateurs/search`;
     const params = new HttpParams().set('email', email);
-    
     return this.http.get<Contact>(searchUrl, { params });
   }
 
@@ -145,7 +142,7 @@ export class MessageApi {
     return this.http.get<any[]>(`${this.API_URL}/partage/conversation`, { params, withCredentials: true });
   }
 
-  // ✍️ 3. Envoyer un message en tant que délégué (au nom de l'initiateur, vers le tiers)
+  // ✍️ 3. Envoyer un message en tant que délégué
   envoyerMessageDelegue(beneficiaireId: number, initiateurId: number, destinataireId: number, contenu: string): Observable<Message> {
     const params = new HttpParams()
       .set('beneficiaireId', beneficiaireId)
